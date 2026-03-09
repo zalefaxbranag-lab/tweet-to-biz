@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Tweet {
+  id        String    @id @default(cuid())
+  url       String    @unique
+  content   String
+  author    String    @default("")
+  media     String    @default("[]")
+  links     String    @default("[]")
+  status    String    @default("pending")
+  error     String?
+  createdAt DateTime  @default(now())
+  analysis  Analysis?
+}
+
+model Analysis {
+  id         String   @id @default(cuid())
+  tweetId    String   @unique
+  tweet      Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  summary    String
+  bizIdea    String
+  plan       String
+  tools      String   @default("[]")
+  score      Int
+  weaknesses String   @default("")
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  status      String      @default("draft")
+  plan        String
+  score       Int         @default(0)
+  category    String      @default("")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  analyses    Analysis[]
+  iterations  Iteration[]
+}
+
+model Iteration {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  version   Int
+  plan      String
+  feedback  String
+  score     Int
+  changes   String
+  createdAt DateTime @default(now())
+}
