@@ -1,19 +1,21 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 import { prisma } from "@/lib/db";
 
-async function getClient(): Promise<Anthropic> {
+const MODEL = "llama-3.3-70b-versatile";
+
+async function getClient(): Promise<Groq> {
   // Try env var first
-  if (process.env.ANTHROPIC_API_KEY) {
-    return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  if (process.env.GROQ_API_KEY) {
+    return new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
   // Fall back to DB setting
   const setting = await prisma.setting.findUnique({
-    where: { key: "ANTHROPIC_API_KEY" },
+    where: { key: "GROQ_API_KEY" },
   });
   if (setting?.value) {
-    return new Anthropic({ apiKey: setting.value });
+    return new Groq({ apiKey: setting.value });
   }
-  throw new Error("No API key configured. Add one in Settings.");
+  throw new Error("No Groq API key configured. Add one in Settings (free at console.groq.com).");
 }
 
 export interface PlanStep {
@@ -133,17 +135,17 @@ export async function processTweet(
     const userPrompt = buildUserPrompt(tweetContent, existingProjects, weaknesses);
 
     const client = await getClient();
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+    const message = await client.chat.completions.create({
+      model: MODEL,
       max_tokens: 2048,
       messages: [
+        { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
       ],
-      system: SYSTEM_PROMPT,
+      temperature: 0.7,
     });
 
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const responseText = message.choices[0]?.message?.content || "";
     result = parseAIResponse(responseText);
 
     // If score >= 8, we're satisfied
@@ -164,16 +166,16 @@ export async function iteratePlan(
   const userPrompt = `Here is the current business plan:\n\n${currentPlan}\n\nOriginal tweet content:\n${tweetContent}\n\nUser feedback to improve the plan:\n${feedback}\n\nGenerate an improved version of the plan addressing the feedback.`;
 
   const client = await getClient();
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+  const message = await client.chat.completions.create({
+    model: MODEL,
     max_tokens: 2048,
     messages: [
+      { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: userPrompt },
     ],
-    system: SYSTEM_PROMPT,
+    temperature: 0.7,
   });
 
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const responseText = message.choices[0]?.message?.content || "";
   return parseAIResponse(responseText);
 }

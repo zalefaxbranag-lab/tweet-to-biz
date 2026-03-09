@@ -230,7 +230,7 @@ export default function Home() {
         {/* Settings panel */}
         {showSettings && (
           <div className="mb-4 p-4 bg-gray-900 rounded-xl border border-gray-800">
-            <h2 className="text-sm font-medium text-gray-300 mb-3">Anthropic API Key</h2>
+            <h2 className="text-sm font-medium text-gray-300 mb-3">Groq API Key (free)</h2>
             {hasApiKey ? (
               <div className="flex items-center gap-2 text-sm">
                 <span className="w-2 h-2 bg-green-500 rounded-full" />
@@ -245,9 +245,9 @@ export default function Home() {
             ) : (
               <div className="space-y-2">
                 <p className="text-xs text-gray-500">
-                  Get a key from{" "}
-                  <a href="https://console.anthropic.com/settings/keys" target="_blank" className="text-blue-400 hover:underline">
-                    console.anthropic.com
+                  100% free — get a key from{" "}
+                  <a href="https://console.groq.com/keys" target="_blank" className="text-blue-400 hover:underline">
+                    console.groq.com/keys
                   </a>
                 </p>
                 <div className="flex gap-2">
@@ -255,7 +255,7 @@ export default function Home() {
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-ant-api03-..."
+                    placeholder="gsk_..."
                     className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-blue-500"
                   />
                   <button
@@ -323,7 +323,7 @@ export default function Home() {
         {!hasApiKey && tweets.length > 0 && (
           <div className="mb-4 p-3 bg-amber-900/20 border border-amber-800 rounded-lg flex items-center gap-3">
             <span className="text-amber-400 text-sm">
-              Add your Anthropic API key to process {pendingCount} pending tweets
+              Add your free Groq API key to process {pendingCount} pending tweets
             </span>
             <button
               onClick={() => setShowSettings(true)}
