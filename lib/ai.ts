@@ -1,6 +1,20 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "@/lib/db";
 
-const client = new Anthropic();
+async function getClient(): Promise<Anthropic> {
+  // Try env var first
+  if (process.env.ANTHROPIC_API_KEY) {
+    return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  // Fall back to DB setting
+  const setting = await prisma.setting.findUnique({
+    where: { key: "ANTHROPIC_API_KEY" },
+  });
+  if (setting?.value) {
+    return new Anthropic({ apiKey: setting.value });
+  }
+  throw new Error("No API key configured. Add one in Settings.");
+}
 
 export interface PlanStep {
   step: string;
@@ -118,8 +132,9 @@ export async function processTweet(
   for (let i = 0; i < maxIterations; i++) {
     const userPrompt = buildUserPrompt(tweetContent, existingProjects, weaknesses);
 
+    const client = await getClient();
     const message = await client.messages.create({
-      model: "claude-sonnet-4-5-20250514",
+      model: "claude-sonnet-4-5-20250929",
       max_tokens: 2048,
       messages: [
         { role: "user", content: userPrompt },
@@ -148,8 +163,9 @@ export async function iteratePlan(
 ): Promise<AnalysisResult> {
   const userPrompt = `Here is the current business plan:\n\n${currentPlan}\n\nOriginal tweet content:\n${tweetContent}\n\nUser feedback to improve the plan:\n${feedback}\n\nGenerate an improved version of the plan addressing the feedback.`;
 
+  const client = await getClient();
   const message = await client.messages.create({
-    model: "claude-sonnet-4-5-20250514",
+    model: "claude-sonnet-4-5-20250929",
     max_tokens: 2048,
     messages: [
       { role: "user", content: userPrompt },

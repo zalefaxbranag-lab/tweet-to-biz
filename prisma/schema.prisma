@@ -49,6 +49,11 @@ model Project {
   iterations  Iteration[]
 }
 
+model Setting {
+  key   String @id
+  value String
+}
+
 model Iteration {
   id        String   @id @default(cuid())
   projectId String
