@@ -22,8 +22,8 @@ with sync_playwright() as p:
             screens: +(d.scrollHeight/vh).toFixed(1),
             horizontalOverflow: d.scrollWidth > d.clientWidth,
             scrollWidth: d.scrollWidth, clientWidth: d.clientWidth,
-            heroCtaTop: top(q('.cs-dh-cta .cs-btn')),
-            heroCtaAboveFold: top(q('.cs-dh-cta .cs-btn')) !== null && top(q('.cs-dh-cta .cs-btn')) < vh,
+            heroCtaTop: top(q('.cs-dh-cta')||q('.cs-dh-cta .cs-btn')),
+            heroCtaAboveFold: top(q('.cs-dh-cta')||q('.cs-dh-cta .cs-btn')) !== null && top(q('.cs-dh-cta')||q('.cs-dh-cta .cs-btn')) < vh,
             sectionTops: {
               hero: top(q('.cs-duo-hero')), vsl: top(q('.cs-duo-vsl')),
               demos: top(q('.cs-duo-demos')), steps: top(q('.cs-duo-steps')),
