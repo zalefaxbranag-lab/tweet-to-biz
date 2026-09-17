@@ -39,6 +39,46 @@ PAGE = {
  "guests-gift": ("1:1", "A wedding reception table seen from above at night, a phone in the centre playing music with several hands of different ages resting around it, glasses and candles, everyone leaning in to listen, shallow focus on the hands."),
  "just-because": ("3:2", "A couple in their late twenties in a parked car at night, engine off, he has just connected his phone to the stereo, both mid-laugh, dashboard glow on their faces, rain on the windscreen, city lights out of focus."),
 }
+# Stills de reference pour les clips de VSL, a passer ensuite dans Seedance 2.5.
+# Tous en 16:9 et composes POUR UN BANDEAU CENTRAL : le montage final recadre
+# chaque moitie en 1920x540 (32:9), donc rien d'important en haut ni en bas de
+# cadre, et les deux visages sur la meme ligne horizontale.
+BAND = ("Compose for a central horizontal band: both faces on the same horizontal line, "
+        "centred vertically, generous empty headroom above and floor below that can be "
+        "cropped away without losing anything. Wide two-shot, locked-off tripod framing.")
+VSL = {
+ # --- couple 1 : les maries, lendemain de noce, chanson de premiere danse
+ "vsl1-reaction": ("16:9",
+   "A newly married couple in their thirties sitting side by side on a sofa in a dim living "
+   "room the morning after their wedding, still in soft clothes, a laptop open on the coffee "
+   "table in front of them out of frame, their faces lit almost entirely by the screen with "
+   "one warm lamp behind them, leaning slightly into each other, about to watch something. " + BAND),
+ "vsl1-musicvideo": ("16:9",
+   "A frame from a warm Super-8 style wedding film: a bride and groom mid first dance under "
+   "string lights in a wooden barn, motion blur in her dress, halation around the lights, "
+   "heavy film grain, slightly faded colours, as if projected."),
+ # --- couple 2 : la quarantaine, anniversaire, chanson-recit
+ "vsl2-reaction": ("16:9",
+   "A couple in their forties sitting close together at a kitchen table at night, a phone "
+   "propped against a jar in front of them out of frame, two glasses of wine, the room lit by "
+   "the phone screen and a single hanging bulb, her hand flat on the table near his, both "
+   "watching something on the small screen. " + BAND),
+ "vsl2-musicvideo": ("16:9",
+   "A frame from a grainy 16mm home-movie montage: a young couple running across a car park "
+   "in the rain in clothes from fifteen years ago, laughing, overexposed highlights, dust and "
+   "scratches on the emulsion, handheld and slightly out of focus."),
+ # --- couple 3 : les soixante-dix ans, cinquante ans de mariage
+ "vsl3-reaction": ("16:9",
+   "A couple in their seventies sitting together on a worn sofa in a living room full of "
+   "framed photographs, a tablet propped on a cushion in front of them out of frame, both "
+   "leaning forward slightly, her hand holding his forearm, faces lit by the small screen, "
+   "late evening. " + BAND),
+ "vsl3-musicvideo": ("16:9",
+   "A frame from a black-and-white archival-looking film: a young couple in 1970s clothes on "
+   "the steps of a registry office, confetti in the air, high contrast, visible film grain, "
+   "the kind of footage transferred from an old reel."),
+}
+
 DEMO = {
  "demo-meeting": ("16:9", "a warm late-afternoon street corner with low golden sun and shallow depth of field, two people noticing each other"),
  "demo-home": ("16:9", "a kitchen lit at night, two people slow-dancing barefoot, practical lights, film grain"),
@@ -95,11 +135,14 @@ def run(k, model, slots, out, ref, dry):
     ok, bad = [], []
     for i, (name, (aspect, txt)) in enumerate(slots.items(), 1):
         if ref:
-            prompt = ("A reference photograph of a real couple is provided. Place that exact "
-                      "couple into %s. The photograph is the ground truth for both faces: keep "
-                      "exactly what it shows and add no features that are not in it. Render the "
-                      "faces in the same style as the scene, never a pasted photograph; keep "
-                      "head size and body proportions. %s %s" % (txt, REAL, NOSPLIT))
+            # Le libelle de scene est parfois un fragment, parfois une phrase complete :
+            # on l'isole apres "Scene:" pour que la consigne reste grammaticale dans les deux cas.
+            prompt = ("A reference photograph of a real couple is provided. Recreate that exact "
+                      "couple in the scene described below. Scene: %s The photograph is the ground "
+                      "truth for both faces: keep exactly what it shows and add no features that "
+                      "are not in it. Render the faces in the same style as the scene, never a "
+                      "pasted photograph; keep head size and body proportions. %s %s"
+                      % (txt if txt.endswith(".") else txt + ".", REAL, NOSPLIT))
         else:
             prompt = "%s %s %s" % (txt, REAL, NOSPLIT)
         print("\n[%d/%d] %s  (%s)" % (i, len(slots), name, aspect))
@@ -130,7 +173,7 @@ def run(k, model, slots, out, ref, dry):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", choices=["probe", "page", "demo"])
+    ap.add_argument("command", choices=["probe", "page", "demo", "vsl"])
     ap.add_argument("--photo"); ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--out", default="./kie-out"); ap.add_argument("--only")
     ap.add_argument("--dry-run", action="store_true")
@@ -156,17 +199,18 @@ def main():
         else:
             print("\nAucun modele reconnu - colle-moi la sortie complete ci-dessus.")
         return
-    slots = dict(PAGE if a.command == "page" else DEMO)
+    slots = dict({"page": PAGE, "demo": DEMO, "vsl": VSL}[a.command])
     if a.only:
         w = {s.strip() for s in a.only.split(",")}
         slots = {x: y for x, y in slots.items() if x in w}
         if not slots: sys.exit("Aucun emplacement ne correspond.")
     print("Mode %s - %d images, modele %s (~%d credits)" % (a.command.upper(), len(slots), a.model, len(slots) * 18))
-    ref = "<photo de reference>" if (a.dry_run and a.command == "demo") else None
+    ref = "<photo de reference>" if (a.dry_run and a.photo) else None
     if not a.dry_run:
         credits(k)
-        if a.command == "demo":
-            if not a.photo: sys.exit("Le mode demo exige : --photo chemin/vers/photo.jpg")
+        if a.command == "demo" and not a.photo:
+            sys.exit("Le mode demo exige : --photo chemin/vers/photo.jpg")
+        if a.photo:
             ref = upload(k, a.photo)
     run(k, a.model, slots, Path(a.out), ref, a.dry_run)
 
