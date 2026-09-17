@@ -37,7 +37,7 @@ PAGE = {
  "long-distance": ("2:3", "A young woman sitting on an airport floor against a window with earphones in, boarding gate behind her, holding her phone against her chest, eyes shining, listening to something personal, blue evening light on the tarmac."),
  "reconciliation": ("3:2", "A couple sitting close on a parked car's tailgate at dusk, one earphone each, shoulders touching, both looking ahead rather than at each other, a moment of repair rather than celebration, muted warm tones."),
  "guests-gift": ("1:1", "A wedding reception table seen from above at night, a phone in the centre playing music with several hands of different ages resting around it, glasses and candles, everyone leaning in to listen, shallow focus on the hands."),
- "just-because": ("3:2", "A couple in their late twenties in a small car at night, she is driving and he has just connected his phone to the stereo, both mid-laugh, dashboard glow on their faces, rain on the windscreen, city lights out of focus."),
+ "just-because": ("3:2", "A couple in their late twenties in a parked car at night, engine off, he has just connected his phone to the stereo, both mid-laugh, dashboard glow on their faces, rain on the windscreen, city lights out of focus."),
 }
 DEMO = {
  "demo-meeting": ("16:9", "a warm late-afternoon street corner with low golden sun and shallow depth of field, two people noticing each other"),

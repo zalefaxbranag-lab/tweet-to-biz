@@ -62,6 +62,32 @@ veut dire qu'il n'existe pas.
 `500 … is required` et coûte 0 crédit, donc l'erreur est bénigne mais elle fait
 perdre un aller-retour. Ne pas deviner : sonder.
 
+## Placer les images sans ouvrir l'éditeur de thème
+
+Les réglages `image_picker` d'un template Shopify stockent une référence, pas un
+fichier. Format confirmé sur les templates en production de la boutique :
+
+```json
+"image": "shopify://shop_images/craftstory-ba-jungle.png"
+```
+
+Donc dès que les PNG sont dans **Contenu → Fichiers** de l'admin Shopify, les
+neuf emplacements se câblent côté template, en une seule poussée, sans passer
+par les sélecteurs d'image un par un. Les fichiers gardent le nom que
+`tools/kie.py` leur donne (`cs-duo-<emplacement>.png`), ce qui rend la
+correspondance emplacement → fichier mécanique.
+
+**Requête à utiliser, et pourquoi elle est filtrée :**
+
+```graphql
+files(first: 20, query: "filename:cs-duo*", sortKey: FILENAME) { nodes { ... } }
+```
+
+Une requête `files` non filtrée sur cette boutique remonte les aperçus clients
+générés par le worker, dont le champ `alt` contient des prénoms d'enfants et des
+adresses e-mail. Toujours filtrer sur `filename:cs-duo*` : ces données n'ont
+aucune raison d'entrer dans une session de travail sur la landing page.
+
 ## Règles de prompt (elles viennent d'échecs constatés, pas de goût)
 
 - **Jamais** de description de visage : l'identité vient uniquement de la photo de

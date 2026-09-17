@@ -132,7 +132,7 @@ PAGE_SLOTS = {
                "and candles, everyone leaning in to listen, shallow focus on the hands."),
     "just-because": dict(
         aspect="3:2",
-        prompt="A couple in their late twenties in a small car at night, she is driving and "
+        prompt="A couple in their late twenties in a parked car at night, engine off, "
                "he has just connected his phone to the stereo, both mid-laugh, dashboard "
                "glow on their faces, rain on the windscreen, city lights out of focus."),
 }
