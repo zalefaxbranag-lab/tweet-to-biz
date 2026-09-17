@@ -1,0 +1,79 @@
+<div class="cs cs-duo-steps">
+  <div class="cs-wrap">
+    <div class="cs-sec">
+      <div class="cs-sec-head">
+        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+      </div>
+
+      <ol class="cs-ds-grid">
+        {%- assign step_n = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'step' -%}
+            {%- assign step_n = step_n | plus: 1 -%}
+            <li class="cs-ds-card" {{ block.shopify_attributes }}>
+              <span class="cs-ds-num">{{ step_n }}</span>
+              {%- if block.settings.title != blank -%}<h3 class="cs-ds-t">{{ block.settings.title }}</h3>{%- endif -%}
+              {%- if block.settings.body != blank -%}<p class="cs-ds-b">{{ block.settings.body }}</p>{%- endif -%}
+              {%- if block.settings.note != blank -%}<span class="cs-chip cs-ds-chip">{{ block.settings.note }}</span>{%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ol>
+
+      {%- if section.settings.cta_label != blank -%}
+        <div class="cs-ds-cta">
+          <a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a>
+          {%- if section.settings.cta_note != blank -%}<span class="cs-ds-note">{{ section.settings.cta_note }}</span>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "CraftStory Duo Steps",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "How it works" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You answer five questions. We do the rest." },
+    { "type": "textarea", "id": "body", "label": "Mini-text", "default": "No writing, no recording, no musical skill. You will not be asked to be creative — only to tell us about the two of you." },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start With Five Questions" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" },
+    { "type": "text", "id": "cta_note", "label": "Note next to the button", "default": "Nothing to pay until you have heard it" }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Step", "limit": 5, "settings": [
+      { "type": "text", "id": "title", "label": "Title", "default": "Tell us about the two of you" },
+      { "type": "textarea", "id": "body", "label": "Text", "default": "How you met, what you call each other, the moment you would keep." },
+      { "type": "text", "id": "note", "label": "Chip (optional)", "default": "2 minutes" }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Steps", "blocks": [
+      { "type": "step", "settings": { "title": "Tell us about the two of you", "body": "Five questions: how you met, what you call each other, the moment you would keep, the style you want. Type it the way you would say it.", "note": "2 minutes" } },
+      { "type": "step", "settings": { "title": "We write and record the song", "body": "Your answers become real lyrics with their name in them, then a finished track in the genre you picked.", "note": "Nothing for you to do" } },
+      { "type": "step", "settings": { "title": "We film the music video", "body": "The two of you become the couple on screen, so the video tells your story and not a stock one.", "note": "Included" } },
+      { "type": "step", "settings": { "title": "Hear your free preview", "body": "You get a preview before you decide anything. If it is not right, you pay nothing and you can tell us to start over.", "note": "Free" } }
+    ] }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-steps{background:var(--cs-paper2)}
+.cs-ds-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2vw,20px);counter-reset:none}
+.cs-ds-card{background:var(--cs-card);border:1px solid var(--cs-line);border-radius:var(--cs-r-lg);padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:10px;box-shadow:var(--cs-sh-sm)}
+.cs-ds-num{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:var(--cs-gold-soft);color:var(--cs-ink);display:grid;place-items:center;font-family:var(--cs-serif);font-weight:700;font-size:1.02rem;font-variant-numeric:tabular-nums}
+.cs-ds-t{font-size:clamp(1.02rem,1.5vw,1.15rem);line-height:1.2}
+.cs-ds-b{color:var(--cs-ink2);font-size:.97rem;line-height:1.5}
+.cs-ds-chip{align-self:flex-start;margin-top:auto}
+.cs-ds-cta{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:clamp(26px,4vw,42px)}
+.cs-ds-note{font-size:.88rem;color:var(--cs-ink3);font-weight:600}
+@media(max-width:1040px){.cs-ds-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){
+  .cs-ds-grid{grid-template-columns:1fr}
+  .cs-ds-cta{width:100%}
+  .cs-ds-cta .cs-btn{width:100%}
+}
+{% endstylesheet %}

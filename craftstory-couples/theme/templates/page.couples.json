@@ -1,0 +1,123 @@
+{
+  "sections": {
+    "head": { "type": "cs-head", "settings": {} },
+    "hero": {
+      "type": "cs-duo-hero",
+      "blocks": {
+        "p1": { "type": "point", "settings": { "text": "Their name and your story in the lyrics" } },
+        "p2": { "type": "point", "settings": { "text": "A music video with the two of you in it" } },
+        "p3": { "type": "point", "settings": { "text": "Any genre — you pick the style" } },
+        "p4": { "type": "point", "settings": { "text": "Hear your free preview before you pay anything" } }
+      },
+      "block_order": ["p1", "p2", "p3", "p4"],
+      "settings": {
+        "eyebrow": "For couples",
+        "heading": "Turn your love story into a song — and a music video they'll watch on repeat.",
+        "body": "Answer five questions about the two of you. We write it, record it and film it — their name in the lyrics, your story in every verse, the two of you on screen.",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_note": "Takes about 2 minutes",
+        "trust_line": "No payment up front · Free preview first · Full refund if you don't love it",
+        "play_label": "Watch her hear it for the first time"
+      }
+    },
+    "vsl": {
+      "type": "cs-duo-vsl",
+      "blocks": {
+        "m1": { "type": "mark", "settings": { "time": "0:12", "text": "A full song written from one couple's story" } },
+        "m2": { "type": "mark", "settings": { "time": "0:48", "text": "The music video, with the two of them on screen" } },
+        "m3": { "type": "mark", "settings": { "time": "1:30", "text": "Her face the moment she hears her own name" } }
+      },
+      "block_order": ["m1", "m2", "m3"],
+      "settings": {
+        "eyebrow": "Watch this first",
+        "heading": "Here is what they get — and how they react when it plays.",
+        "body": "Three real songs, three music videos, three first listens. Sound on.",
+        "play_label": "Play with sound on",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_note": "Free preview first — pay only if you love it"
+      }
+    },
+    "demos": {
+      "type": "cs-duo-demos",
+      "blocks": {
+        "mv1": { "type": "clip", "settings": { "kind": "music", "label": "Play", "caption": "Written from how they met" } },
+        "mv2": { "type": "clip", "settings": { "kind": "music", "label": "Play", "caption": "Their first dance, made for them" } },
+        "mv3": { "type": "clip", "settings": { "kind": "music", "label": "Play", "caption": "Ten years, one song" } },
+        "rx1": { "type": "clip", "settings": { "kind": "reaction", "label": "Play", "caption": "She hears her name in the second line" } },
+        "rx2": { "type": "clip", "settings": { "kind": "reaction", "label": "Play", "caption": "He did not know it existed" } },
+        "rx3": { "type": "clip", "settings": { "kind": "reaction", "label": "Play", "caption": "Played at the reception" } }
+      },
+      "block_order": ["mv1", "mv2", "mv3", "rx1", "rx2", "rx3"],
+      "settings": {
+        "eyebrow": "Real songs, real reactions",
+        "heading": "Hear three of them. Then watch three people hear theirs.",
+        "body": "Every song below came from one couple answering five questions. Nothing was written by them, and nothing was a template.",
+        "music_title": "The music videos",
+        "reaction_title": "The first listen",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
+    },
+    "steps": {
+      "type": "cs-duo-steps",
+      "blocks": {
+        "s1": { "type": "step", "settings": { "title": "Tell us about the two of you", "body": "Five questions: how you met, what you call each other, the moment you would keep, the style you want. Type it the way you would say it.", "note": "2 minutes" } },
+        "s2": { "type": "step", "settings": { "title": "We write and record the song", "body": "Your answers become real lyrics with their name in them, then a finished track in the genre you picked.", "note": "Nothing for you to do" } },
+        "s3": { "type": "step", "settings": { "title": "We film the music video", "body": "The two of you become the couple on screen, so the video tells your story and not a stock one.", "note": "Included" } },
+        "s4": { "type": "step", "settings": { "title": "Hear your free preview", "body": "You get a preview before you decide anything. If it is not right, you pay nothing and you can tell us to start over.", "note": "Free" } }
+      },
+      "block_order": ["s1", "s2", "s3", "s4"],
+      "settings": {
+        "eyebrow": "How it works",
+        "heading": "You answer five questions. We do the rest.",
+        "body": "No writing, no recording, no musical skill. You will not be asked to be creative — only to tell us about the two of you.",
+        "cta_label": "Start With Five Questions",
+        "cta_link": "#",
+        "cta_note": "Nothing to pay until you have heard it"
+      }
+    },
+    "offer": {
+      "type": "cs-duo-offer",
+      "blocks": {
+        "i1": { "type": "item", "settings": { "text": "A full-length song with their name and your story in the lyrics" } },
+        "i2": { "type": "item", "settings": { "text": "A music video where the couple on screen is the two of you" } },
+        "i3": { "type": "item", "settings": { "text": "The genre you choose, not a template" } },
+        "i4": { "type": "item", "settings": { "text": "Yours to keep, share and replay" } },
+        "i5": { "type": "item", "settings": { "text": "A free preview before you pay anything" } }
+      },
+      "block_order": ["i1", "i2", "i3", "i4", "i5"],
+      "settings": {
+        "eyebrow": "What you get",
+        "heading": "One song. One music video. Both about them.",
+        "body": "This is the one gift they cannot get for themselves, and the one they cannot guess.",
+        "free_line": "Your preview is free",
+        "show_price": false,
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_note": "You decide after you have heard it",
+        "guarantee": "Full refund if you are not happy with it"
+      }
+    },
+    "faq": {
+      "type": "cs-duo-faq",
+      "blocks": {
+        "q1": { "type": "qa", "settings": { "q": "Do I have to be good with words?", "a": "<p>No. You are not writing anything. You answer five plain questions about the two of you, in your own words, and we turn those answers into lyrics.</p>", "open": true } },
+        "q2": { "type": "qa", "settings": { "q": "Do the two of us really appear in the music video?", "a": "<p>Yes — that is the part nobody else does. The couple on screen is built to look like you, so the video tells your story instead of a stock one.</p>", "open": false } },
+        "q3": { "type": "qa", "settings": { "q": "Can I choose the style?", "a": "<p>You pick the genre and the mood. Country, soul, pop, acoustic, rap — whatever they would actually put on.</p>", "open": false } },
+        "q4": { "type": "qa", "settings": { "q": "What if I do not like it?", "a": "<p>You hear a free preview before you pay anything. If it is not right, you owe nothing, and if you have already ordered and you are not happy with it, you get a full refund.</p>", "open": false } },
+        "q5": { "type": "qa", "settings": { "q": "What exactly do I receive?", "a": "<p>A full-length song and a music video, both about the two of you, yours to keep and to share.</p>", "open": false } },
+        "q6": { "type": "qa", "settings": { "q": "Is it a good wedding gift?", "a": "<p>It is made for the moments where a card is not enough: a first dance, a wedding morning, an anniversary, or the gift the guests give together.</p>", "open": false } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4", "q5", "q6"],
+      "settings": {
+        "eyebrow": "Before you start",
+        "heading": "The questions everyone asks",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
+    }
+  },
+  "order": ["head", "hero", "vsl", "demos", "steps", "offer", "faq"]
+}
