@@ -40,6 +40,28 @@ paramètre : les deux coûtent 0 crédit. `probe` sépare donc les deux listes
 gratuitement, et imprime la commande `page` à lancer ensuite avec le premier
 modèle valide.
 
+## Modèles réellement disponibles sur le compte
+
+Résultat de `probe` lancé le 2026-09-17 depuis la machine du propriétaire
+(solde à ce moment-là : 105 080 crédits). Un `500 … is required` veut dire que
+le modèle existe et réclame ses paramètres ; un `422 model name … not supported`
+veut dire qu'il n'existe pas.
+
+| id | verdict | paramètre d'image réclamé |
+|---|---|---|
+| `nano-banana-pro` | existe | `image_input` |
+| `seedream/4.5-edit` | existe | `image_urls` + `quality` obligatoire |
+| `seedream/5-pro-image-to-image` | existe | non déterminé |
+| `flux-2/pro-text-to-image` | existe | aucun (texte seul) |
+| `flux-2/pro-image-to-image` | existe | **`input_urls`** |
+| `google/nano-banana-edit` | existe | non déterminé |
+| `gpt-image-2` | **n'existe pas** | — |
+
+À retenir : les trois familles nomment le champ image différemment
+(`image_input`, `image_urls`, `input_urls`). Se tromper de nom donne un
+`500 … is required` et coûte 0 crédit, donc l'erreur est bénigne mais elle fait
+perdre un aller-retour. Ne pas deviner : sonder.
+
 ## Règles de prompt (elles viennent d'échecs constatés, pas de goût)
 
 - **Jamais** de description de visage : l'identité vient uniquement de la photo de
