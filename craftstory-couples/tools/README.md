@@ -1,0 +1,51 @@
+# tools/ — génération d'images KIE
+
+## Pourquoi ça tourne sur ta machine et pas ici
+
+L'environnement d'exécution de l'assistant passe tout le HTTPS sortant par un
+proxy d'organisation qui refuse `api.kie.ai` et `kieai.redpandaai.co` : le refus
+(`403 Forbidden`) tombe sur le `CONNECT`, donc la requête ne quitte jamais le
+conteneur et la clé n'est jamais transmise. Ce n'est pas un bug de la clé ni du
+compte KIE — la même clé fonctionne depuis un poste normal. Sur ton Mac il n'y a
+pas ce filtre : c'est là que la génération se lance.
+
+## Deux fichiers, le même travail
+
+| fichier | à quoi il sert |
+|---|---|
+| `kie.py` | version compacte, faite pour être **collée dans un terminal** en une commande. C'est celle à utiliser. |
+| `kie_images.py` | version longue et commentée (mêmes prompts, mêmes endpoints), gardée comme référence de lecture. |
+
+## Lancer
+
+```bash
+cd ~/Downloads
+python3 kie.py probe        # quels modèles le compte accepte — 0 crédit
+python3 kie.py page         # les 9 visuels d'occasions — ~18 crédits/image
+python3 kie.py demo --photo photo-du-couple.jpg   # 3 visuels avec votre ressemblance
+```
+
+Options : `--model <id>`, `--only proposal,golden`, `--out ./images`, `--dry-run`
+(affiche les prompts sans rien dépenser).
+
+La clé n'est jamais écrite dans le fichier. Le script lit `KIE_KEY` si elle est
+dans l'environnement, sinon il la demande à l'écran en saisie masquée — elle ne
+passe donc pas dans l'historique du shell.
+
+## Ce que `probe` sert à trancher
+
+Les ids de modèles KIE ne se devinent pas. Un nom inconnu renvoie `422 model name
+not supported`, un nom connu avec des paramètres vides renvoie une erreur de
+paramètre : les deux coûtent 0 crédit. `probe` sépare donc les deux listes
+gratuitement, et imprime la commande `page` à lancer ensuite avec le premier
+modèle valide.
+
+## Règles de prompt (elles viennent d'échecs constatés, pas de goût)
+
+- **Jamais** de description de visage : l'identité vient uniquement de la photo de
+  référence. Décrire un visage fait dériver vers un visage générique.
+- Clause anti-split obligatoire — sans elle le modèle rend régulièrement une
+  image en deux moitiés ou un collage.
+- `nano-banana-pro` attend `image_input`, **pas** `image_urls`.
+- Les visuels de la page sont des couples fictifs : aucune photo de client n'est
+  utilisée pour du marketing ou pour des tests.
