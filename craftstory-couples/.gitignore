@@ -1,0 +1,12 @@
+# Artefacts de compilation Python, laisses par les controles de syntaxe
+# (python3 -m py_compile qa/*.py, tools/*.py).
+__pycache__/
+*.pyc
+
+# Sorties de generation : les PNG produits par tools/kie.py sont des binaires
+# volumineux et regenerables, ils n'ont rien a faire dans l'historique.
+tools/kie-out/
+
+# Captures du harnais de QA local (qa/shoot.py, qa/final_qa.py).
+qa/shots/
+qa/*.png
