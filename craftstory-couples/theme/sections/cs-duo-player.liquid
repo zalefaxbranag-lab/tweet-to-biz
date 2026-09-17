@@ -1,0 +1,292 @@
+{%- liquid
+  assign tracks = 0
+  for block in section.blocks
+    if block.type == 'track' and block.settings.url != blank
+      assign tracks = tracks | plus: 1
+    endif
+  endfor
+-%}
+{%- if tracks > 0 or request.design_mode -%}
+<div class="cs cs-duo-player">
+  <div class="cs-wrap">
+    <div class="cs-sec">
+      <div class="cs-sec-head">
+        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+      </div>
+
+      {%- if tracks > 0 -%}
+        <div class="cs-pl-card" data-cs-player>
+          <div class="cs-pl-top">
+            <span class="cs-pl-disc" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <span class="cs-pl-title" data-cs-pl-title aria-live="polite"></span>
+          </div>
+
+          <div class="cs-pl-bottom">
+            <input class="cs-pl-range" type="range" min="0" max="100" value="0" step="0.1"
+                   data-cs-pl-seek aria-label="{{ section.settings.seek_label | default: 'Seek' | escape }}">
+            <div class="cs-pl-times">
+              <span data-cs-pl-cur>0:00</span>
+              <span data-cs-pl-dur>0:00</span>
+            </div>
+            <div class="cs-pl-controls">
+              <button class="cs-pl-btn" type="button" data-cs-pl-prev aria-label="{{ section.settings.prev_label | default: 'Previous song' | escape }}">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 6h2v12H7zm3 6l8-6v12z"/></svg>
+              </button>
+              <button class="cs-pl-btn cs-pl-play" type="button" data-cs-pl-play aria-label="{{ section.settings.play_label | default: 'Play or pause' | escape }}">
+                <svg class="cs-pl-ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cs-pl-ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.2v14H7zm6.8 0H17v14h-3.2z"/></svg>
+              </button>
+              <button class="cs-pl-btn" type="button" data-cs-pl-next aria-label="{{ section.settings.next_label | default: 'Next song' | escape }}">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 6h2v12h-2zM6 6l8 6-8 6z"/></svg>
+              </button>
+            </div>
+            {%- if tracks > 1 -%}
+              <p class="cs-pl-count"><span data-cs-pl-pos>1</span> / {{ tracks }}</p>
+            {%- endif -%}
+          </div>
+
+          <audio class="cs-pl-audio" preload="metadata" data-cs-pl-audio></audio>
+          <script type="application/json" data-cs-pl-data>
+            [
+              {%- assign first = true -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'track' and block.settings.url != blank -%}
+                  {%- unless first -%},{%- endunless -%}{%- assign first = false -%}
+                  {"title": {{ block.settings.title | default: 'Custom song' | json }}, "url": {{ block.settings.url | json }}}
+                {%- endif -%}
+              {%- endfor -%}
+            ]
+          </script>
+        </div>
+      {%- elsif request.design_mode -%}
+        <div class="cs-pl-empty">
+          <strong>No songs yet — this section stays hidden on the storefront.</strong>
+          Upload an MP3 under Content ▸ Files, copy its URL, and paste it into a Song block.
+          The player appears the moment one has a URL.
+        </div>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="cs-pl-incl">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'included' and block.settings.title != blank -%}
+              <li {{ block.shopify_attributes }}>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>
+                <span><strong>{{ block.settings.title }}</strong>{% if block.settings.body != blank %}<span class="cs-pl-inclb">{{ block.settings.body }}</span>{% endif %}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.cta_label != blank -%}
+        <div class="cs-pl-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+{%- endif -%}
+<script>
+(function(){
+  var card = document.querySelector('[data-cs-player]');
+  if(!card || card.dataset.csPlayerInit) return;
+  card.dataset.csPlayerInit = '1';
+
+  var audio = card.querySelector('[data-cs-pl-audio]');
+  var dataEl = card.querySelector('[data-cs-pl-data]');
+  if(!audio || !dataEl) return;
+
+  var list = [];
+  try { list = JSON.parse(dataEl.textContent) || []; } catch(e){ return; }
+  if(!list.length) return;
+
+  var titleEl = card.querySelector('[data-cs-pl-title]');
+  var curEl   = card.querySelector('[data-cs-pl-cur]');
+  var durEl   = card.querySelector('[data-cs-pl-dur]');
+  var posEl   = card.querySelector('[data-cs-pl-pos]');
+  var seek    = card.querySelector('[data-cs-pl-seek]');
+  var btnPlay = card.querySelector('[data-cs-pl-play]');
+  var i = 0, seeking = false;
+
+  function fmt(s){
+    if(!isFinite(s) || s < 0) s = 0;
+    var m = Math.floor(s / 60), r = Math.floor(s % 60);
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  function load(n, autoplay){
+    i = (n + list.length) % list.length;
+    audio.src = list[i].url;
+    if(titleEl) titleEl.textContent = list[i].title || '';
+    if(posEl) posEl.textContent = String(i + 1);
+    if(curEl) curEl.textContent = '0:00';
+    if(durEl) durEl.textContent = '0:00';
+    if(seek) seek.value = 0;
+    if(autoplay){
+      var p = audio.play();
+      if(p && p.catch){ p.catch(function(){}); }
+    }
+  }
+
+  audio.addEventListener('loadedmetadata', function(){
+    if(durEl) durEl.textContent = fmt(audio.duration);
+  });
+  audio.addEventListener('timeupdate', function(){
+    if(seeking) return;
+    if(curEl) curEl.textContent = fmt(audio.currentTime);
+    if(seek && isFinite(audio.duration) && audio.duration > 0){
+      seek.value = (audio.currentTime / audio.duration) * 100;
+    }
+  });
+  audio.addEventListener('play',  function(){ card.classList.add('cs-pl-playing'); });
+  audio.addEventListener('pause', function(){ card.classList.remove('cs-pl-playing'); });
+  audio.addEventListener('ended', function(){
+    if(list.length > 1){ load(i + 1, true); } else { card.classList.remove('cs-pl-playing'); }
+  });
+
+  if(seek){
+    // pendant le glissement on gele l'affichage, sinon timeupdate ramene le curseur
+    var startSeek = function(){ seeking = true; };
+    var doSeek = function(){
+      if(isFinite(audio.duration) && audio.duration > 0){
+        var t = (parseFloat(seek.value) / 100) * audio.duration;
+        if(curEl) curEl.textContent = fmt(t);
+      }
+    };
+    var endSeek = function(){
+      if(isFinite(audio.duration) && audio.duration > 0){
+        audio.currentTime = (parseFloat(seek.value) / 100) * audio.duration;
+      }
+      seeking = false;
+    };
+    seek.addEventListener('mousedown', startSeek);
+    seek.addEventListener('touchstart', startSeek, {passive:true});
+    seek.addEventListener('input', doSeek);
+    seek.addEventListener('change', endSeek);
+    seek.addEventListener('mouseup', endSeek);
+    seek.addEventListener('touchend', endSeek);
+    seek.addEventListener('keyup', endSeek);
+  }
+
+  if(btnPlay) btnPlay.addEventListener('click', function(){
+    if(audio.paused){
+      var p = audio.play();
+      if(p && p.catch){ p.catch(function(){}); }
+    } else { audio.pause(); }
+  });
+  var prev = card.querySelector('[data-cs-pl-prev]');
+  var next = card.querySelector('[data-cs-pl-next]');
+  if(prev) prev.addEventListener('click', function(){ load(i - 1, !audio.paused); });
+  if(next) next.addEventListener('click', function(){ load(i + 1, !audio.paused); });
+
+  // met en pause toute video de la page quand une chanson demarre
+  audio.addEventListener('play', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('video'), function(v){
+      if(!v.paused && !v.muted){ try { v.pause(); } catch(e){} }
+    });
+  });
+
+  load(0, false);
+})();
+</script>
+{% schema %}
+{
+  "name": "CraftStory Duo Player",
+  "settings": [
+    { "type": "paragraph", "content": "One player, several songs. This is the competitor's strongest proof: the visitor hears the product without leaving the page. Upload each MP3 under Content ▸ Files, copy its URL and paste it into a Song block. The section hides itself while no song has a URL." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Hear it first" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What's included in your song" },
+    { "type": "textarea", "id": "body", "label": "Mini-text", "default": "Press play. Every one of these came from one couple answering five questions." },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" },
+    { "type": "header", "content": "Button labels for screen readers" },
+    { "type": "text", "id": "play_label", "label": "Play / pause", "default": "Play or pause" },
+    { "type": "text", "id": "prev_label", "label": "Previous", "default": "Previous song" },
+    { "type": "text", "id": "next_label", "label": "Next", "default": "Next song" },
+    { "type": "text", "id": "seek_label", "label": "Progress bar", "default": "Seek" }
+  ],
+  "blocks": [
+    { "type": "track", "name": "Song", "limit": 12, "settings": [
+      { "type": "text", "id": "title", "label": "Title", "default": "1. A song for them — Country", "info": "Shown while it plays, the way the competitor labels each demo." },
+      { "type": "text", "id": "url", "label": "MP3 URL", "info": "Content ▸ Files, upload the MP3, then copy its URL here." }
+    ] },
+    { "type": "included", "name": "Included item", "limit": 6, "settings": [
+      { "type": "text", "id": "title", "label": "Title", "default": "Studio-quality recording" },
+      { "type": "textarea", "id": "body", "label": "Text" }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Player", "blocks": [
+      { "type": "track" }, { "type": "track" }, { "type": "track" },
+      { "type": "included", "settings": { "title": "Studio-quality recording", "body": "A finished track you will be glad to play out loud." } },
+      { "type": "included", "settings": { "title": "Lyrics written from your answers", "body": "Their name, your places, the moments only the two of you know." } },
+      { "type": "included", "settings": { "title": "A music video to go with it", "body": "The couple on screen is built to look like you." } }
+    ] }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-player{background:var(--cs-night);color:var(--cs-night-ink)}
+.cs-duo-player .cs-sec{padding:clamp(38px,7vw,88px) 0}
+.cs-duo-player .cs-sec-head p{color:var(--cs-night-ink2)}
+.cs-duo-player .cs-h2{color:var(--cs-night-ink)}
+.cs-duo-player .cs-eyebrow{color:var(--cs-star)}
+.cs-pl-card{max-width:560px;margin:0 auto;background:rgba(255,255,255,.055);
+  border:1px solid var(--cs-night-line);border-radius:var(--cs-r-xl);
+  padding:clamp(20px,3vw,30px);box-shadow:var(--cs-sh-lg)}
+.cs-pl-top{display:flex;align-items:center;gap:13px;margin-bottom:18px;min-height:44px}
+.cs-pl-disc{flex:0 0 42px;width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.08);color:var(--cs-star);display:grid;place-items:center}
+.cs-pl-disc svg{width:24px;height:24px}
+.cs-pl-playing .cs-pl-disc{animation:cs-pl-spin 4s linear infinite}
+@keyframes cs-pl-spin{to{transform:rotate(360deg)}}
+.cs-pl-title{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1rem,2.2vw,1.14rem);
+  line-height:1.25;color:var(--cs-night-ink);min-width:0}
+.cs-pl-range{-webkit-appearance:none;appearance:none;width:100%;height:22px;margin:0;
+  background:transparent;cursor:pointer;display:block}
+.cs-pl-range::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:rgba(255,255,255,.22)}
+.cs-pl-range::-moz-range-track{height:5px;border-radius:3px;background:rgba(255,255,255,.22)}
+.cs-pl-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;
+  border-radius:50%;background:var(--cs-star);border:0;margin-top:-6px;
+  box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.cs-pl-range::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--cs-star);
+  border:0;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.cs-pl-range:focus-visible{outline:2px solid var(--cs-star);outline-offset:3px;border-radius:var(--cs-pill)}
+.cs-pl-times{display:flex;justify-content:space-between;font-size:.79rem;font-weight:700;
+  font-variant-numeric:tabular-nums;color:var(--cs-night-ink2);margin-top:2px}
+.cs-pl-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.cs-pl-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--cs-night-line);
+  background:rgba(255,255,255,.08);color:var(--cs-night-ink);cursor:pointer;
+  display:grid;place-items:center;transition:background .18s ease,transform .18s ease}
+.cs-pl-btn svg{width:20px;height:20px}
+.cs-pl-btn:hover{background:rgba(255,255,255,.18)}
+.cs-pl-btn:active{transform:scale(.94)}
+.cs-pl-play{width:60px;height:60px;background:var(--cs-coral);border-color:transparent;color:#fff;
+  box-shadow:0 10px 26px -8px rgba(236,91,60,.8)}
+.cs-pl-play:hover{background:var(--cs-coral-deep)}
+.cs-pl-play svg{width:25px;height:25px}
+.cs-pl-ico-pause,.cs-pl-playing .cs-pl-ico-play{display:none}
+.cs-pl-playing .cs-pl-ico-pause{display:block}
+.cs-pl-count{text-align:center;font-size:.76rem;font-weight:700;font-variant-numeric:tabular-nums;
+  color:var(--cs-night-ink2);margin-top:11px;letter-spacing:.04em}
+.cs-pl-audio{display:none}
+.cs-pl-empty{max-width:600px;margin:0 auto;text-align:center;border:1px dashed var(--cs-night-ink2);
+  border-radius:var(--cs-r-lg);padding:22px;color:var(--cs-night-ink2);font-size:.93rem;line-height:1.55}
+.cs-pl-empty strong{display:block;color:var(--cs-night-ink);margin-bottom:5px}
+.cs-pl-incl{list-style:none;margin:clamp(26px,4vw,40px) auto 0;padding:0;max-width:620px;
+  display:flex;flex-direction:column;gap:13px}
+.cs-pl-incl li{display:flex;gap:11px;align-items:flex-start;font-size:.99rem;line-height:1.45}
+.cs-pl-incl svg{width:19px;height:19px;flex:0 0 19px;margin-top:2px;color:var(--cs-star)}
+.cs-pl-incl strong{display:block;font-weight:700;color:var(--cs-night-ink)}
+.cs-pl-inclb{display:block;color:var(--cs-night-ink2);font-size:.93rem;margin-top:2px}
+.cs-pl-cta{display:flex;justify-content:center;margin-top:clamp(24px,3.4vw,38px)}
+@media(max-width:560px){
+  .cs-pl-cta{width:100%}
+  .cs-pl-cta .cs-btn{width:100%}
+}
+{% endstylesheet %}

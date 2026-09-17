@@ -6,25 +6,7 @@
     },
     "hero": {
       "type": "cs-duo-hero",
-      "settings": {
-        "badge": "",
-        "eyebrow": "For couples",
-        "heading": "I pressed play and we both stopped",
-        "highlight": "talking",
-        "quote_style": true,
-        "body": "Surprise them with a custom song and a music video about the two of you.",
-        "cta_icon": "♫",
-        "cta_label": "Start My Custom Song",
-        "cta_link": "#",
-        "cta_note": "100% money-back guarantee · Delivered by email",
-        "faces_count": "",
-        "proof_strong": "",
-        "proof_text": "",
-        "trust_line": "Free preview in minutes | Nothing to ship | First dance · Anniversaries · Proposals",
-        "autoplay": true,
-        "unmute_label": "Tap to unmute",
-        "play_label": "Play"
-      }
+      "settings": {}
     },
     "vsl": {
       "type": "cs-duo-vsl",
@@ -56,15 +38,7 @@
         "m2",
         "m3"
       ],
-      "settings": {
-        "eyebrow": "Watch this first",
-        "heading": "Here is what they get — and how they react when it plays.",
-        "body": "Three real songs, three music videos, three first listens. Sound on.",
-        "play_label": "Play with sound on",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
-        "cta_note": "Free preview first — pay only if you love it"
-      }
+      "settings": {}
     },
     "demos": {
       "type": "cs-duo-demos",
@@ -126,15 +100,7 @@
         "rx2",
         "rx3"
       ],
-      "settings": {
-        "eyebrow": "Real songs, real reactions",
-        "heading": "Hear three of them. Then watch three people hear theirs.",
-        "body": "Every song below came from one couple answering five questions.",
-        "music_title": "The music videos",
-        "reaction_title": "The first listen",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
-      }
+      "settings": {}
     },
     "steps": {
       "type": "cs-duo-steps",
@@ -178,14 +144,7 @@
         "s3",
         "s4"
       ],
-      "settings": {
-        "eyebrow": "How it works",
-        "heading": "You answer five questions. We do the rest.",
-        "body": "No writing, no recording, no musical skill. You will not be asked to be creative — only to tell us about the two of you.",
-        "cta_label": "Start With Five Questions",
-        "cta_link": "#",
-        "cta_note": "Nothing to pay until you have heard it"
-      }
+      "settings": {}
     },
     "offer": {
       "type": "cs-duo-offer",
@@ -228,17 +187,7 @@
         "i4",
         "i5"
       ],
-      "settings": {
-        "eyebrow": "What you get",
-        "heading": "One song. One music video. Both about them.",
-        "body": "This is the one gift they cannot get for themselves, and the one they cannot guess.",
-        "free_line": "Your preview is free",
-        "show_price": false,
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
-        "cta_note": "You decide after you have heard it",
-        "guarantee": "Full refund if you are not happy with it"
-      }
+      "settings": {}
     },
     "faq": {
       "type": "cs-duo-faq",
@@ -309,29 +258,15 @@
         "q6",
         "q7"
       ],
-      "settings": {
-        "eyebrow": "Before you start",
-        "heading": "The questions everyone asks",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
-      }
+      "settings": {}
     },
     "bar": {
       "type": "cs-duo-bar",
-      "settings": {
-        "title": "Your preview is free",
-        "note": "No payment up front",
-        "cta_label": "Start",
-        "cta_link": "#",
-        "show_desktop": false
-      }
+      "settings": {}
     },
     "ann": {
       "type": "cs-duo-ann",
-      "settings": {
-        "text": "Founding-couple pricing — the first 50 songs",
-        "link": ""
-      }
+      "settings": {}
     },
     "trust": {
       "type": "cs-duo-trust",
@@ -407,13 +342,7 @@
         "r3",
         "r4"
       ],
-      "settings": {
-        "eyebrow": "In their words",
-        "heading": "What happens when they press play.",
-        "proof_line": "",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
-      }
+      "settings": {}
     },
     "occasions": {
       "type": "cs-duo-occasions",
@@ -511,13 +440,63 @@
         "o8",
         "o9"
       ],
-      "settings": {
-        "eyebrow": "Every kind of us",
-        "heading": "A song for the moment you are actually in.",
-        "body": "Not only weddings. The morning of. The ten years after. The year you nearly didn't make it.",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
-      }
+      "settings": {}
+    },
+    "player": {
+      "type": "cs-duo-player",
+      "blocks": {
+        "tr1": {
+          "type": "track",
+          "settings": {
+            "title": "1. A song for them — Country",
+            "url": ""
+          }
+        },
+        "tr2": {
+          "type": "track",
+          "settings": {
+            "title": "2. A song for them — Soul",
+            "url": ""
+          }
+        },
+        "tr3": {
+          "type": "track",
+          "settings": {
+            "title": "3. A song for them — Acoustic",
+            "url": ""
+          }
+        },
+        "in1": {
+          "type": "included",
+          "settings": {
+            "title": "Studio-quality recording",
+            "body": "A finished track you will be glad to play out loud."
+          }
+        },
+        "in2": {
+          "type": "included",
+          "settings": {
+            "title": "Lyrics written from your answers",
+            "body": "Their name, your places, the moments only the two of you know."
+          }
+        },
+        "in3": {
+          "type": "included",
+          "settings": {
+            "title": "A music video to go with it",
+            "body": "The couple on screen is built to look like you."
+          }
+        }
+      },
+      "block_order": [
+        "tr1",
+        "tr2",
+        "tr3",
+        "in1",
+        "in2",
+        "in3"
+      ],
+      "settings": {}
     }
   },
   "order": [
@@ -529,6 +508,7 @@
     "reviews",
     "occasions",
     "vsl",
+    "player",
     "demos",
     "offer",
     "faq",
