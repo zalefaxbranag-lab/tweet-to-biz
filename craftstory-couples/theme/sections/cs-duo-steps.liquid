@@ -72,8 +72,16 @@
 .cs-ds-note{font-size:.88rem;color:var(--cs-ink3);font-weight:600}
 @media(max-width:1040px){.cs-ds-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){
-  .cs-ds-grid{grid-template-columns:1fr}
-  .cs-ds-cta{width:100%}
+  .cs-duo-steps .cs-sec{padding:clamp(34px,7vw,52px) 0}
+  .cs-ds-grid{grid-template-columns:1fr;gap:10px}
+  /* numero en ligne avec le titre : ~40% de hauteur en moins par carte */
+  .cs-ds-card{display:grid;grid-template-columns:34px 1fr;grid-template-areas:"num title" ". body" ". chip";
+    column-gap:12px;row-gap:6px;padding:16px 18px;align-items:start}
+  .cs-ds-num{grid-area:num}
+  .cs-ds-t{grid-area:title;align-self:center;font-size:1.04rem}
+  .cs-ds-b{grid-area:body;font-size:.94rem;line-height:1.45}
+  .cs-ds-chip{grid-area:chip;justify-self:start;margin-top:0}
+  .cs-ds-cta{width:100%;margin-top:22px}
   .cs-ds-cta .cs-btn{width:100%}
 }
 {% endstylesheet %}

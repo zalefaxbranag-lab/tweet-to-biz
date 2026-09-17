@@ -6,7 +6,7 @@
       {%- if section.settings.body != blank -%}<p class="cs-lead cs-dh-body">{{ section.settings.body }}</p>{%- endif -%}
 
       {%- if section.blocks.size > 0 -%}
-        <ul class="cs-dh-list">
+        <ul class="cs-dh-list cs-dh-bullets">
           {%- for block in section.blocks -%}
             {%- if block.type == 'point' and block.settings.text != blank -%}
               <li {{ block.shopify_attributes }}>
@@ -83,12 +83,12 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
     { "type": "paragraph", "content": "Top of the couples landing page. Keep CraftStory Setup as the first section of the template. The button points to a URL you paste below — set it to the couples order form once that page exists." },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "For couples" },
     { "type": "text", "id": "heading", "label": "Headline", "default": "Turn your love story into a song — and a music video they'll watch on repeat." },
-    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Answer five questions about the two of you. We write it, record it and film it — their name in the lyrics, your story in every verse, the two of you on screen." },
+    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Answer five questions about the two of you. We write it, record it and film it." },
     { "type": "header", "content": "Call to action" },
     { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" },
     { "type": "text", "id": "cta_note", "label": "Note next to the button", "default": "Takes about 2 minutes" },
-    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "No payment up front · Free preview first · Full refund if you don't love it" },
+    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "No payment up front · Full refund if you don't love it" },
     { "type": "header", "content": "Hero video" },
     { "type": "video", "id": "video", "label": "Hero clip (upload MP4)", "info": "Landscape 16:9. Use one of the reaction clips." },
     { "type": "text", "id": "video_url", "label": "…or .mp4 URL" },
@@ -134,10 +134,18 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
 .cs-dh-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#171310;color:#cdbfa9;font-weight:600;font-size:.86rem;text-align:center;padding:18px}
 .cs-dh-empty svg{width:42px;height:42px}
 @media(max-width:900px){
-  .cs-dh-in{grid-template-columns:1fr;gap:26px;padding:clamp(30px,7vw,48px) 22px}
+  .cs-dh-in{grid-template-columns:1fr;gap:18px;padding:14px 22px 26px}
   .cs-dh-media{order:-1}
-  .cs-dh-copy{align-items:flex-start}
-  .cs-dh-cta{width:100%}
+  .cs-dh-copy{align-items:flex-start;gap:10px}
+  /* le CTA doit tenir au-dessus du pli : les puces passent sous le bouton */
+  .cs-dh-copy{display:flex;flex-direction:column}
+  .cs-dh-copy .cs-eyebrow{order:1}
+  .cs-dh-h{order:2;font-size:clamp(1.62rem,6.6vw,2.1rem);line-height:1.1;max-width:none}
+  .cs-dh-body{order:3;font-size:1rem;line-height:1.45}
+  .cs-dh-cta{order:4;width:100%;margin-top:2px}
   .cs-dh-cta .cs-btn{width:100%}
+  .cs-dh-trust{order:5}
+  .cs-dh-bullets{order:6;margin-top:6px;padding-top:14px;border-top:1px solid var(--cs-line)}
+  .cs-dh-note{width:100%;text-align:center}
 }
 {% endstylesheet %}
