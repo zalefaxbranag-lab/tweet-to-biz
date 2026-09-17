@@ -40,13 +40,18 @@
       ],
       "settings": {
         "eyebrow": "For couples",
-        "heading": "Turn your love story into a song — and a music video they'll watch on repeat.",
-        "body": "Answer five questions about the two of you. We write it, record it and film it.",
+        "heading": "I pressed play and we both stopped talking.",
+        "body": "A custom song about the two of you — and a music video to go with it. Answer five questions, we do the rest.",
         "cta_label": "Create Your Free Preview",
         "cta_link": "#",
         "cta_note": "Takes about 2 minutes",
-        "trust_line": "No payment up front · Full refund if you don't love it",
-        "play_label": "Watch her hear it for the first time"
+        "trust_line": "100% money-back guarantee · Delivered by email",
+        "play_label": "Watch her hear it for the first time",
+        "claim": "",
+        "quote_style": true,
+        "quote_by": "",
+        "autoplay": true,
+        "unmute_label": "Tap to unmute"
       }
     },
     "vsl": {
@@ -293,24 +298,32 @@
         "q4": {
           "type": "qa",
           "settings": {
-            "q": "What if I do not like it?",
-            "a": "<p>You hear a free preview before you pay anything. If it is not right, you owe nothing, and if you have already ordered and you are not happy with it, you get a full refund.</p>",
+            "q": "How long does it take?",
+            "a": "<p>Your free preview arrives within minutes. The finished song and music video follow within 48 hours — one delivery time, the same everywhere on this page.</p>",
             "open": false
           }
         },
         "q5": {
           "type": "qa",
           "settings": {
-            "q": "What exactly do I receive?",
-            "a": "<p>A full-length song and a music video, both about the two of you, yours to keep and to share.</p>",
+            "q": "What if I do not like it?",
+            "a": "<p>You hear a free preview before you pay anything. If it is not right, you owe nothing, and if you have already ordered and you are not happy with it, you get a full refund.</p>",
             "open": false
           }
         },
         "q6": {
           "type": "qa",
           "settings": {
-            "q": "Is it a good wedding gift?",
-            "a": "<p>It is made for the moments where a card is not enough: a first dance, a wedding morning, an anniversary, or the gift the guests give together.</p>",
+            "q": "What exactly do I receive?",
+            "a": "<p>A full-length song and a music video, both about the two of you, sent as a private link you can open on any phone or computer and share however you like.</p>",
+            "open": false
+          }
+        },
+        "q7": {
+          "type": "qa",
+          "settings": {
+            "q": "Can we play it at the wedding?",
+            "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car. Play it wherever you want, as often as you want.</p>",
             "open": false
           }
         }
@@ -321,7 +334,8 @@
         "q3",
         "q4",
         "q5",
-        "q6"
+        "q6",
+        "q7"
       ],
       "settings": {
         "eyebrow": "Before you start",
@@ -339,14 +353,211 @@
         "cta_link": "#",
         "show_desktop": false
       }
+    },
+    "ann": {
+      "type": "cs-duo-ann",
+      "settings": {
+        "text": "Founding-couple pricing — the first 50 songs",
+        "link": ""
+      }
+    },
+    "trust": {
+      "type": "cs-duo-trust",
+      "blocks": {
+        "t1": {
+          "type": "item",
+          "settings": {
+            "icon": "note",
+            "text": "A song and a music video, both about you"
+          }
+        },
+        "t2": {
+          "type": "item",
+          "settings": {
+            "icon": "clock",
+            "text": "Free preview in minutes, not days"
+          }
+        },
+        "t3": {
+          "type": "item",
+          "settings": {
+            "icon": "mail",
+            "text": "Delivered by email — nothing to ship"
+          }
+        },
+        "t4": {
+          "type": "item",
+          "settings": {
+            "icon": "shield",
+            "text": "Full refund if you are not happy"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3",
+        "t4"
+      ],
+      "settings": {}
+    },
+    "reviews": {
+      "type": "cs-duo-reviews",
+      "blocks": {
+        "r1": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r2": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r3": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r4": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "r4"
+      ],
+      "settings": {
+        "eyebrow": "In their words",
+        "heading": "What happens when they press play.",
+        "proof_line": "",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
+    },
+    "occasions": {
+      "type": "cs-duo-occasions",
+      "blocks": {
+        "o1": {
+          "type": "card",
+          "settings": {
+            "title": "For the first dance",
+            "note": "Something nobody else has danced to",
+            "ratio": "wide",
+            "link": ""
+          }
+        },
+        "o2": {
+          "type": "card",
+          "settings": {
+            "title": "For the proposal",
+            "note": "Before you even ask",
+            "ratio": "tall",
+            "link": ""
+          }
+        },
+        "o3": {
+          "type": "card",
+          "settings": {
+            "title": "For the anniversary",
+            "note": "One, ten, or forty",
+            "ratio": "wide",
+            "link": ""
+          }
+        },
+        "o4": {
+          "type": "card",
+          "settings": {
+            "title": "For the wedding morning",
+            "note": "Played while she gets ready",
+            "ratio": "tall",
+            "link": ""
+          }
+        },
+        "o5": {
+          "type": "card",
+          "settings": {
+            "title": "For fifty years",
+            "note": "The whole story, in order",
+            "ratio": "wide",
+            "link": ""
+          }
+        },
+        "o6": {
+          "type": "card",
+          "settings": {
+            "title": "For the distance",
+            "note": "When you can't be there",
+            "ratio": "tall",
+            "link": ""
+          }
+        },
+        "o7": {
+          "type": "card",
+          "settings": {
+            "title": "For finding your way back",
+            "note": "When sorry isn't enough",
+            "ratio": "wide",
+            "link": ""
+          }
+        },
+        "o8": {
+          "type": "card",
+          "settings": {
+            "title": "For the guests to give",
+            "note": "Together, as one gift",
+            "ratio": "square",
+            "link": ""
+          }
+        },
+        "o9": {
+          "type": "card",
+          "settings": {
+            "title": "Just because",
+            "note": "No occasion at all",
+            "ratio": "wide",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o6",
+        "o7",
+        "o8",
+        "o9"
+      ],
+      "settings": {
+        "eyebrow": "Every kind of us",
+        "heading": "A song for the moment you are actually in.",
+        "body": "Not only weddings. The morning of. The ten years after. The year you nearly didn't make it.",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
     }
   },
   "order": [
     "head",
+    "ann",
     "hero",
+    "trust",
+    "steps",
+    "reviews",
+    "occasions",
     "vsl",
     "demos",
-    "steps",
     "offer",
     "faq",
     "bar"

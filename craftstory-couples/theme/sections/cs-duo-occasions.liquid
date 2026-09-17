@@ -1,0 +1,117 @@
+<div class="cs cs-duo-occ">
+  <div class="cs-wrap">
+    <div class="cs-sec">
+      <div class="cs-sec-head">
+        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+      </div>
+
+      <div class="cs-occ-grid">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'card' -%}
+            {%- assign occ_img = block.settings.image -%}
+            <a class="cs-occ-card{% if block.settings.feature %} cs-occ-feature{% endif %}" {{ block.shopify_attributes }}
+               href="{{ block.settings.link | default: section.settings.cta_link | default: '#' }}">
+              <div class="cs-occ-media">
+                {%- if occ_img != blank -%}
+                  <img src="{{ occ_img | image_url: width: 1000 }}" alt="{{ occ_img.alt | default: block.settings.title | escape }}" loading="lazy">
+                {%- else -%}
+                  <span class="cs-occ-ph cs-occ-ph-{{ forloop.index0 | modulo: 5 }}" aria-hidden="true"></span>
+                  {%- if request.design_mode -%}<span class="cs-occ-hint">Add this photo</span>{%- endif -%}
+                {%- endif -%}
+                <span class="cs-occ-veil"></span>
+                <span class="cs-occ-txt">
+                  {%- if block.settings.title != blank -%}<span class="cs-occ-t">{{ block.settings.title }}</span>{%- endif -%}
+                  {%- if block.settings.note != blank -%}<span class="cs-occ-n">{{ block.settings.note }}</span>{%- endif -%}
+                </span>
+              </div>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if section.settings.cta_label != blank -%}
+        <div class="cs-occ-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "CraftStory Duo Moments",
+  "settings": [
+    { "type": "paragraph", "content": "The occasions grid. Every tile is the same 4:5 shape and crops its photo to fit, so any source format works and the grid never leaves a hole. Tick \"Feature this one\" on a card to give it double width. Until a photo is added, a designed placeholder shows in its place." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Every kind of us" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A song for the moment you are actually in." },
+    { "type": "textarea", "id": "body", "label": "Mini-text", "default": "Not only weddings. The morning of. The ten years after. The year you nearly didn't make it." },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" }
+  ],
+  "blocks": [
+    { "type": "card", "name": "Moment", "limit": 12, "settings": [
+      { "type": "text", "id": "title", "label": "Title", "default": "For the first dance" },
+      { "type": "text", "id": "note", "label": "Small line under the title" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "checkbox", "id": "feature", "label": "Feature this one (double width)", "default": false },
+      { "type": "text", "id": "link", "label": "Link (optional)" }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Moments", "blocks": [
+      { "type": "card", "settings": { "title": "For the first dance", "note": "Something nobody else has danced to" } },
+      { "type": "card", "settings": { "title": "For the proposal", "note": "Before you even ask" } },
+      { "type": "card", "settings": { "title": "For the anniversary", "note": "One, ten, or forty" } },
+      { "type": "card", "settings": { "title": "For the wedding morning", "note": "Played while she gets ready" } },
+      { "type": "card", "settings": { "title": "For fifty years", "note": "The whole story, in order" } },
+      { "type": "card", "settings": { "title": "For the distance", "note": "When you can't be there" } },
+      { "type": "card", "settings": { "title": "For finding your way back", "note": "When sorry isn't enough" } },
+      { "type": "card", "settings": { "title": "For the guests to give", "note": "Together, as one gift" } },
+      { "type": "card", "settings": { "title": "Just because", "note": "No occasion at all" } }
+    ] }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-occ{background:var(--cs-paper)}
+/* Tuiles uniformes en 4:5. Une grille a ratios melanges laisse des trous
+   (chaque rangee prend la hauteur de sa plus haute carte) et un masonry en
+   colonnes finit desequilibre. Uniforme + object-fit:cover accepte n'importe
+   quel format de photo source sans jamais trouer la grille. La variete vient
+   des images, pas des formats de tuile. */
+.cs-occ-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,18px);grid-auto-flow:dense}
+.cs-occ-card{display:block;text-decoration:none;color:inherit;border-radius:var(--cs-r-lg);overflow:hidden;box-shadow:var(--cs-sh);border:1px solid var(--cs-line);transition:transform .2s ease,box-shadow .2s ease}
+.cs-occ-card:hover{transform:translateY(-3px);box-shadow:var(--cs-sh-lg)}
+.cs-occ-media{position:relative;display:block;background:var(--cs-night);aspect-ratio:4/5}
+/* carte vedette : 2 colonnes, hauteur alignee sur une tuile normale */
+.cs-occ-feature{grid-column:span 2}
+.cs-occ-feature .cs-occ-media{aspect-ratio:8/5}
+.cs-occ-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-occ-ph{position:absolute;inset:0;display:block}
+.cs-occ-ph-0{background:radial-gradient(120% 90% at 22% 18%,#6b4a5e,transparent 62%),linear-gradient(145deg,#2b1f47,#5d3b52)}
+.cs-occ-ph-1{background:radial-gradient(120% 90% at 78% 22%,#4a5f6b,transparent 62%),linear-gradient(145deg,#1f2c47,#3b4f5d)}
+.cs-occ-ph-2{background:radial-gradient(120% 90% at 30% 80%,#6b5b3a,transparent 62%),linear-gradient(145deg,#41321c,#6b5533)}
+.cs-occ-ph-3{background:radial-gradient(120% 90% at 70% 70%,#5a4a6b,transparent 62%),linear-gradient(145deg,#2a2140,#4b3c66)}
+.cs-occ-ph-4{background:radial-gradient(120% 90% at 40% 30%,#6b4a45,transparent 62%),linear-gradient(145deg,#3d2320,#6b413a)}
+.cs-occ-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(12,8,22,.82) 0%,rgba(12,8,22,.32) 42%,rgba(12,8,22,.06) 72%)}
+.cs-occ-txt{position:absolute;left:0;right:0;bottom:0;padding:clamp(13px,1.6vw,18px);display:flex;flex-direction:column;gap:3px}
+.cs-occ-t{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.02rem,1.5vw,1.2rem);line-height:1.15;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.cs-occ-n{font-size:.83rem;font-weight:600;color:rgba(255,255,255,.82);line-height:1.35;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.cs-occ-hint{position:absolute;top:10px;left:10px;right:10px;background:rgba(20,16,12,.85);color:#fff;font-weight:600;font-size:.74rem;padding:6px 9px;border-radius:8px;text-align:center}
+.cs-occ-cta{display:flex;justify-content:center;margin-top:clamp(24px,3.4vw,38px)}
+@media(max-width:860px){.cs-occ-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){
+  .cs-duo-occ .cs-sec{padding:clamp(34px,7vw,52px) 0}
+  .cs-occ-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .cs-occ-feature{grid-column:span 2}
+  /* nombre impair de cartes : la derniere prend les deux colonnes, sinon la
+     grille se termine sur un trou. Automatique, quel que soit le nombre. */
+  .cs-occ-card:last-child:nth-child(odd){grid-column:span 2}
+  .cs-occ-card:last-child:nth-child(odd) .cs-occ-media{aspect-ratio:8/5}
+  .cs-occ-t{font-size:.95rem}
+  .cs-occ-n{display:none}
+  .cs-occ-cta{width:100%}
+  .cs-occ-cta .cs-btn{width:100%}
+}
+{% endstylesheet %}

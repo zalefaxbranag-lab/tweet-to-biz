@@ -1,0 +1,30 @@
+{%- if section.settings.text != blank -%}
+<div class="cs cs-duo-ann">
+  <div class="cs-ann-in">
+    {%- if section.settings.link != blank -%}
+      <a class="cs-ann-t" href="{{ section.settings.link }}">{{ section.settings.text }}</a>
+    {%- else -%}
+      <span class="cs-ann-t">{{ section.settings.text }}</span>
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "CraftStory Duo Banner",
+  "settings": [
+    { "type": "paragraph", "content": "A thin bar above everything. Leave the text empty to hide it. Write only offers that are real — the store's copy rules forbid invented urgency." },
+    { "type": "text", "id": "text", "label": "Text", "default": "Founding-couple pricing — the first 50 songs" },
+    { "type": "text", "id": "link", "label": "Link (optional)" }
+  ],
+  "presets": [ { "name": "CraftStory Duo Banner" } ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-ann{background:var(--cs-night);color:var(--cs-night-ink)}
+.cs-ann-in{max-width:1180px;margin:0 auto;padding:9px 22px;text-align:center}
+.cs-ann-t{font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--cs-star);text-decoration:none;display:inline-block;line-height:1.35}
+a.cs-ann-t:hover{text-decoration:underline}
+@media(max-width:480px){.cs-ann-t{font-size:.74rem;letter-spacing:.04em}}
+{% endstylesheet %}

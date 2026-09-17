@@ -1,0 +1,59 @@
+{%- if section.blocks.size > 0 -%}
+<div class="cs cs-duo-trust">
+  <div class="cs-wrap cs-tr-in">
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'item' and block.settings.text != blank -%}
+        <div class="cs-tr-item" {{ block.shopify_attributes }}>
+          {%- case block.settings.icon -%}
+            {%- when 'stars' -%}<span class="cs-tr-stars" aria-hidden="true">★★★★★</span>
+            {%- when 'clock' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2" stroke-linecap="round"/></svg>
+            {%- when 'mail' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6" stroke-linecap="round"/></svg>
+            {%- when 'shield' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {%- when 'note' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M9 18V6.5l9-2V16" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>
+          {%- endcase -%}
+          <span class="cs-tr-t">{{ block.settings.text }}</span>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "CraftStory Duo Trust",
+  "settings": [
+    { "type": "paragraph", "content": "The thin reassurance band that sits directly under the hero. Keep every line true: no customer counts and no review counts until the numbers are real." }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Item", "limit": 5, "settings": [
+      { "type": "select", "id": "icon", "label": "Icon", "default": "shield", "options": [
+        { "value": "stars", "label": "Stars" }, { "value": "clock", "label": "Clock" },
+        { "value": "mail", "label": "Email" }, { "value": "shield", "label": "Shield" },
+        { "value": "note", "label": "Music note" }
+      ] },
+      { "type": "text", "id": "text", "label": "Text", "default": "Free preview first" }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Trust", "blocks": [
+      { "type": "item", "settings": { "icon": "note", "text": "A song and a music video, both about you" } },
+      { "type": "item", "settings": { "icon": "clock", "text": "Free preview in minutes, not days" } },
+      { "type": "item", "settings": { "icon": "mail", "text": "Delivered by email — nothing to ship" } },
+      { "type": "item", "settings": { "icon": "shield", "text": "Full refund if you are not happy" } }
+    ] }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-trust{background:var(--cs-paper2);border-top:1px solid var(--cs-line);border-bottom:1px solid var(--cs-line)}
+.cs-tr-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:10px clamp(16px,2.6vw,34px);padding:clamp(13px,1.7vw,18px) 22px}
+.cs-tr-item{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:var(--cs-ink2);line-height:1.3}
+.cs-tr-item svg{width:17px;height:17px;flex:0 0 17px;color:var(--cs-gold)}
+.cs-tr-stars{color:var(--cs-star);letter-spacing:.06em;font-size:.95rem;line-height:1}
+@media(max-width:700px){
+  .cs-tr-in{justify-content:flex-start;gap:8px 18px;padding:12px 22px}
+  .cs-tr-item{font-size:.81rem}
+  .cs-tr-item svg{width:15px;height:15px;flex:0 0 15px}
+}
+{% endstylesheet %}

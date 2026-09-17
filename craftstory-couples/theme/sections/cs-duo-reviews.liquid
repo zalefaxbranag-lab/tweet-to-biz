@@ -1,0 +1,112 @@
+{%- liquid
+  assign filled = 0
+  for block in section.blocks
+    if block.settings.image != blank or block.settings.quote != blank
+      assign filled = filled | plus: 1
+    endif
+  endfor
+-%}
+{%- if filled > 0 or request.design_mode -%}
+<div class="cs cs-duo-rev">
+  <div class="cs-wrap">
+    <div class="cs-sec">
+      <div class="cs-sec-head">
+        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.proof_line != blank -%}
+          <p class="cs-rev-proof"><span class="cs-rev-stars" aria-hidden="true">★★★★★</span> {{ section.settings.proof_line }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- if filled > 0 -%}
+        <div class="cs-rev-track" data-cs-rev>
+          {%- for block in section.blocks -%}
+            {%- if block.settings.image != blank or block.settings.quote != blank -%}
+              <figure class="cs-rev-card" {{ block.shopify_attributes }}>
+                {%- if block.settings.image != blank -%}
+                  <img class="cs-rev-shot" src="{{ block.settings.image | image_url: width: 900 }}"
+                       alt="{{ block.settings.image.alt | default: 'Customer review' | escape }}" loading="lazy">
+                {%- else -%}
+                  <blockquote class="cs-rev-q">
+                    {%- if block.settings.stars != blank -%}<span class="cs-rev-stars" aria-hidden="true">{{ block.settings.stars }}</span>{%- endif -%}
+                    <p>{{ block.settings.quote }}</p>
+                    {%- if block.settings.name != blank -%}
+                      <footer class="cs-rev-by">{{ block.settings.name }}{% if block.settings.meta != blank %}<span class="cs-rev-meta">{{ block.settings.meta }}</span>{% endif %}</footer>
+                    {%- endif -%}
+                  </blockquote>
+                {%- endif -%}
+              </figure>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- elsif request.design_mode -%}
+        <div class="cs-rev-empty">
+          <strong>No reviews yet — this section stays hidden on the storefront.</strong>
+          Add a real customer's words, or a screenshot of their message, to a block.
+          It appears the moment you do.
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.cta_label != blank and filled > 0 -%}
+        <div class="cs-rev-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "CraftStory Duo Reviews",
+  "settings": [
+    { "type": "paragraph", "content": "A swipeable row of customer reviews. Two formats per block: a screenshot of a real message, or a typed quote. The whole section hides itself on the storefront while every block is empty, so the page never shows an empty shelf." },
+    { "type": "paragraph", "content": "Only real customer words go here. Invented reviews, invented names and invented counts are illegal in the US and the UK, get ad accounts rejected, and are already forbidden by this store's copy rules. The fastest honest fill: email every buyer on delivery day and ask for one line plus permission to quote it." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "In their words" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What happens when they press play." },
+    { "type": "text", "id": "proof_line", "label": "Proof line", "info": "Leave empty until the number is real. Example once it is: \"4.9 from 63 couples\"." },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" }
+  ],
+  "blocks": [
+    { "type": "review", "name": "Review", "limit": 16, "settings": [
+      { "type": "paragraph", "content": "Either drop a screenshot, or type the quote. A screenshot wins when you have one." },
+      { "type": "image_picker", "id": "image", "label": "Screenshot of the message" },
+      { "type": "textarea", "id": "quote", "label": "Quote (their exact words)" },
+      { "type": "text", "id": "stars", "label": "Stars", "default": "★★★★★" },
+      { "type": "text", "id": "name", "label": "Who said it" },
+      { "type": "text", "id": "meta", "label": "Context", "info": "For example: 10th anniversary" }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Reviews", "blocks": [
+      { "type": "review" }, { "type": "review" }, { "type": "review" }, { "type": "review" }
+    ] }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-rev{background:var(--cs-paper2)}
+.cs-rev-proof{display:flex;align-items:center;justify-content:center;gap:.5em;font-weight:600;color:var(--cs-ink2);font-size:1rem}
+.cs-rev-stars{color:var(--cs-star);letter-spacing:.08em;font-size:1.02em;line-height:1}
+.cs-rev-track{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.6vw,18px);align-items:start}
+.cs-rev-card{margin:0;background:var(--cs-card);border:1px solid var(--cs-line);border-radius:var(--cs-r-lg);box-shadow:var(--cs-sh-sm);overflow:hidden}
+.cs-rev-shot{width:100%;height:auto;display:block}
+.cs-rev-q{margin:0;padding:clamp(16px,2vw,22px);display:flex;flex-direction:column;gap:10px}
+.cs-rev-q p{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1rem,1.4vw,1.1rem);line-height:1.35;color:var(--cs-ink)}
+.cs-rev-by{font-size:.86rem;font-weight:700;color:var(--cs-ink2);display:flex;flex-direction:column;gap:1px;margin-top:auto}
+.cs-rev-meta{font-weight:600;color:var(--cs-ink3);font-size:.81rem}
+.cs-rev-empty{max-width:640px;margin:0 auto;text-align:center;background:var(--cs-card);border:1px dashed var(--cs-ink3);border-radius:var(--cs-r-lg);padding:22px;color:var(--cs-ink2);font-size:.94rem;line-height:1.55}
+.cs-rev-empty strong{display:block;color:var(--cs-ink);margin-bottom:5px}
+.cs-rev-cta{display:flex;justify-content:center;margin-top:clamp(24px,3.4vw,38px)}
+@media(max-width:1040px){.cs-rev-track{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+  .cs-duo-rev .cs-sec{padding:clamp(34px,7vw,52px) 0}
+  .cs-rev-track{display:flex;grid-template-columns:none;gap:12px;overflow-x:auto;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    padding:2px 22px 4px;margin:0 -22px}
+  .cs-rev-track::-webkit-scrollbar{display:none}
+  .cs-rev-card{flex:0 0 78%;scroll-snap-align:center}
+  .cs-rev-cta{width:100%}
+  .cs-rev-cta .cs-btn{width:100%}
+}
+{% endstylesheet %}

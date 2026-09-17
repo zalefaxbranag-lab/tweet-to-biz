@@ -11,7 +11,7 @@ def stylesheet(path):
 
 # CSS de base reel (cs-head) + CSS de chaque section
 css = [stylesheet(f"{SKILL}/sections/cs-head.liquid")]
-for f in ["cs-duo-hero","cs-duo-vsl","cs-duo-demos","cs-duo-steps","cs-duo-offer","cs-duo-faq","cs-duo-bar"]:
+for f in ["cs-duo-hero","cs-duo-vsl","cs-duo-demos","cs-duo-steps","cs-duo-offer","cs-duo-faq","cs-duo-bar","cs-duo-ann","cs-duo-trust","cs-duo-reviews","cs-duo-occasions"]:
     p = f"{SEC}/{f}.liquid"
     if os.path.exists(p):
         css.append(f"\n/* ===== {f} ===== */\n" + stylesheet(p))
@@ -47,14 +47,18 @@ hero_points = ["Their name and your story in the lyrics",
                "Hear your free preview before you pay anything"]
 HERO = f'''<div class="cs cs-duo-hero"><div class="cs-wrap cs-dh-in">
 <div class="cs-dh-copy">
-<span class="cs-eyebrow">✦ For couples</span>
-<h1 class="cs-h1 cs-dh-h">Turn your love story into a song — and a music video they'll watch on repeat.</h1>
-<p class="cs-lead cs-dh-body">Answer five questions about the two of you. We write it, record it and film it.</p>
+<p class="cs-dh-claim"><span class="cs-dh-stars">★★★★★</span> LIGNE-CLAIM</p>
+<h1 class="cs-h1 cs-dh-h cs-dh-quote">I pressed play and we both stopped talking.</h1>
+<span class="cs-dh-qby">ATTRIBUTION</span>
+<p class="cs-lead cs-dh-body">A custom song about the two of you — and a music video to go with it. Answer five questions, we do the rest.</p>
 <ul class="cs-dh-list cs-dh-bullets">{"".join(f"<li>{CHECK}<span>{html.escape(p)}</span></li>" for p in hero_points)}</ul>
 <div class="cs-dh-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="#">Create Your Free Preview</a><span class="cs-dh-note">Takes about 2 minutes</span></div>
-<p class="cs-dh-trust">No payment up front · Full refund if you don't love it</p>
+<p class="cs-dh-trust">100% money-back guarantee · Delivered by email</p>
 </div>
-<div class="cs-dh-media">{stage("dh", poster("#2b1f47","#6b3b52","reaction clip"), "Watch her hear it for the first time")}</div>
+<div class="cs-dh-media"><div class="cs-dh-stage cs-dh-auto">
+<img src="{poster("#2b1f47","#6b3b52","reaction clip (autoplay, muet)")}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+<button type="button" class="cs-dh-unmute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M11 5L6.5 9H3v6h3.5L11 19V5z" stroke-linejoin="round"/><path d="M16 9.5l4 5M20 9.5l-4 5" stroke-linecap="round"/></svg><span>Tap to unmute</span></button>
+</div></div>
 </div></div>'''
 
 # ---------- VSL ----------
@@ -129,11 +133,52 @@ FAQ = f'''<div class="cs cs-duo-faq"><div class="cs-wrap"><div class="cs-sec">
 <div class="cs-df-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="#">Create Your Free Preview</a></div>
 </div></div></div>'''
 
+
+# ---------- BARRE D ANNONCE ----------
+ANN = '<div class="cs cs-duo-ann"><div class="cs-ann-in"><span class="cs-ann-t">Founding-couple pricing \u2014 the first 50 songs</span></div></div>'
+
+# ---------- BANDEAU DE CONFIANCE ----------
+_TR = [("note","A song and a music video, both about you"),("clock","Free preview in minutes, not days"),
+       ("mail","Delivered by email \u2014 nothing to ship"),("shield","Full refund if you are not happy")]
+_ICO = {
+ "note":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 18V6.5l9-2V16" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>',
+ "clock":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2" stroke-linecap="round"/></svg>',
+ "mail":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6" stroke-linecap="round"/></svg>',
+ "shield":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
+TRUST = '<div class="cs cs-duo-trust"><div class="cs-wrap cs-tr-in">' + "".join(
+  f'<div class="cs-tr-item">{_ICO[i]}<span class="cs-tr-t">{t}</span></div>' for i,t in _TR) + '</div></div>'
+
+# ---------- OCCASIONS (9 cartes, placeholders concus) ----------
+_OCC = [("For the first dance","Something nobody else has danced to","wide"),
+        ("For the proposal","Before you even ask","tall"),
+        ("For the anniversary","One, ten, or forty","wide"),
+        ("For the wedding morning","Played while she gets ready","tall"),
+        ("For fifty years","The whole story, in order","wide"),
+        ("For the distance","When you can't be there","tall"),
+        ("For finding your way back","When sorry isn't enough","wide"),
+        ("For the guests to give","Together, as one gift","square"),
+        ("Just because","No occasion at all","wide")]
+def _occ_card(i,t,n,r):
+    return (f'<a class="cs-occ-card" href="#"><div class="cs-occ-media">'
+            f'<span class="cs-occ-ph cs-occ-ph-{i%5}"></span><span class="cs-occ-veil"></span>'
+            f'<span class="cs-occ-txt"><span class="cs-occ-t">{html.escape(t)}</span>'
+            f'<span class="cs-occ-n">{html.escape(n)}</span></span></div></a>')
+OCC = ('<div class="cs cs-duo-occ"><div class="cs-wrap"><div class="cs-sec">'
+  '<div class="cs-sec-head"><span class="cs-eyebrow">\u2726 Every kind of us</span>'
+  '<h2 class="cs-h2">A song for the moment you are actually in.</h2>'
+  "<p>Not only weddings. The morning of. The ten years after. The year you nearly didn't make it.</p></div>"
+  '<div class="cs-occ-grid">' + "".join(_occ_card(i,t,n,r) for i,(t,n,r) in enumerate(_OCC)) + '</div>'
+  '<div class="cs-occ-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="#">Create Your Free Preview</a></div>'
+  '</div></div></div>')
+
+# ---------- AVIS : blocs vides => la section se masque (comportement attendu) ----------
+REV = ""
+
 page = f'''<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>QA mock</title><style>{CSS}
 html,body{{margin:0;padding:0;background:var(--cs-paper)}}
-</style></head><body>{HERO}{VSL}{DEMOS}{STEPS}{OFFER}{FAQ}<div class="cs cs-duo-bar cs-dbar-mobile-only cs-dbar-on"><div class="cs-dbar-in">
+</style></head><body>{ANN}{HERO}{TRUST}{STEPS}{REV}{OCC}{VSL}{DEMOS}{OFFER}{FAQ}<div class="cs cs-duo-bar cs-dbar-mobile-only cs-dbar-on"><div class="cs-dbar-in">
 <div class="cs-dbar-txt"><span class="cs-dbar-t">Your preview is free</span><span class="cs-dbar-n">No payment up front</span></div>
 <a class="cs-btn cs-btn-primary cs-dbar-btn" href="#">Start</a></div></div></body></html>'''
 
