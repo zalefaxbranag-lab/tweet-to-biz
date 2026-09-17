@@ -1,44 +1,14 @@
 <div class="cs cs-duo-hero">
-  <div class="cs-wrap cs-dh-in">
-    <div class="cs-dh-copy">
-      {%- if section.settings.claim != blank -%}
-        <p class="cs-dh-claim"><span class="cs-dh-stars" aria-hidden="true">★★★★★</span> {{ section.settings.claim }}</p>
-      {%- elsif section.settings.eyebrow != blank -%}
-        <span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>
-      {%- endif -%}
-      {%- if section.settings.heading != blank -%}
-        <h1 class="cs-h1 cs-dh-h{% if section.settings.quote_style %} cs-dh-quote{% endif %}">{{ section.settings.heading }}</h1>
-        {%- if section.settings.quote_style and section.settings.quote_by != blank -%}
-          <span class="cs-dh-qby">{{ section.settings.quote_by }}</span>
-        {%- endif -%}
-      {%- endif -%}
-      {%- if section.settings.body != blank -%}<p class="cs-lead cs-dh-body">{{ section.settings.body }}</p>{%- endif -%}
+  <div class="cs-dh-inner">
 
-      {%- if section.blocks.size > 0 -%}
-        <ul class="cs-dh-list cs-dh-bullets">
-          {%- for block in section.blocks -%}
-            {%- if block.type == 'point' and block.settings.text != blank -%}
-              <li {{ block.shopify_attributes }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>{{ block.settings.text }}</span>
-              </li>
-            {%- endif -%}
-          {%- endfor -%}
-        </ul>
-      {%- endif -%}
+    {%- if section.settings.badge != blank -%}
+      <p class="cs-dh-badge"><span class="cs-dh-badge-stars" aria-hidden="true">★★★★★</span>{{ section.settings.badge }}</p>
+    {%- elsif section.settings.eyebrow != blank -%}
+      <span class="cs-eyebrow cs-dh-eyebrow">✦ {{ section.settings.eyebrow }}</span>
+    {%- endif -%}
 
-      <div class="cs-dh-cta">
-        {%- if section.settings.cta_label != blank -%}
-          <a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a>
-        {%- endif -%}
-        {%- if section.settings.cta_note != blank -%}<span class="cs-dh-note">{{ section.settings.cta_note }}</span>{%- endif -%}
-      </div>
-
-      {%- if section.settings.trust_line != blank -%}<p class="cs-dh-trust">{{ section.settings.trust_line }}</p>{%- endif -%}
-    </div>
-
-    <div class="cs-dh-media">
-      {%- assign dh_cover = section.settings.cover -%}
+    {%- assign dh_cover = section.settings.cover -%}
+    <div class="cs-dh-videowrap">
       {%- if section.settings.video != blank or section.settings.video_url != blank -%}
         <div class="cs-dh-stage{% if section.settings.autoplay %} cs-dh-auto{% endif %}" data-cs-duo-play{% if section.settings.autoplay %} data-cs-duo-auto{% endif %}>
           {%- if section.settings.video != blank -%}
@@ -52,7 +22,7 @@
           {%- endif -%}
           {%- if section.settings.autoplay -%}
             <button type="button" class="cs-dh-unmute" data-cs-duo-unmute>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M11 5L6.5 9H3v6h3.5L11 19V5z" stroke-linejoin="round"/><path d="M16 9.5l4 5M20 9.5l-4 5" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
               <span>{{ section.settings.unmute_label | default: 'Tap to unmute' }}</span>
             </button>
           {%- endif -%}
@@ -60,18 +30,88 @@
             {%- if dh_cover != blank -%}<img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager">{%- endif -%}
             <span class="cs-dh-scrim"></span>
             <span class="cs-dh-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-            {%- if section.settings.play_label != blank -%}<span class="cs-dh-playlabel">{{ section.settings.play_label }}</span>{%- endif -%}
           </button>
         </div>
       {%- elsif dh_cover != blank -%}
-        <div class="cs-dh-stage cs-dh-stage-still"><img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager"></div>
+        <div class="cs-dh-stage cs-dh-still"><img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager"></div>
       {%- else -%}
-        <div class="cs-dh-stage cs-dh-stage-still cs-dh-empty">
+        <div class="cs-dh-stage cs-dh-still cs-dh-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z" stroke-linejoin="round"/></svg>
           {%- if request.design_mode -%}<span>Add the hero clip — Theme editor ▸ CraftStory Duo Hero ▸ Hero video</span>{%- endif -%}
         </div>
       {%- endif -%}
     </div>
+
+    {%- if section.settings.heading != blank -%}
+      <h1 class="cs-dh-title">
+        {%- if section.settings.quote_style -%}<span class="cs-dh-q" aria-hidden="true">“</span>{%- endif -%}
+        {{ section.settings.heading }}
+        {%- if section.settings.highlight != blank -%} <em>{{ section.settings.highlight }}</em>{%- endif -%}
+        {%- if section.settings.quote_style -%}<span class="cs-dh-q" aria-hidden="true">”</span>{%- endif -%}
+      </h1>
+    {%- endif -%}
+
+    {%- if section.settings.body != blank -%}<p class="cs-dh-sub">{{ section.settings.body }}</p>{%- endif -%}
+
+    {%- if section.settings.cta_label != blank -%}
+      <div class="cs-dh-ctas">
+        <a class="cs-dh-cta" href="{{ section.settings.cta_link | default: '#' }}">
+          {%- if section.settings.cta_icon != blank -%}<span class="cs-dh-cta-ico" aria-hidden="true">{{ section.settings.cta_icon }}</span>{%- endif -%}
+          <span>{{ section.settings.cta_label }}</span>
+        </a>
+        {%- if section.settings.cta_note != blank -%}
+          <span class="cs-dh-ctasub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>
+            {{ section.settings.cta_note }}
+          </span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- liquid
+      assign faces = 0
+      for block in section.blocks
+        if block.type == 'face' and block.settings.image != blank
+          assign faces = faces | plus: 1
+        endif
+      endfor
+    -%}
+    {%- if faces > 0 or section.settings.proof_text != blank -%}
+      <div class="cs-dh-proof">
+        {%- if faces > 0 -%}
+          <div class="cs-dh-faces">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'face' and block.settings.image != blank -%}
+                <img class="cs-dh-face" src="{{ block.settings.image | image_url: width: 120 }}" alt="" loading="lazy" {{ block.shopify_attributes }}>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if section.settings.faces_count != blank -%}
+              <span class="cs-dh-facecount">{{ section.settings.faces_count }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+        {%- if section.settings.proof_text != blank -%}
+          <div class="cs-dh-prooftxt">
+            <span class="cs-dh-proofstars" aria-hidden="true">★★★★★</span>
+            <span class="cs-dh-prooflabel">
+              {%- if section.settings.proof_strong != blank -%}<strong>{{ section.settings.proof_strong }}</strong> {% endif -%}
+              {{ section.settings.proof_text }}
+            </span>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.trust_line != blank -%}
+      {%- assign trust_bits = section.settings.trust_line | split: '|' -%}
+      <p class="cs-dh-trust">
+        {%- for bit in trust_bits -%}
+          {%- unless forloop.first -%}<span class="cs-dh-sep" aria-hidden="true"></span>{%- endunless -%}
+          <span>{{ bit | strip }}</span>
+        {%- endfor -%}
+      </p>
+    {%- endif -%}
+
   </div>
 </div>
 <script>
@@ -114,98 +154,128 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
 {
   "name": "CraftStory Duo Hero",
   "settings": [
-    { "type": "paragraph", "content": "Top of the couples landing page. Keep CraftStory Setup as the first section of the template. The button points to a URL you paste below — set it to the couples order form once that page exists." },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "For couples" },
-    { "type": "text", "id": "claim", "label": "Star line above the headline", "info": "Shown with five stars, and it replaces the eyebrow. Leave it empty until the claim is true — no invented customer counts." },
-    { "type": "text", "id": "heading", "label": "Headline", "default": "I pressed play and we both stopped talking." },
-    { "type": "checkbox", "id": "quote_style", "label": "Show the headline as a customer quote", "default": true, "info": "The competitor's strongest device: the headline is a real customer's sentence, in quotes. Use only words a customer actually said." },
-    { "type": "text", "id": "quote_by", "label": "Who said it" },
-    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "A custom song about the two of you — and a music video to go with it. Answer five questions, we do the rest." },
-    { "type": "header", "content": "Call to action" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
+    { "type": "paragraph", "content": "One centred column, the way a landing-page hero is built: star line, clip, headline, sub-headline, one full-width button, guarantee, social proof, trust line. Keep CraftStory Setup as the first section of the template." },
+    { "type": "header", "content": "Star line" },
+    { "type": "text", "id": "badge", "label": "Star line", "info": "Shown with five stars and it replaces the eyebrow. Leave it empty until the claim is true — no invented customer counts." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (fallback)", "default": "For couples" },
+    { "type": "header", "content": "Headline" },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "I pressed play and we both stopped" },
+    { "type": "text", "id": "highlight", "label": "Last word, emphasised", "default": "talking", "info": "Rendered in italic coral at the end of the headline, the way the competitor emphasises one word." },
+    { "type": "checkbox", "id": "quote_style", "label": "Wrap the headline in quote marks", "default": true, "info": "Their strongest device: the headline is a real customer's sentence. Use only words a customer actually said." },
+    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Surprise them with a custom song and a music video about the two of you." },
+    { "type": "header", "content": "Button" },
+    { "type": "text", "id": "cta_icon", "label": "Icon before the label", "default": "♫" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start My Custom Song" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" },
-    { "type": "text", "id": "cta_note", "label": "Note next to the button", "default": "Takes about 2 minutes" },
-    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "No payment up front · Full refund if you don't love it" },
+    { "type": "text", "id": "cta_note", "label": "Line under the button", "default": "100% money-back guarantee · Delivered by email" },
+    { "type": "header", "content": "Social proof" },
+    { "type": "paragraph", "content": "Customer faces and counts go here. Add a face only when it is a real customer who agreed to it, and leave the count empty until the number is real — the whole block hides itself while both are empty." },
+    { "type": "text", "id": "faces_count", "label": "Count bubble", "info": "For example 50+. Shown at the end of the face row." },
+    { "type": "text", "id": "proof_strong", "label": "Bold part of the line" },
+    { "type": "text", "id": "proof_text", "label": "Rest of the line", "info": "For example: couples who turned their story into a song" },
+    { "type": "header", "content": "Trust line" },
+    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free preview in minutes | Nothing to ship | First dance · Anniversaries · Proposals", "info": "Separate the parts with a vertical bar. Each one gets a dot between." },
     { "type": "header", "content": "Hero video" },
     { "type": "checkbox", "id": "autoplay", "label": "Play silently on load, with a Tap-to-unmute button", "default": true, "info": "How the competitor's hero works. The clip loops muted, and one tap turns the sound on." },
     { "type": "text", "id": "unmute_label", "label": "Unmute button label", "default": "Tap to unmute" },
     { "type": "video", "id": "video", "label": "Hero clip (upload MP4)", "info": "Landscape 16:9. Use one of the reaction clips." },
     { "type": "text", "id": "video_url", "label": "…or .mp4 URL" },
     { "type": "image_picker", "id": "cover", "label": "Thumbnail (poster)" },
-    { "type": "text", "id": "play_label", "label": "Play-button caption", "default": "Watch her hear it for the first time" }
+    { "type": "text", "id": "play_label", "label": "Play-button label (for screen readers)", "default": "Play" }
   ],
   "blocks": [
-    { "type": "point", "name": "Bullet", "limit": 5, "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "Their name in the lyrics" } ] }
-  ],
-  "presets": [
-    { "name": "CraftStory Duo Hero", "blocks": [
-      { "type": "point", "settings": { "text": "Their name and your story in the lyrics" } },
-      { "type": "point", "settings": { "text": "A music video with the two of you in it" } },
-      { "type": "point", "settings": { "text": "Any genre — you pick the style" } },
-      { "type": "point", "settings": { "text": "Hear your free preview before you pay anything" } }
+    { "type": "face", "name": "Customer face", "limit": 8, "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo", "info": "A real customer who agreed to appear here." }
     ] }
-  ]
+  ],
+  "presets": [ { "name": "CraftStory Duo Hero" } ]
 }
 {% endschema %}
 {% stylesheet %}
-.cs-duo-hero{background:var(--cs-paper)}
-.cs-dh-in{display:grid;grid-template-columns:1.02fr 1fr;gap:clamp(28px,4vw,58px);align-items:center;padding:clamp(40px,6vw,86px) 22px}
-.cs-dh-copy{display:flex;flex-direction:column;gap:clamp(14px,2vw,20px);align-items:flex-start}
-.cs-dh-h{max-width:15em}
-.cs-dh-body{max-width:34em}
-.cs-dh-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-.cs-dh-list li{display:flex;gap:10px;align-items:flex-start;font-size:1.01rem;color:var(--cs-ink2);font-weight:500}
-.cs-dh-list svg{width:18px;height:18px;flex:0 0 18px;margin-top:4px;color:var(--cs-coral)}
-.cs-dh-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:4px}
-.cs-dh-note{font-size:.9rem;color:var(--cs-ink3);font-weight:600}
-.cs-dh-trust{font-size:.86rem;color:var(--cs-ink3);font-weight:600}
-.cs-dh-media{width:100%}
-.cs-dh-stage{position:relative;aspect-ratio:16/9;border-radius:var(--cs-r-xl);overflow:hidden;background:#000;box-shadow:var(--cs-sh-lg);border:1px solid var(--cs-line)}
-.cs-dh-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#000}
-.cs-dh-cover{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;margin:0;cursor:pointer;display:block;background:#000;font:inherit}
-.cs-duo-playing .cs-dh-cover{display:none}
-.cs-dh-cover img,.cs-dh-stage-still img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.cs-dh-scrim{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,rgba(0,0,0,.1),rgba(0,0,0,.48))}
-.cs-dh-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:clamp(58px,8vw,80px);height:clamp(58px,8vw,80px);border-radius:50%;background:rgba(255,255,255,.95);color:var(--cs-coral);display:grid;place-items:center;box-shadow:0 12px 34px rgba(0,0,0,.34);transition:transform .18s ease}
+.cs-duo-hero{background:
+  radial-gradient(120% 80% at 50% 0%,rgba(236,91,60,.09),transparent 62%),
+  var(--cs-paper);
+  --cs-duo-green:#3E9C6A}
+.cs-dh-inner{position:relative;z-index:1;max-width:720px;width:100%;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:22px;padding:clamp(18px,3vw,40px) 22px clamp(42px,6vw,72px)}
+.cs-dh-badge{display:inline-flex;align-items:center;gap:.55em;white-space:nowrap;max-width:100%;
+  font-size:clamp(.7rem,2.2vw,.82rem);font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cs-coral);background:var(--cs-card);border:1px solid var(--cs-line);
+  border-radius:var(--cs-pill);padding:7px 15px;box-shadow:var(--cs-sh-sm)}
+.cs-dh-badge-stars{color:var(--cs-star);letter-spacing:.09em;font-size:.86em;line-height:1;flex-shrink:0}
+.cs-dh-eyebrow{align-self:center}
+.cs-dh-videowrap{width:100%;max-width:640px}
+.cs-dh-stage{position:relative;aspect-ratio:16/9;border-radius:var(--cs-r-xl);overflow:hidden;
+  background:#000;box-shadow:var(--cs-sh-lg);border:1px solid var(--cs-line)}
+.cs-dh-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.cs-dh-cover{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;margin:0;
+  cursor:pointer;display:block;background:#000;font:inherit}
+.cs-duo-playing .cs-dh-cover,.cs-dh-auto .cs-dh-cover{display:none}
+.cs-dh-cover img,.cs-dh-still img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-dh-scrim{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,rgba(0,0,0,.1),rgba(0,0,0,.46))}
+.cs-dh-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:clamp(58px,8vw,78px);height:clamp(58px,8vw,78px);border-radius:50%;
+  background:rgba(255,255,255,.95);color:var(--cs-coral);display:grid;place-items:center;
+  box-shadow:0 12px 34px rgba(0,0,0,.34);transition:transform .18s ease}
 .cs-dh-play svg{width:38%;height:38%;margin-left:8%}
-.cs-dh-cover:hover .cs-dh-play,.cs-dh-cover:focus-visible .cs-dh-play{transform:translate(-50%,-50%) scale(1.09)}
-.cs-dh-playlabel{position:absolute;left:14px;right:14px;bottom:14px;text-align:center;color:#fff;font-weight:700;font-size:clamp(.85rem,1.3vw,1rem);text-shadow:0 2px 12px rgba(0,0,0,.6)}
-.cs-dh-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#171310;color:#cdbfa9;font-weight:600;font-size:.86rem;text-align:center;padding:18px}
-.cs-dh-empty svg{width:42px;height:42px}
-.cs-dh-claim{display:flex;align-items:center;gap:.5em;font-size:.86rem;font-weight:700;
-  color:var(--cs-ink2);letter-spacing:.01em;line-height:1.3}
-.cs-dh-stars{color:var(--cs-star);letter-spacing:.06em;font-size:.95rem;line-height:1}
-.cs-dh-quote{quotes:"\201C" "\201D"}
-.cs-dh-quote:before{content:open-quote}
-.cs-dh-quote:after{content:close-quote}
-.cs-dh-qby{font-size:.85rem;font-weight:700;color:var(--cs-ink3);margin-top:-4px}
-/* l habillage du lecteur s effile quand la video joue en muet */
-.cs-dh-auto .cs-dh-cover{display:none}
-.cs-dh-unmute{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:2;
-  display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font:inherit;
-  font-weight:700;font-size:.88rem;color:var(--cs-ink);background:rgba(255,255,255,.94);
-  padding:11px 18px;border-radius:var(--cs-pill);box-shadow:0 10px 26px rgba(0,0,0,.3);
-  min-height:44px;transition:transform .18s ease}
-.cs-dh-unmute svg{width:17px;height:17px;flex:0 0 17px;color:var(--cs-coral)}
-.cs-dh-unmute:hover{transform:translateX(-50%) translateY(-2px)}
+.cs-dh-cover:hover .cs-dh-play{transform:translate(-50%,-50%) scale(1.09)}
+/* pastille centree, comme leur "Tap to Unmute", avec l'anneau qui pulse */
+.cs-dh-unmute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;
+  display:inline-flex;align-items:center;gap:9px;border:0;cursor:pointer;font:inherit;
+  font-weight:700;font-size:clamp(.88rem,2.4vw,1rem);color:#fff;
+  background:rgba(28,21,51,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  padding:13px 26px;border-radius:var(--cs-pill);min-height:46px;
+  transition:transform .18s ease,background .18s ease}
+.cs-dh-unmute svg{width:20px;height:20px;flex:0 0 20px}
+.cs-dh-unmute:hover{background:rgba(28,21,51,.9);transform:translate(-50%,-50%) scale(1.05)}
+.cs-dh-unmute:before{content:"";position:absolute;inset:-4px;border-radius:inherit;
+  border:2px solid rgba(255,255,255,.3);animation:cs-dh-ring 2s ease-out infinite}
+@keyframes cs-dh-ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.14);opacity:0}}
 .cs-duo-unmuted .cs-dh-unmute{display:none}
-@media(max-width:900px){
-  .cs-dh-claim{font-size:.8rem}
-  .cs-dh-in{grid-template-columns:1fr;gap:18px;padding:14px 22px 26px}
-  .cs-dh-media{order:-1}
-  .cs-dh-copy{align-items:flex-start;gap:10px}
-  /* le CTA doit tenir au-dessus du pli : les puces passent sous le bouton */
-  .cs-dh-copy{display:flex;flex-direction:column}
-  /* tout element de .cs-dh-copy doit porter un order : sans lui il vaut 0 et
-     remonte au-dessus des autres (la ligne d'attribution passait avant le titre). */
-  .cs-dh-copy .cs-eyebrow,.cs-dh-claim{order:1}
-  .cs-dh-h{order:2;font-size:clamp(1.62rem,6.6vw,2.1rem);line-height:1.1;max-width:none}
-  .cs-dh-qby{order:3}
-  .cs-dh-body{order:4;font-size:1rem;line-height:1.45}
-  .cs-dh-cta{order:5;width:100%;margin-top:2px}
-  .cs-dh-cta .cs-btn{width:100%}
-  .cs-dh-trust{order:6}
-  .cs-dh-bullets{order:7;margin-top:6px;padding-top:14px;border-top:1px solid var(--cs-line)}
-  .cs-dh-note{width:100%;text-align:center}
+.cs-dh-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:#171310;color:#cdbfa9;font-weight:600;font-size:.86rem;text-align:center;padding:18px}
+.cs-dh-empty svg{width:42px;height:42px}
+.cs-dh-title{font-family:var(--cs-serif);font-weight:600;letter-spacing:-.015em;
+  font-size:clamp(1.85rem,6.4vw,3.1rem);line-height:1.08;max-width:19em;text-wrap:balance}
+.cs-dh-title em{font-style:italic;color:var(--cs-coral)}
+.cs-dh-q{font-family:var(--cs-serif);color:var(--cs-coral);opacity:.3}
+.cs-dh-sub{font-size:clamp(1rem,2.4vw,1.18rem);line-height:1.55;color:var(--cs-ink2);max-width:31em}
+.cs-dh-ctas{display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;max-width:420px}
+.cs-dh-cta{display:inline-flex;align-items:center;justify-content:center;gap:.55em;width:100%;
+  position:relative;overflow:hidden;font-family:var(--cs-sans);font-weight:700;
+  font-size:clamp(1rem,2.4vw,1.07rem);text-decoration:none;color:#fff;background:var(--cs-coral);
+  border-radius:var(--cs-pill);padding:18px 28px;line-height:1;min-height:56px;
+  box-shadow:0 12px 30px -10px rgba(236,91,60,.7);transition:transform .18s ease,background .18s ease}
+.cs-dh-cta:before{content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,transparent 50%);pointer-events:none}
+.cs-dh-cta:hover{background:var(--cs-coral-deep);transform:translateY(-2px)}
+.cs-dh-cta-ico{font-size:1.2em;line-height:1}
+.cs-dh-ctasub{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;
+  color:var(--cs-ink2);line-height:1.35;text-align:left}
+.cs-dh-ctasub svg{width:16px;height:16px;flex:0 0 16px;color:var(--cs-duo-green)}
+.cs-dh-proof{display:flex;flex-direction:column;align-items:center;gap:12px}
+.cs-dh-faces{display:flex;align-items:center}
+.cs-dh-face{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--cs-card);
+  object-fit:cover;margin-left:-10px;box-shadow:0 2px 8px rgba(36,27,58,.14)}
+.cs-dh-face:first-child{margin-left:0}
+.cs-dh-facecount{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--cs-card);
+  margin-left:-10px;background:var(--cs-ink2);color:#fff;display:grid;place-items:center;
+  font-size:.62rem;font-weight:800;letter-spacing:.01em}
+.cs-dh-prooftxt{display:flex;flex-direction:column;align-items:center;gap:4px}
+.cs-dh-proofstars{color:var(--cs-star);font-size:1rem;letter-spacing:.14em;line-height:1}
+.cs-dh-prooflabel{font-size:.9rem;font-weight:500;color:var(--cs-ink2);line-height:1.4}
+.cs-dh-prooflabel strong{color:var(--cs-ink);font-weight:800}
+.cs-dh-trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:7px 11px;font-size:.83rem;font-weight:600;color:var(--cs-ink3);line-height:1.4;max-width:34em}
+.cs-dh-sep{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex:0 0 3px}
+@media(max-width:560px){
+  .cs-dh-inner{gap:18px;padding:12px 16px 40px}
+  /* jamais de texte tronque : le badge passe a la ligne plutot que de deborder */
+  .cs-dh-badge{white-space:normal;text-align:center;line-height:1.35;padding:7px 14px}
+  .cs-dh-title{max-width:none}
+  .cs-dh-face,.cs-dh-facecount{width:32px;height:32px;margin-left:-8px}
+  .cs-dh-face:first-child{margin-left:0}
+  .cs-dh-facecount{font-size:.56rem}
 }
 {% endstylesheet %}

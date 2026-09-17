@@ -40,25 +40,20 @@ def stage(prefix, cover, label):
             f'<span class="cs-{prefix}-{"playlabel" if prefix in ("dh","dv") else "lab"}">{label}</span>'
             f'</button></div>')
 
-# ---------- HERO ----------
-hero_points = ["Their name and your story in the lyrics",
-               "A music video with the two of you in it",
-               "Any genre — you pick the style",
-               "Hear your free preview before you pay anything"]
-HERO = f'''<div class="cs cs-duo-hero"><div class="cs-wrap cs-dh-in">
-<div class="cs-dh-copy">
-<p class="cs-dh-claim"><span class="cs-dh-stars">★★★★★</span> LIGNE-CLAIM</p>
-<h1 class="cs-h1 cs-dh-h cs-dh-quote">I pressed play and we both stopped talking.</h1>
-<span class="cs-dh-qby">ATTRIBUTION</span>
-<p class="cs-lead cs-dh-body">A custom song about the two of you — and a music video to go with it. Answer five questions, we do the rest.</p>
-<ul class="cs-dh-list cs-dh-bullets">{"".join(f"<li>{CHECK}<span>{html.escape(p)}</span></li>" for p in hero_points)}</ul>
-<div class="cs-dh-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="#">Create Your Free Preview</a><span class="cs-dh-note">Takes about 2 minutes</span></div>
-<p class="cs-dh-trust">100% money-back guarantee · Delivered by email</p>
-</div>
-<div class="cs-dh-media"><div class="cs-dh-stage cs-dh-auto">
-<img src="{poster("#2b1f47","#6b3b52","reaction clip (autoplay, muet)")}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
-<button type="button" class="cs-dh-unmute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M11 5L6.5 9H3v6h3.5L11 19V5z" stroke-linejoin="round"/><path d="M16 9.5l4 5M20 9.5l-4 5" stroke-linecap="round"/></svg><span>Tap to unmute</span></button>
+# ---------- HERO (une colonne centree, structure du concurrent) ----------
+HERO = f'''<div class="cs cs-duo-hero"><div class="cs-dh-inner">
+<p class="cs-dh-badge"><span class="cs-dh-badge-stars">★★★★★</span>A SONG AND A MUSIC VIDEO, MADE FOR TWO</p>
+<div class="cs-dh-videowrap"><div class="cs-dh-stage cs-dh-auto">
+<img src="{poster("#2b1f47","#6b3b52","clip de reaction (autoplay muet)")}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+<button type="button" class="cs-dh-unmute"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg><span>Tap to unmute</span></button>
 </div></div>
+<h1 class="cs-dh-title"><span class="cs-dh-q">&#8220;</span>I pressed play and we both stopped <em>talking</em><span class="cs-dh-q">&#8221;</span></h1>
+<p class="cs-dh-sub">Surprise them with a custom song and a music video about the two of you.</p>
+<div class="cs-dh-ctas">
+<a class="cs-dh-cta" href="#"><span class="cs-dh-cta-ico">&#9834;</span><span>Start My Custom Song</span></a>
+<span class="cs-dh-ctasub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>100% money-back guarantee &#183; Delivered by email</span>
+</div>
+<p class="cs-dh-trust"><span>Free preview in minutes</span><span class="cs-dh-sep"></span><span>Nothing to ship</span><span class="cs-dh-sep"></span><span>First dance &#183; Anniversaries &#183; Proposals</span></p>
 </div></div>'''
 
 # ---------- VSL ----------

@@ -6,52 +6,24 @@
     },
     "hero": {
       "type": "cs-duo-hero",
-      "blocks": {
-        "p1": {
-          "type": "point",
-          "settings": {
-            "text": "Their name and your story in the lyrics"
-          }
-        },
-        "p2": {
-          "type": "point",
-          "settings": {
-            "text": "A music video with the two of you in it"
-          }
-        },
-        "p3": {
-          "type": "point",
-          "settings": {
-            "text": "Any genre — you pick the style"
-          }
-        },
-        "p4": {
-          "type": "point",
-          "settings": {
-            "text": "Hear your free preview before you pay anything"
-          }
-        }
-      },
-      "block_order": [
-        "p1",
-        "p2",
-        "p3",
-        "p4"
-      ],
       "settings": {
+        "badge": "",
         "eyebrow": "For couples",
-        "heading": "I pressed play and we both stopped talking.",
-        "body": "A custom song about the two of you — and a music video to go with it. Answer five questions, we do the rest.",
-        "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
-        "cta_note": "Takes about 2 minutes",
-        "trust_line": "100% money-back guarantee · Delivered by email",
-        "play_label": "Watch her hear it for the first time",
-        "claim": "",
+        "heading": "I pressed play and we both stopped",
+        "highlight": "talking",
         "quote_style": true,
-        "quote_by": "",
+        "body": "Surprise them with a custom song and a music video about the two of you.",
+        "cta_icon": "♫",
+        "cta_label": "Start My Custom Song",
+        "cta_link": "#",
+        "cta_note": "100% money-back guarantee · Delivered by email",
+        "faces_count": "",
+        "proof_strong": "",
+        "proof_text": "",
+        "trust_line": "Free preview in minutes | Nothing to ship | First dance · Anniversaries · Proposals",
         "autoplay": true,
-        "unmute_label": "Tap to unmute"
+        "unmute_label": "Tap to unmute",
+        "play_label": "Play"
       }
     },
     "vsl": {

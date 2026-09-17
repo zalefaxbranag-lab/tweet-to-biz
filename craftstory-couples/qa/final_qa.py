@@ -11,12 +11,24 @@ with sync_playwright() as p:
         pg.goto("file://"+Q+"/mock.html"); pg.wait_for_timeout(350)
         r=pg.evaluate("""(vh)=>{
           const d=document.documentElement, q=s=>document.querySelector(s);
-          const cta=q('.cs-dh-cta .cs-btn');
+          const cta=q('.cs-dh-cta')||q('.cs-dh-cta .cs-btn');
           const ctaTop=cta?Math.round(cta.getBoundingClientRect().top+window.scrollY):null;
           // debordement de texte : element dont le contenu depasse sa boite
-          const clipped=[...document.querySelectorAll('h1,h2,h3,p,span,li,a,summary,figcaption')]
-            .filter(e=>e.children.length===0 && e.scrollWidth>e.clientWidth+2)
-            .map(e=>(e.className||e.tagName)+':"'+(e.textContent||'').trim().slice(0,28)+'"');
+          // tout element dont le contenu deborde sa boite, enfants compris.
+          // La version precedente exigeait children.length===0 et laissait passer
+          // le badge du hero (qui contient un <span>), tronque a l'ellipse.
+          const clipped=[...document.querySelectorAll('h1,h2,h3,p,span,li,a,summary,figcaption,div')]
+            .filter(e=>{
+              if(e.scrollWidth<=e.clientWidth+2) return false;
+              const scrolls=el=>{const o=getComputedStyle(el).overflowX;
+                                 return o==='auto'||o==='scroll';};
+              // exclut la piste scrollable elle-meme ET ses parents : une piste a
+              // marge negative rend son parent plus large sans rien tronquer.
+              if(scrolls(e)) return false;
+              if(e.querySelector('*') && [...e.querySelectorAll('*')].some(scrolls)) return false;
+              return true;
+            })
+            .map(e=>(e.className||e.tagName)+':"'+(e.textContent||'').trim().slice(0,26)+'"');
           const small=[...document.querySelectorAll('a.cs-btn,button,summary')]
             .filter(e=>{const b=e.getBoundingClientRect();return b.height>0&&b.height<44}).length;
           return {overflow:d.scrollWidth>d.clientWidth, sw:d.scrollWidth, cw:d.clientWidth,
@@ -26,7 +38,7 @@ with sync_playwright() as p:
         bad = r["overflow"] or not r["above"] or r["small"]>0 or r["clipped"]
         if bad: allok=False
         print(f"{w:>8} | {('OUI '+str(r['sw'])+'>'+str(r['cw'])) if r['overflow'] else 'aucun':>10} | "
-              f"{('oui' if r['above'] else 'NON'):>8} | {r['ctaTop']:>6} | {r['page']:>6} | {r['screens']:>6} | "
+              f"{('oui' if r['above'] else 'NON'):>8} | {(r['ctaTop'] if r['ctaTop'] is not None else -1):>6} | {r['page']:>6} | {r['screens']:>6} | "
               f"{r['small']:>7} | {', '.join(r['clipped']) if r['clipped'] else 'aucun'}")
         if w==320: pg.screenshot(path=f"{Q}/v3-320-fold.png")
         pg.close()
