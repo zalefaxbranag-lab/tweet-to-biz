@@ -47,3 +47,50 @@ md5sum theme/sections/*.liquid theme/templates/page.couples.json
 ```
 puis la même liste côté thème, et comparaison. Un MD5 identique est la seule
 preuve que le fichier est réellement arrivé à l'octet près.
+
+## Les rejets silencieux de Shopify — lire avant de pousser une section
+
+`themeFilesUpsert` peut renvoyer **201 a l'upload et `userErrors: []` a l'upsert
+sans appliquer le fichier**. Aucune erreur, nulle part. Deux causes ont ete
+isolees a la main, les deux invisibles cote API :
+
+| Cause | Symptome | Ce qui bloquait |
+|---|---|---|
+| `"default": ""` sur un setting | fichier jamais applique, zero erreur | `cs-duo-hero`, `cs-duo-trust` |
+| `name` de section, de bloc ou de preset **> 25 caracteres** | idem | `cs-duo-how` (`"CraftStory Duo How It Works"` = 27) |
+
+Un `default` present doit etre non vide : **on omet la cle** plutot que de la
+mettre a `""`.
+
+`qa/schema_check.py` refuse desormais ces deux motifs, plus tout ce que la
+documentation Shopify liste et qui coute zero a verifier : cles racine inconnues,
+ids dupliques, `select` sans options ou avec un default hors options, `range` a
+plus de 101 pas ou dont le pas ne divise pas l'intervalle, `header`/`paragraph`
+portant un id ou un default, preset depassant `max_blocks`, et tout
+`section.settings.x` lu dans le markup mais absent du schema.
+
+**A lancer avant chaque push, avec les deux autres portes :**
+
+```bash
+python3 qa/liquid_check.py theme/sections/*.liquid   # balises Liquid equilibrees
+python3 qa/schema_check.py theme/sections/*.liquid   # rejets silencieux
+```
+
+## Un piege qui n'a rien a voir avec l'API : l'editeur de theme
+
+L'editeur de theme Shopify **reecrit `templates/page.*.json` en entier** depuis
+son etat interne. Shopify l'ecrit lui-meme en tete du fichier. Concretement : une
+seule sauvegarde dans l'editeur annule toutes les poussees API faites sur ce
+template. C'est arrive une fois sur ce projet — le template est revenu de 21 a 11
+sections, avec l'ancien titre et l'ancien bouton.
+
+Donc : **relire le template depuis le theme avant de le modifier**, et fusionner
+depuis cette version. Jamais pousser une version locale par-dessus sans l'avoir
+relue, sinon on ecrase le travail fait dans l'editeur.
+
+## Un fichier plus gros que ~34 Ko ne passe pas
+
+Constate, pas documente : `cs-duo-reviews.liquid` (42 236 octets) est refuse
+alors que `cs-duo-hero.liquid` (33 579) passe, avec un schema propre dans les
+deux cas. Le plafond se situe donc entre les deux. A verifier en decoupant la
+section si le besoin revient.
