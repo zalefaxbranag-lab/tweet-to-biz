@@ -75,8 +75,25 @@
           assign faces = faces | plus: 1
         endif
       endfor
+
+      # star row: blank setting means no rating is claimed, so the row is not rendered
+      assign star_count = section.settings.proof_stars | times: 1
+      if star_count > 5
+        assign star_count = 5
+      endif
+
+      # join line: plain word, then the bold part that carries the number, then an optional plain tail
+      assign proof_line = false
+      if section.settings.proof_strong != blank or section.settings.proof_text != blank
+        assign proof_line = true
+      endif
+
+      assign proof_any = false
+      if faces > 0 or star_count > 0 or proof_line
+        assign proof_any = true
+      endif
     -%}
-    {%- if faces > 0 or section.settings.proof_text != blank -%}
+    {%- if proof_any -%}
       <div class="cs-dh-proof">
         {%- if faces > 0 -%}
           <div class="cs-dh-faces">
@@ -90,16 +107,23 @@
             {%- endif -%}
           </div>
         {%- endif -%}
-        {%- if section.settings.proof_text != blank -%}
+        {%- if star_count > 0 or proof_line -%}
           <div class="cs-dh-prooftxt">
-            <span class="cs-dh-proofstars" aria-hidden="true">★★★★★</span>
-            <span class="cs-dh-prooflabel">
-              {%- if section.settings.proof_strong != blank -%}<strong>{{ section.settings.proof_strong }}</strong> {% endif -%}
-              {{ section.settings.proof_text }}
-            </span>
+            {%- if star_count > 0 -%}
+              <span class="cs-dh-proofstars" aria-label="{{ star_count }} out of 5 stars">{% for i in (1..star_count) %}★{% endfor %}</span>
+            {%- endif -%}
+            {%- if proof_line -%}
+              <span class="cs-dh-prooflabel">
+                {%- if section.settings.proof_prefix != blank -%}{{ section.settings.proof_prefix }} {% endif -%}
+                {%- if section.settings.proof_strong != blank -%}<strong>{{ section.settings.proof_strong }}</strong>{%- endif -%}
+                {%- if section.settings.proof_text != blank -%}{% if section.settings.proof_strong != blank %} {% endif %}{{ section.settings.proof_text }}{%- endif -%}
+              </span>
+            {%- endif -%}
           </div>
         {%- endif -%}
       </div>
+    {%- elsif request.design_mode -%}
+      <p class="cs-dh-proofhint">Social proof row (faces, star row, join line) is hidden because it is empty. Theme editor &#9656; CraftStory Duo Hero &#9656; Social proof: add Customer face blocks, set Star row, and fill the Join line. Leave them empty until the reviews and the count are real.</p>
     {%- endif -%}
 
     {%- if section.settings.trust_line != blank -%}
@@ -169,12 +193,14 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" },
     { "type": "text", "id": "cta_note", "label": "Line under the button", "default": "100% money-back guarantee · Delivered by email" },
     { "type": "header", "content": "Social proof" },
-    { "type": "paragraph", "content": "Customer faces and counts go here. Add a face only when it is a real customer who agreed to it, and leave the count empty until the number is real — the whole block hides itself while both are empty." },
-    { "type": "text", "id": "faces_count", "label": "Count bubble", "info": "For example 50+. Shown at the end of the face row." },
-    { "type": "text", "id": "proof_strong", "label": "Bold part of the line" },
-    { "type": "text", "id": "proof_text", "label": "Rest of the line", "info": "For example: couples who turned their story into a song" },
+    { "type": "paragraph", "content": "Three rows, in the reference order: the face row, then the gold star row directly under it, then the join line. Every part starts empty and hides itself while it is empty, so the cluster only appears once the numbers are real. Add a face only when it is a real customer who agreed to it." },
+    { "type": "text", "id": "faces_count", "label": "Count bubble", "info": "For example 50+. Sits at the end of the face row. Leave empty until the number is real." },
+    { "type": "text", "id": "proof_stars", "label": "Star row (1-5)", "info": "Type 5 to show the five-gold-star row directly under the faces. Leave empty until you have real reviews behind it — empty means the row is not rendered at all." },
+    { "type": "text", "id": "proof_prefix", "label": "Join line — plain first word", "default": "Join", "info": "Plain text before the bold part, the way the reference starts the line with Join. On its own it renders nothing." },
+    { "type": "text", "id": "proof_strong", "label": "Join line — bold part", "info": "The number and the phrase after it, all in bold, so the count is what the eye lands on. Fill it the day the count is real, in this shape: <count> couples who turned their story into a song. No number here until it is one we can stand behind." },
+    { "type": "text", "id": "proof_text", "label": "Join line — plain tail (optional)", "info": "Anything that should stay unbolded after the bold part." },
     { "type": "header", "content": "Trust line" },
-    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free preview in minutes | Nothing to ship | First dance · Anniversaries · Proposals", "info": "Separate the parts with a vertical bar. Each one gets a dot between." },
+    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free preview in minutes | Nothing to ship | Anniversaries · Weddings · Proposals · Just because", "info": "Three parts separated by a vertical bar, split the way the reference splits it: speed, then shipping, then the occasions. Each part gets a dot between, and at phone width the occasions drop onto a second line on their own. Do not put a turnaround promise here until it is one we keep." },
     { "type": "header", "content": "Hero video" },
     { "type": "checkbox", "id": "autoplay", "label": "Play silently on load, with a Tap-to-unmute button", "default": true, "info": "How the competitor's hero works. The clip loops muted, and one tap turns the sound on." },
     { "type": "text", "id": "unmute_label", "label": "Unmute button label", "default": "Tap to unmute" },
@@ -220,7 +246,7 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
   box-shadow:0 12px 34px rgba(0,0,0,.34);transition:transform .18s ease}
 .cs-dh-play svg{width:38%;height:38%;margin-left:8%}
 .cs-dh-cover:hover .cs-dh-play{transform:translate(-50%,-50%) scale(1.09)}
-/* pastille centree, comme leur "Tap to Unmute", avec l'anneau qui pulse */
+/* centred pill, like their Tap to Unmute, with the pulsing ring */
 .cs-dh-unmute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;
   display:inline-flex;align-items:center;gap:9px;border:0;cursor:pointer;font:inherit;
   font-weight:700;font-size:clamp(.88rem,2.4vw,1rem);color:#fff;
@@ -254,7 +280,7 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
 .cs-dh-ctasub{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;
   color:var(--cs-ink2);line-height:1.35;text-align:left}
 .cs-dh-ctasub svg{width:16px;height:16px;flex:0 0 16px;color:var(--cs-duo-green)}
-.cs-dh-proof{display:flex;flex-direction:column;align-items:center;gap:12px}
+.cs-dh-proof{display:flex;flex-direction:column;align-items:center;gap:14px}
 .cs-dh-faces{display:flex;align-items:center}
 .cs-dh-face{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--cs-card);
   object-fit:cover;margin-left:-10px;box-shadow:0 2px 8px rgba(36,27,58,.14)}
@@ -266,12 +292,17 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
 .cs-dh-proofstars{color:var(--cs-star);font-size:1rem;letter-spacing:.14em;line-height:1}
 .cs-dh-prooflabel{font-size:.9rem;font-weight:500;color:var(--cs-ink2);line-height:1.4}
 .cs-dh-prooflabel strong{color:var(--cs-ink);font-weight:800}
+/* design-mode only: never rendered for a visitor */
+.cs-dh-proofhint{max-width:34em;font-size:.78rem;font-weight:600;line-height:1.45;color:var(--cs-ink2);
+  background:var(--cs-paper2);border:1px dashed var(--cs-line);border-radius:var(--cs-r);padding:10px 14px}
+/* trust line: two short parts and a trailing dot on line 1, the occasions wrap to line 2 on their own */
 .cs-dh-trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:7px 11px;font-size:.83rem;font-weight:600;color:var(--cs-ink3);line-height:1.4;max-width:34em}
+  gap:6px;font-size:.75rem;font-weight:600;color:var(--cs-ink2);line-height:1.45;max-width:34em;opacity:.8}
+.cs-dh-trust>span{min-width:0}
 .cs-dh-sep{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex:0 0 3px}
 @media(max-width:560px){
   .cs-dh-inner{gap:18px;padding:12px 16px 40px}
-  /* jamais de texte tronque : le badge passe a la ligne plutot que de deborder */
+  /* never clip text: the badge wraps instead of overflowing */
   .cs-dh-badge{white-space:normal;text-align:center;line-height:1.35;padding:7px 14px}
   .cs-dh-title{max-width:none}
   .cs-dh-face,.cs-dh-facecount{width:32px;height:32px;margin-left:-8px}

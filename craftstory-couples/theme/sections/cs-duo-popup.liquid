@@ -1,0 +1,446 @@
+{%- liquid
+  assign pop_live = false
+  if section.settings.enable and request.design_mode == false
+    assign pop_live = true
+  endif
+  assign pop_pad = section.settings.pad | default: 12
+  assign pop_radius = section.settings.radius | default: 0
+  assign pop_max = section.settings.max_width | default: 440
+  assign pop_delay = section.settings.delay_seconds | default: 6
+  assign pop_scroll = section.settings.scroll_percent | default: 40
+  assign pop_days = section.settings.repeat_days
+  assign pop_points = 0
+  for block in section.blocks
+    if block.settings.text != blank
+      assign pop_points = pop_points | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if section.settings.enable or request.design_mode -%}
+<div class="cs cs-duo-popup cs-pop-{{ section.settings.theme }}{% if request.design_mode %} cs-pop-preview{% endif %}"
+     style="--cs-duo-pop-pad:{{ pop_pad }}px;--cs-duo-pop-r:{{ pop_radius }}px;--cs-duo-pop-max:{{ pop_max }}px;"
+     data-cs-pop
+     data-cs-pop-key="cs-duo-popup:{{ section.id }}"
+     data-cs-pop-store="{{ section.settings.store }}"
+     data-cs-pop-trigger="{{ section.settings.trigger }}"
+     data-cs-pop-delay="{{ pop_delay }}"
+     data-cs-pop-scroll="{{ pop_scroll }}"
+     data-cs-pop-days="{{ pop_days }}"
+     {% if pop_live %}data-cs-pop-live="1"{% endif %}
+     {% unless request.design_mode %}hidden{% endunless %}>
+
+  <div class="cs-pop-overlay" data-cs-pop-overlay{% if request.design_mode %} aria-hidden="true"{% endif %}></div>
+
+  <div class="cs-pop-modal" role="dialog" aria-modal="true"
+       aria-label="{{ section.settings.dialog_label | default: 'CraftStory Couples' | escape }}"
+       tabindex="-1" data-cs-pop-dialog>
+
+    <button type="button" class="cs-pop-close" data-cs-pop-close
+            aria-label="{{ section.settings.close_label | default: 'Close' | escape }}">
+      <svg class="cs-pop-x" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <path d="M4 4l10 10M14 4L4 14"/>
+      </svg>
+    </button>
+
+    {%- if section.settings.image != blank -%}
+      <div class="cs-pop-media">
+        <img src="{{ section.settings.image | image_url: width: 900 }}"
+             alt="{{ section.settings.image.alt | default: '' | escape }}"
+             width="900" height="600" loading="lazy" decoding="async">
+      </div>
+    {%- endif -%}
+
+    <div class="cs-pop-body">
+
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="cs-eyebrow cs-pop-eyebrow">&#10022; {{ section.settings.eyebrow }}</span>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="cs-h2 cs-pop-title">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <p class="cs-pop-text">{{ section.settings.body }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.offer_line != blank -%}
+        <p class="cs-pop-offer">{{ section.settings.offer_line }}</p>
+      {%- endif -%}
+
+      {%- if pop_points > 0 -%}
+        <ul class="cs-pop-points">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.text != blank -%}
+              <li class="cs-pop-point" {{ block.shopify_attributes }}>
+                <span class="cs-pop-tick" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                </span>
+                <span>{{ block.settings.text }}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.cta_label != blank -%}
+        <a class="cs-btn cs-btn-primary cs-pop-cta" href="{{ section.settings.cta_link | default: '#' }}" data-cs-pop-accept>
+          {%- if section.settings.cta_icon != blank -%}<span class="cs-pop-cta-ico" aria-hidden="true">{{ section.settings.cta_icon }}</span>{%- endif -%}
+          <span>{{ section.settings.cta_label }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- if section.settings.decline_label != blank -%}
+        <button type="button" class="cs-pop-decline" data-cs-pop-close>{{ section.settings.decline_label }}</button>
+      {%- endif -%}
+
+      {%- if section.settings.note != blank -%}
+        <p class="cs-pop-note">{{ section.settings.note }}</p>
+      {%- endif -%}
+
+      {%- if request.design_mode -%}
+        <p class="cs-pop-hint">
+          {%- if section.settings.enable -%}
+            Preview only. On the storefront this opens over the page
+            {%- case section.settings.trigger -%}
+              {%- when 'scroll' -%} after the visitor scrolls {{ pop_scroll }}% of the page
+              {%- when 'exit' -%} when the pointer leaves towards the browser bar (on phones, after {{ pop_delay }}s)
+              {%- else -%} {{ pop_delay }}s after the page loads
+            {%- endcase -%}
+            , and it never opens again for anyone who closed it
+            {%- if pop_days == 0 -%}.{%- else -%} in the last {{ pop_days }} days.{%- endif -%}
+          {%- else -%}
+            This popup is OFF and never shows on the storefront. Turn on &#9656; Behaviour &#9656; Enable the popup once your offer is real.
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+
+    </div>
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CraftStory Duo Popup",
+  "settings": [
+    { "type": "paragraph", "content": "The promo popup. It ships OFF: nothing renders on the storefront until you enable it. It closes on the button, on a click outside, and on Escape, keeps the keyboard inside the dialog while it is open, and remembers the visitor who closed it so it does not come back on every page." },
+
+    { "type": "header", "content": "Behaviour" },
+    { "type": "checkbox", "id": "enable", "label": "Enable the popup", "default": false, "info": "Off until you have a real offer to put in it. While it is off the section renders nothing on the storefront and stays visible here as a preview." },
+    { "type": "select", "id": "trigger", "label": "When it opens", "default": "time", "options": [
+      { "value": "time", "label": "After a delay" },
+      { "value": "scroll", "label": "After scrolling down the page" },
+      { "value": "exit", "label": "When the visitor moves to leave" }
+    ] },
+    { "type": "range", "id": "delay_seconds", "label": "Delay before it opens", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 6, "info": "Also the phone fallback for the leave trigger, since phones have no pointer to follow." },
+    { "type": "range", "id": "scroll_percent", "label": "Scroll depth that opens it", "min": 10, "max": 90, "step": 5, "unit": "%", "default": 40 },
+    { "type": "select", "id": "store", "label": "How long a close is remembered", "default": "local", "options": [
+      { "value": "local", "label": "Across visits (localStorage)" },
+      { "value": "session", "label": "This browser tab only (sessionStorage)" }
+    ], "info": "Either way it never reopens during the same visit once it has been closed." },
+    { "type": "range", "id": "repeat_days", "label": "Days before it may open again", "min": 0, "max": 90, "step": 1, "unit": "d", "default": 30, "info": "0 means never again for that visitor." },
+
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "For couples" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Hear a sample before you order" },
+    { "type": "textarea", "id": "body", "label": "Text", "default": "Listen to a demo and see how the song and the animated video come together." },
+    { "type": "text", "id": "offer_line", "label": "Offer line", "info": "EMPTY ON PURPOSE. This is the one line for your real offer, and it is not rendered at all while it is empty. Never a countdown, an expiry, an 'only N left', a rating or a customer count — the store's copy rules forbid invented urgency and invented numbers." },
+    { "type": "text", "id": "cta_icon", "label": "Icon before the button label", "default": "♫" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Hear a Sample" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path the button should open, for example /pages/couples-start. Clicking it also counts as closing the popup, so it does not reopen on the next page." },
+    { "type": "text", "id": "decline_label", "label": "Decline link under the button", "default": "No thanks" },
+    { "type": "text", "id": "note", "label": "Small line at the bottom", "info": "Optional, hidden while empty. Keep it to promises we already keep elsewhere on the page." },
+    { "type": "image_picker", "id": "image", "label": "Image at the top (optional)", "info": "Landscape 3:2. Loaded at 900px wide." },
+
+    { "type": "header", "content": "Appearance" },
+    { "type": "select", "id": "theme", "label": "Colour", "default": "paper", "options": [
+      { "value": "paper", "label": "Paper (light)" },
+      { "value": "night", "label": "Night (dark)" }
+    ] },
+    { "type": "range", "id": "max_width", "label": "Card width", "min": 320, "max": 560, "step": 10, "unit": "px", "default": 440 },
+    { "type": "range", "id": "pad", "label": "Card padding", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 12, "info": "12px on all four sides is the reference popup's own padding. The text inside keeps its own breathing room." },
+    { "type": "range", "id": "radius", "label": "Corner radius", "min": 0, "max": 30, "step": 1, "unit": "px", "default": 0, "info": "0 matches the reference popup's square corners. 14 brings it in line with the rest of the CraftStory cards." },
+
+    { "type": "header", "content": "Labels" },
+    { "type": "text", "id": "dialog_label", "label": "Dialog name for screen readers", "default": "CraftStory Couples" },
+    { "type": "text", "id": "close_label", "label": "Close button label for screen readers", "default": "Close" }
+  ],
+  "blocks": [
+    { "type": "point", "name": "Bullet", "limit": 4, "settings": [
+      { "type": "text", "id": "text", "label": "Bullet", "info": "Empty bullets are skipped. No numbers, ratings or customer counts here." }
+    ] }
+  ],
+  "presets": [ { "name": "CraftStory Duo Popup", "blocks": [] } ]
+}
+{% endschema %}
+
+{% stylesheet %}
+.cs-duo-popup{
+  --cs-duo-pop-z:9990;
+  --cs-duo-pop-pad:12px;
+  --cs-duo-pop-r:0px;
+  --cs-duo-pop-max:440px;
+  --cs-duo-pop-bw:1px;
+  --cs-duo-pop-shx:10px;
+  --cs-duo-pop-shy:12px;
+  --cs-duo-pop-shb:20px;
+  --cs-duo-pop-bg:var(--cs-card);
+  --cs-duo-pop-ink:var(--cs-ink);
+  --cs-duo-pop-ink2:var(--cs-ink2);
+  --cs-duo-pop-border:color-mix(in srgb, var(--cs-ink) 10%, transparent);
+  --cs-duo-pop-shc:color-mix(in srgb, var(--cs-ink) 10%, transparent);
+  position:fixed;inset:0;z-index:var(--cs-duo-pop-z);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+}
+.cs-duo-popup[hidden]{display:none}
+.cs-pop-night{
+  --cs-duo-pop-bg:var(--cs-night);
+  --cs-duo-pop-ink:var(--cs-night-ink);
+  --cs-duo-pop-ink2:var(--cs-night-ink2);
+  --cs-duo-pop-border:color-mix(in srgb, var(--cs-night-ink) 14%, transparent);
+}
+.cs-pop-overlay{
+  position:absolute;inset:0;background:var(--cs-night);opacity:.62;cursor:pointer;
+}
+.cs-pop-modal{
+  position:relative;width:100%;max-width:var(--cs-duo-pop-max);
+  background:var(--cs-duo-pop-bg);color:var(--cs-duo-pop-ink);
+  border:var(--cs-duo-pop-bw) solid var(--cs-duo-pop-border);
+  border-radius:var(--cs-duo-pop-r);
+  box-shadow:var(--cs-duo-pop-shx) var(--cs-duo-pop-shy) var(--cs-duo-pop-shb) var(--cs-duo-pop-shc);
+  padding:var(--cs-duo-pop-pad);
+  max-height:calc(100vh - 32px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  text-align:center;
+}
+@supports (max-height: 100dvh){
+  .cs-pop-modal{max-height:calc(100dvh - 32px)}
+}
+.cs-pop-close{
+  position:absolute;top:calc(var(--cs-duo-pop-pad) + 6px);right:calc(var(--cs-duo-pop-pad) + 6px);
+  z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:var(--cs-pill);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:var(--cs-duo-pop-bg);color:var(--cs-duo-pop-ink);
+  box-shadow:var(--cs-sh-sm);
+}
+.cs-pop-close:hover{color:var(--cs-coral)}
+.cs-pop-x{width:18px;height:18px}
+.cs-pop-media{
+  margin:0 0 4px;border-radius:calc(var(--cs-duo-pop-r) * .7);overflow:hidden;background:var(--cs-paper2);
+}
+.cs-pop-media img{width:100%;height:auto;aspect-ratio:3 / 2;object-fit:cover}
+.cs-pop-body{
+  display:flex;flex-direction:column;align-items:center;gap:11px;
+  padding:18px 14px 20px;
+}
+.cs-pop-eyebrow{color:var(--cs-gold)}
+.cs-pop-night .cs-pop-eyebrow{color:var(--cs-star)}
+.cs-pop-title{font-size:clamp(1.35rem,5.4vw,1.75rem);color:var(--cs-duo-pop-ink)}
+.cs-pop-text{color:var(--cs-duo-pop-ink2);font-size:1rem;line-height:1.5}
+.cs-pop-offer{
+  font-family:var(--cs-serif);font-weight:600;font-size:1.05rem;line-height:1.35;
+  color:var(--cs-duo-pop-ink);
+  background:var(--cs-gold-soft);border-radius:var(--cs-pill);
+  padding:9px 16px;
+}
+.cs-pop-night .cs-pop-offer{background:var(--cs-night-line);color:var(--cs-night-ink)}
+.cs-pop-points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
+.cs-pop-point{display:flex;align-items:flex-start;gap:9px;font-size:.95rem;color:var(--cs-duo-pop-ink2);line-height:1.45}
+.cs-pop-tick{flex:0 0 auto;width:18px;height:18px;margin-top:1px;color:var(--cs-coral)}
+.cs-pop-tick svg{width:18px;height:18px;display:block}
+.cs-pop-cta{width:100%;margin-top:3px}
+.cs-pop-cta-ico{font-size:1.05em;line-height:1}
+.cs-pop-decline{
+  background:none;border:0;padding:2px 6px;cursor:pointer;
+  font-family:var(--cs-sans);font-size:.92rem;font-weight:600;
+  color:var(--cs-duo-pop-ink2);text-decoration:underline;text-underline-offset:3px;
+}
+.cs-pop-decline:hover{color:var(--cs-duo-pop-ink)}
+.cs-pop-note{font-size:.8rem;line-height:1.45;color:var(--cs-duo-pop-ink2);opacity:.95}
+.cs-pop-hint{
+  margin-top:4px;font-size:.78rem;line-height:1.45;text-align:left;
+  color:var(--cs-duo-pop-ink2);
+  border-top:1px dashed var(--cs-duo-pop-border);padding-top:9px;width:100%;
+}
+.cs-duo-popup .cs-pop-modal{opacity:0;transform:translateY(14px) scale(.985);transition:opacity .22s ease,transform .26s cubic-bezier(.2,.75,.3,1)}
+.cs-duo-popup .cs-pop-overlay{opacity:0;transition:opacity .22s ease}
+.cs-duo-popup.cs-pop-open .cs-pop-modal{opacity:1;transform:none}
+.cs-duo-popup.cs-pop-open .cs-pop-overlay{opacity:.62}
+.cs-pop-preview{position:static;display:block;padding:24px 16px;background:var(--cs-paper)}
+.cs-pop-preview .cs-pop-overlay{display:none}
+.cs-pop-preview .cs-pop-modal{margin:0 auto;opacity:1;transform:none;max-height:none}
+html.cs-pop-lock{overflow:hidden}
+@media(min-width:750px){
+  .cs-pop-body{padding:22px 20px 24px;gap:12px}
+  .cs-pop-cta{width:auto;min-width:230px}
+}
+@media(prefers-reduced-motion:reduce){
+  .cs-duo-popup .cs-pop-modal,.cs-duo-popup .cs-pop-overlay{transition:none}
+  .cs-duo-popup .cs-pop-modal{opacity:1;transform:none}
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+  function bin(root) {
+    try {
+      return root.getAttribute('data-cs-pop-store') === 'session' ? window.sessionStorage : window.localStorage;
+    } catch (e) { return null; }
+  }
+
+  function dismissed(root) {
+    var store = bin(root);
+    if (!store) return false;
+    var days = parseInt(root.getAttribute('data-cs-pop-days'), 10);
+    if (isNaN(days)) days = 0;
+    try {
+      var raw = store.getItem(root.getAttribute('data-cs-pop-key'));
+      if (!raw) return false;
+      if (days <= 0) return true;
+      var at = parseInt(raw, 10);
+      if (isNaN(at)) return true;
+      return (Date.now() - at) < days * 86400000;
+    } catch (e) { return false; }
+  }
+
+  function remember(root) {
+    var store = bin(root);
+    if (!store) return;
+    try { store.setItem(root.getAttribute('data-cs-pop-key'), String(Date.now())); } catch (e) {}
+  }
+
+  function setup(root) {
+    if (!root || root.dataset.csPopOn === '1') return;
+    if (!root.hasAttribute('data-cs-pop-live')) return;
+    if (window.Shopify && window.Shopify.designMode) return;
+    root.dataset.csPopOn = '1';
+
+    var dialog = root.querySelector('[data-cs-pop-dialog]');
+    if (!dialog) return;
+    if (dismissed(root)) return;
+
+    var open = false;
+    var last = null;
+    var timer = null;
+    var done = false;
+
+    function focusables() {
+      var out = [];
+      var all = dialog.querySelectorAll(FOCUSABLE);
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (el.offsetWidth || el.offsetHeight || el.getClientRects().length) out.push(el);
+      }
+      return out;
+    }
+
+    function onKey(e) {
+      if (!open) return;
+      var key = e.key || e.keyCode;
+      if (key === 'Escape' || key === 'Esc' || key === 27) {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (key !== 'Tab' && key !== 9) return;
+      var list = focusables();
+      if (!list.length) { e.preventDefault(); dialog.focus(); return; }
+      var first = list[0];
+      var lastEl = list[list.length - 1];
+      var active = document.activeElement;
+      if (!dialog.contains(active)) { e.preventDefault(); (e.shiftKey ? lastEl : first).focus(); return; }
+      if (e.shiftKey && (active === first || active === dialog)) { e.preventDefault(); lastEl.focus(); }
+      else if (!e.shiftKey && active === lastEl) { e.preventDefault(); first.focus(); }
+    }
+
+    function show() {
+      if (open || done) return;
+      if (dismissed(root)) { teardownTriggers(); return; }
+      open = true;
+      teardownTriggers();
+      try { last = document.activeElement; } catch (e) { last = null; }
+      root.hidden = false;
+      document.documentElement.classList.add('cs-pop-lock');
+      window.requestAnimationFrame(function () { root.classList.add('cs-pop-open'); });
+      document.addEventListener('keydown', onKey, true);
+      // Focus the dialog itself, so a screen reader announces the popup's own
+      // label first instead of the close button, and Tab then walks the content.
+      dialog.focus();
+    }
+
+    function close() {
+      done = true;
+      remember(root);
+      document.removeEventListener('keydown', onKey, true);
+      document.documentElement.classList.remove('cs-pop-lock');
+      root.classList.remove('cs-pop-open');
+      open = false;
+      window.setTimeout(function () { root.hidden = true; }, 240);
+      if (last && last.focus) { try { last.focus(); } catch (e) {} }
+    }
+
+    var closers = root.querySelectorAll('[data-cs-pop-close]');
+    for (var i = 0; i < closers.length; i++) closers[i].addEventListener('click', function (e) { e.preventDefault(); close(); });
+
+    var overlay = root.querySelector('[data-cs-pop-overlay]');
+    if (overlay) overlay.addEventListener('click', function () { close(); });
+
+    var accept = root.querySelector('[data-cs-pop-accept]');
+    if (accept) accept.addEventListener('click', function () { remember(root); done = true; });
+
+    function onScroll() {
+      var want = parseInt(root.getAttribute('data-cs-pop-scroll'), 10) || 40;
+      var doc = document.documentElement;
+      var reach = doc.scrollHeight - window.innerHeight;
+      var pct = reach > 0 ? (window.pageYOffset || doc.scrollTop) / reach * 100 : 100;
+      if (pct >= want) show();
+    }
+
+    function onOut(e) {
+      if (e.relatedTarget || e.toElement) return;
+      if (e.clientY > 0) return;
+      show();
+    }
+
+    function teardownTriggers() {
+      if (timer) { window.clearTimeout(timer); timer = null; }
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('mouseout', onOut);
+    }
+
+    var delay = (parseFloat(root.getAttribute('data-cs-pop-delay')) || 6) * 1000;
+    var mode = root.getAttribute('data-cs-pop-trigger') || 'time';
+    var coarse = !(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+
+    if (mode === 'scroll') {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    } else if (mode === 'exit' && !coarse) {
+      document.addEventListener('mouseout', onOut);
+    } else {
+      timer = window.setTimeout(show, delay);
+    }
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var roots = host.querySelectorAll('[data-cs-pop]');
+    for (var i = 0; i < roots.length; i++) setup(roots[i]);
+    if (host !== document && host.matches && host.matches('[data-cs-pop]')) setup(host);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); });
+  else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+  document.addEventListener('shopify:section:unload', function (e) {
+    if (e.target && e.target.querySelector && e.target.querySelector('[data-cs-pop]')) {
+      document.documentElement.classList.remove('cs-pop-lock');
+    }
+  });
+})();
+{% endjavascript %}

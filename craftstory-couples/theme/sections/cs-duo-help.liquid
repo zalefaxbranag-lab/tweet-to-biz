@@ -1,0 +1,138 @@
+{%- liquid
+  assign dhelp_email = section.settings.email | strip
+
+  # the sentence exists as soon as any of its three parts is filled
+  assign dhelp_line = false
+  if section.settings.intro != blank or dhelp_email != blank or section.settings.tail != blank
+    assign dhelp_line = true
+  endif
+
+  assign dhelp_channels = 0
+  for block in section.blocks
+    if block.type == 'channel' and block.settings.label != blank
+      assign dhelp_channels = dhelp_channels | plus: 1
+    endif
+  endfor
+
+  assign dhelp_any = false
+  if section.settings.heading != blank or dhelp_line or dhelp_channels > 0
+    assign dhelp_any = true
+  endif
+-%}
+{%- if dhelp_any or request.design_mode -%}
+<div class="cs cs-duo-help cs-dhelp--{{ section.settings.bg | default: 'night' }}">
+  <div class="cs-wrap">
+    <div class="cs-dhelp-inner">
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="cs-h2 cs-dhelp-h">
+          {{- section.settings.heading -}}
+          {%- if section.settings.highlight != blank -%} <span class="cs-dhelp-hl">{{ section.settings.highlight }}</span>{%- endif -%}
+        </h2>
+      {%- endif -%}
+
+      {%- if dhelp_line -%}
+        <p class="cs-dhelp-line">
+          {%- if section.settings.intro != blank -%}{{ section.settings.intro }} {% endif -%}
+          {%- if dhelp_email != blank -%}
+            <a class="cs-dhelp-mail" href="mailto:{{ dhelp_email | escape }}" rel="noreferrer noopener">{{ dhelp_email | escape }}</a>
+          {%- endif -%}
+          {%- if section.settings.tail != blank -%}{{ section.settings.tail }}{%- endif -%}
+        </p>
+      {%- endif -%}
+
+      {%- if dhelp_channels > 0 -%}
+        <p class="cs-dhelp-channels">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'channel' and block.settings.label != blank -%}
+              {%- if block.settings.link != blank -%}
+                <a class="cs-dhelp-ch" href="{{ block.settings.link }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</a>
+              {%- else -%}
+                <span class="cs-dhelp-ch cs-dhelp-ch--plain" {{ block.shopify_attributes }}>{{ block.settings.label }}</span>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </p>
+      {%- endif -%}
+
+      {%- if dhelp_any == false and request.design_mode -%}
+        <p class="cs-dhelp-hint">Closing help block is empty. Theme editor &#9656; CraftStory Duo Help: fill the Heading, the Line before the email and the Email address. Leave "After the email" empty until you have decided a reply time you actually keep.</p>
+      {%- elsif dhelp_email == blank and request.design_mode -%}
+        <p class="cs-dhelp-hint">No support address set. Theme editor &#9656; CraftStory Duo Help &#9656; Email address.</p>
+      {%- endif -%}
+
+    </div>
+  </div>
+</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "CraftStory Duo Help",
+  "tag": "section",
+  "settings": [
+    { "type": "paragraph", "content": "The closing block, last section before the footer: one centred heading, one centred line of reassurance, and the support address as a mailto link inside that line. Deliberately tight padding (30px / 39px on phones, 40px / 52px from 750px up) so it reads as the page signing off rather than as another section." },
+    { "type": "header", "content": "Heading" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Still Have Questions?" },
+    { "type": "text", "id": "highlight", "label": "Last words, emphasised (optional)", "info": "Rendered in the accent colour after the heading. Leave empty for a plain heading — that is how the reference renders, because its highlight colour is set to the same colour as the text." },
+    { "type": "header", "content": "The line" },
+    { "type": "paragraph", "content": "The line is built in three parts so the address stays a setting: text, then the address as a link, then anything after it. The third part is glued straight onto the link, with no space, so a clause starting with a dash reads correctly." },
+    { "type": "text", "id": "intro", "label": "Line before the email", "default": "We are here to help before you order. Email us anytime at" },
+    { "type": "text", "id": "email", "label": "Email address", "default": "Sarah@craftstory.co", "info": "Rendered as a mailto link. Use an inbox that is actually read every day." },
+    { "type": "text", "id": "tail", "label": "After the email (optional)", "info": "The reply-time clause, glued straight onto the address. Empty by default on purpose: no reply time is promised until you have chosen one you keep. Fill it in your own words, starting with the dash, for example: — we usually reply the same day." },
+    { "type": "header", "content": "Band" },
+    { "type": "select", "id": "bg", "label": "Background", "default": "night", "options": [
+      { "value": "night", "label": "Night (matches the reference's dark closing band)" },
+      { "value": "deep", "label": "Night, one shade deeper" },
+      { "value": "paper2", "label": "Sand" },
+      { "value": "paper", "label": "Paper" },
+      { "value": "card", "label": "White" }
+    ] }
+  ],
+  "blocks": [
+    { "type": "channel", "name": "Extra contact line", "limit": 4, "settings": [
+      { "type": "text", "id": "label", "label": "Label", "info": "An extra way to reach you, shown under the line. The reference has none, so leave this out unless you really answer there." },
+      { "type": "url", "id": "link", "label": "Link", "info": "Optional. Without a link the label is shown as plain text." }
+    ] }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Help" }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-help{
+  --cs-duo-help-bg:var(--cs-night);
+  --cs-duo-help-ink:var(--cs-night-ink);
+  --cs-duo-help-ink2:var(--cs-night-ink2);
+  --cs-duo-help-accent:var(--cs-star);
+  --cs-duo-help-deep:#140F26;
+  background:var(--cs-duo-help-bg);color:var(--cs-duo-help-ink)}
+.cs-dhelp--deep{--cs-duo-help-bg:var(--cs-duo-help-deep)}
+.cs-dhelp--paper2{--cs-duo-help-bg:var(--cs-paper2);--cs-duo-help-ink:var(--cs-ink);--cs-duo-help-ink2:var(--cs-ink2);--cs-duo-help-accent:var(--cs-coral)}
+.cs-dhelp--paper{--cs-duo-help-bg:var(--cs-paper);--cs-duo-help-ink:var(--cs-ink);--cs-duo-help-ink2:var(--cs-ink2);--cs-duo-help-accent:var(--cs-coral)}
+.cs-dhelp--card{--cs-duo-help-bg:var(--cs-card);--cs-duo-help-ink:var(--cs-ink);--cs-duo-help-ink2:var(--cs-ink2);--cs-duo-help-accent:var(--cs-coral)}
+/* the reference band is deliberately short: 30/39 on phones, 40/52 from 750px */
+.cs-dhelp-inner{display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:12px;padding:30px 0 39px;max-width:70em;margin:0 auto}
+.cs-dhelp-h{color:var(--cs-duo-help-ink);font-weight:700}
+.cs-dhelp-hl{color:var(--cs-duo-help-accent)}
+.cs-dhelp-line{color:var(--cs-duo-help-ink2);font-size:clamp(1rem,2.2vw,1.08rem);line-height:1.6;
+  max-width:46em;text-wrap:pretty}
+.cs-dhelp-mail{color:var(--cs-duo-help-ink);font-weight:600;text-decoration:underline;
+  text-underline-offset:.3em;text-decoration-thickness:1.5px;overflow-wrap:anywhere;
+  transition:color .18s ease}
+.cs-dhelp-mail:hover,.cs-dhelp-mail:focus-visible{color:var(--cs-duo-help-accent)}
+.cs-dhelp-channels{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:8px 18px;font-size:.92rem;font-weight:600;color:var(--cs-duo-help-ink2)}
+.cs-dhelp-ch{color:var(--cs-duo-help-ink);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:1px;overflow-wrap:anywhere}
+.cs-dhelp-ch:hover{color:var(--cs-duo-help-accent)}
+.cs-dhelp-ch--plain{border-bottom:0;color:var(--cs-duo-help-ink2)}
+/* design mode only: a visitor never sees this */
+.cs-dhelp-hint{max-width:40em;font-size:.78rem;font-weight:600;line-height:1.45;
+  color:var(--cs-duo-help-ink2);border:1px dashed currentColor;border-radius:var(--cs-r);
+  padding:10px 14px}
+@media(min-width:750px){
+  .cs-dhelp-inner{gap:16px;padding:40px 0 52px}
+}
+{% endstylesheet %}

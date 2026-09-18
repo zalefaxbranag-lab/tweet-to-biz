@@ -1,59 +1,297 @@
-{%- if section.blocks.size > 0 -%}
-<div class="cs cs-duo-trust">
-  <div class="cs-wrap cs-tr-in">
-    {%- for block in section.blocks -%}
-      {%- if block.type == 'item' and block.settings.text != blank -%}
-        <div class="cs-tr-item" {{ block.shopify_attributes }}>
-          {%- case block.settings.icon -%}
-            {%- when 'stars' -%}<span class="cs-tr-stars" aria-hidden="true">★★★★★</span>
-            {%- when 'clock' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2" stroke-linecap="round"/></svg>
-            {%- when 'mail' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6" stroke-linecap="round"/></svg>
-            {%- when 'shield' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            {%- when 'note' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M9 18V6.5l9-2V16" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>
-          {%- endcase -%}
-          <span class="cs-tr-t">{{ block.settings.text }}</span>
-        </div>
+{%- comment -%}
+  CraftStory Duo Trust — three-benefit icon bar.
+  Structural clone of the reference icon bar: no heading, one centred icon card per item
+  (filled check mark, bold serif title, one line of detail), three columns on desktop with a
+  4px gutter, and a two-up snap carousel with dots underneath at phone width.
+  Nothing here states a customer count, a review count or a turnaround: the delivery promise
+  lives in the third block's title so the owner writes his own.
+{%- endcomment -%}
+
+{%- assign ib_count = section.blocks.size -%}
+
+{%- if ib_count > 0 or request.design_mode -%}
+<div class="cs cs-duo-trust cs-ib cs-ib-ico-{{ section.settings.icon_color }} cs-ib-style-{{ section.settings.card_style }}{% if section.settings.mobile_carousel and ib_count > 1 %} cs-ib-slider{% endif %}"
+  style="--cs-duo-cols:{{ section.settings.columns_desktop }};--cs-duo-gap:{{ section.settings.gap_desktop }}px"
+  data-cs-ib>
+  <div class="cs-wrap cs-ib-wrap">
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="cs-h2 cs-ib-head">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if ib_count > 0 -%}
+      <div class="cs-ib-track" data-cs-ib-track>
+        {%- for block in section.blocks -%}
+          {%- assign ib_title = block.settings.title | default: block.settings.text -%}
+          <div class="cs-ib-slide" style="--i:{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <div class="cs-ib-card cs-ib-card--{{ section.settings.icon_size }}">
+              <span class="cs-ib-ico" aria-hidden="true">
+                {%- case block.settings.icon -%}
+                  {%- when 'stars' -%}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6l2.6 5.8 6.3.7-4.7 4.2 1.3 6.2L12 16.4l-5.5 3.1 1.3-6.2L3.1 9.1l6.3-.7z"/></svg>
+                  {%- when 'clock' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2" stroke-linecap="round"/></svg>
+                  {%- when 'mail' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6" stroke-linecap="round"/></svg>
+                  {%- when 'shield' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {%- when 'note' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 18V6.5l9-2V16" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/></svg>
+                  {%- when 'video' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="2.6" y="6" width="13" height="12" rx="2.4"/><path d="M15.6 11l5-3v8l-5-3z" stroke-linejoin="round"/></svg>
+                  {%- when 'heart' -%}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20.2S4.8 16 4.8 10.8A3.9 3.9 0 0 1 12 8.5a3.9 3.9 0 0 1 7.2 2.3c0 5.2-7.2 9.4-7.2 9.4z" stroke-linejoin="round"/></svg>
+                  {%- else -%}<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Zm-2.45 15.6L4.65 12.7l1.41-1.41 3.49 3.49 8.39-8.39 1.41 1.41L9.55 17.6Z"/></svg>
+                {%- endcase -%}
+              </span>
+              {%- if ib_title != blank or block.settings.body != blank -%}
+                <div class="cs-ib-info">
+                  {%- if ib_title != blank -%}<h3 class="cs-ib-t">{{ ib_title }}</h3>{%- endif -%}
+                  {%- if block.settings.body != blank -%}<div class="cs-ib-b"><p>{{ block.settings.body }}</p></div>{%- endif -%}
+                </div>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if section.settings.mobile_carousel -%}
+        {%- assign ib_pages = ib_count | plus: 1 | divided_by: 2 -%}
+        {%- if ib_pages > 1 -%}
+          <div class="cs-ib-dots" role="tablist" aria-label="Select a slide to show" data-cs-ib-dots>
+            {%- for i in (1..ib_pages) -%}
+              <button type="button" class="cs-ib-dot{% if forloop.first %} is-active{% endif %}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show benefits {{ forloop.index }} of {{ ib_pages }}" data-cs-ib-page="{{ forloop.index0 }}"></button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
       {%- endif -%}
-    {%- endfor -%}
+
+    {%- elsif request.design_mode -%}
+      <p class="cs-ib-empty">Add three Benefit blocks — Theme editor ▸ CraftStory Duo Trust ▸ Add block.</p>
+    {%- endif -%}
+
   </div>
 </div>
 {%- endif -%}
+
 {% schema %}
 {
   "name": "CraftStory Duo Trust",
   "settings": [
-    { "type": "paragraph", "content": "The thin reassurance band that sits directly under the hero. Keep every line true: no customer counts and no review counts until the numbers are real." }
+    { "type": "paragraph", "content": "The three-benefit icon bar: a check mark, a bold title and one line of detail, three across on desktop and two-up with dots on a phone. Keep every line true — no customer counts, no review counts, no star ratings, and state our own turnaround rather than copying anyone else's." },
+    { "type": "text", "id": "heading", "label": "Heading (optional)", "info": "The reference bar has no heading. Leave this empty and nothing is rendered." },
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "columns_desktop", "label": "Columns on desktop", "default": "3", "options": [
+      { "value": "2", "label": "2" }, { "value": "3", "label": "3" }, { "value": "4", "label": "4" }
+    ] },
+    { "type": "range", "id": "gap_desktop", "label": "Gap between cards on desktop", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 4 },
+    { "type": "checkbox", "id": "mobile_carousel", "label": "Swipeable two-up carousel on mobile", "default": true, "info": "How the reference behaves at phone width: two cards visible, 15px apart, swipe for the rest, dots underneath. Untick for a plain two-column grid." },
+    { "type": "header", "content": "Cards" },
+    { "type": "select", "id": "card_style", "label": "Card background", "default": "flat", "options": [
+      { "value": "flat", "label": "Flat — same paper as the section (reference)" },
+      { "value": "card", "label": "White card with a hairline border" }
+    ] },
+    { "type": "select", "id": "icon_size", "label": "Icon size", "default": "medium", "options": [
+      { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" }
+    ] },
+    { "type": "select", "id": "icon_color", "label": "Icon colour", "default": "coral", "options": [
+      { "value": "coral", "label": "Coral (reference accent)" },
+      { "value": "gold", "label": "Gold" },
+      { "value": "ink", "label": "Ink" }
+    ], "info": "The reference paints the check marks in its warm accent. Switch to gold if you want coral kept for the button alone." }
   ],
   "blocks": [
-    { "type": "item", "name": "Item", "limit": 5, "settings": [
-      { "type": "select", "id": "icon", "label": "Icon", "default": "shield", "options": [
-        { "value": "stars", "label": "Stars" }, { "value": "clock", "label": "Clock" },
-        { "value": "mail", "label": "Email" }, { "value": "shield", "label": "Shield" },
-        { "value": "note", "label": "Music note" }
+    { "type": "item", "name": "Benefit", "limit": 6, "settings": [
+      { "type": "select", "id": "icon", "label": "Icon", "default": "check", "options": [
+        { "value": "check", "label": "Check mark (reference)" },
+        { "value": "note", "label": "Music note" },
+        { "value": "video", "label": "Video" },
+        { "value": "heart", "label": "Heart" },
+        { "value": "clock", "label": "Clock" },
+        { "value": "mail", "label": "Email" },
+        { "value": "shield", "label": "Shield" },
+        { "value": "stars", "label": "Star" }
       ] },
-      { "type": "text", "id": "text", "label": "Text", "default": "Free preview first" }
+      { "type": "text", "id": "title", "label": "Title", "default": "Studio-Quality Song and Video", "info": "Two to five words, Title Case. For the delivery benefit, write the turnaround we actually keep." },
+      { "type": "textarea", "id": "body", "label": "Detail", "default": "One line that backs the title up.", "info": "One sentence, no full stop needed. Keep it short — at phone width two cards share the screen." },
+      { "type": "text", "id": "text", "label": "Short line (legacy)", "info": "The one-line version used by the older thin band. Only read when Title is empty, so old pages keep rendering. Fill Title instead." }
     ] }
   ],
   "presets": [
     { "name": "CraftStory Duo Trust", "blocks": [
-      { "type": "item", "settings": { "icon": "note", "text": "A song and a music video, both about you" } },
-      { "type": "item", "settings": { "icon": "clock", "text": "Free preview in minutes, not days" } },
-      { "type": "item", "settings": { "icon": "mail", "text": "Delivered by email — nothing to ship" } },
-      { "type": "item", "settings": { "icon": "shield", "text": "Full refund if you are not happy" } }
+      { "type": "item", "settings": {
+        "icon": "check",
+        "title": "Studio-Quality Song and Video",
+        "body": "A professionally produced song and an animated music video you will be proud to play for family and friends"
+      } },
+      { "type": "item", "settings": {
+        "icon": "check",
+        "title": "Written From YOUR Story",
+        "body": "Every word and every scene comes from the details you share: your names, how you met, the moments only the two of you remember"
+      } },
+      { "type": "item", "settings": {
+        "icon": "check",
+        "title": "Delivered Straight to Your Inbox",
+        "body": "Ready for the anniversary, the wedding or the moment you already have planned"
+      } }
     ] }
   ]
 }
 {% endschema %}
+
 {% stylesheet %}
-.cs-duo-trust{background:var(--cs-paper2);border-top:1px solid var(--cs-line);border-bottom:1px solid var(--cs-line)}
-.cs-tr-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:10px clamp(16px,2.6vw,34px);padding:clamp(13px,1.7vw,18px) 22px}
-.cs-tr-item{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:var(--cs-ink2);line-height:1.3}
-.cs-tr-item svg{width:17px;height:17px;flex:0 0 17px;color:var(--cs-gold)}
-.cs-tr-stars{color:var(--cs-star);letter-spacing:.06em;font-size:.95rem;line-height:1}
-@media(max-width:700px){
-  .cs-tr-in{justify-content:flex-start;gap:8px 18px;padding:12px 22px}
-  .cs-tr-item{font-size:.81rem}
-  .cs-tr-item svg{width:15px;height:15px;flex:0 0 15px}
+.cs-duo-trust{
+  background:var(--cs-paper);
+  padding-top:27px;padding-bottom:24px;
+  --cs-duo-check:var(--cs-coral-deep);
+  --cs-duo-card-bg:transparent;
+  --cs-duo-card-line:transparent;
+  --cs-duo-card-pad:14px 8px;
+  --cs-duo-ico:34px;
+  --cs-duo-slide-gap:15px;
+  --cs-duo-slide-edge:24px;
+}
+.cs-ib-ico-gold{--cs-duo-check:var(--cs-gold)}
+.cs-ib-ico-ink{--cs-duo-check:var(--cs-ink)}
+.cs-ib-style-card{--cs-duo-card-bg:var(--cs-card);--cs-duo-card-line:var(--cs-line);--cs-duo-card-pad:18px 14px}
+
+.cs-ib-wrap{display:flex;flex-direction:column;align-items:center;gap:13px}
+.cs-ib-head{text-align:center;margin:0 0 2px}
+.cs-ib-empty{font-size:.9rem;color:var(--cs-ink3);text-align:center}
+
+/* Plain two-up grid — mobile default when the carousel is off */
+.cs-ib-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--cs-duo-slide-gap);width:100%}
+
+/* Two-up snap carousel, bleeding to the screen edges with a 24px inset */
+.cs-ib-slider .cs-ib-track{
+  grid-template-columns:none;grid-auto-flow:column;
+  grid-auto-columns:calc((100% - var(--cs-duo-slide-gap)) / 2);
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;scroll-behavior:smooth;
+  padding:0 var(--cs-duo-slide-edge);
+  scroll-padding-inline-start:var(--cs-duo-slide-edge);
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.cs-ib-slider .cs-ib-track::-webkit-scrollbar{width:0;height:0;display:none}
+.cs-ib-slide{min-width:0;scroll-snap-align:start}
+
+.cs-ib-card{
+  height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;gap:9px;padding:var(--cs-duo-card-pad);
+  background:var(--cs-duo-card-bg);border:1px solid var(--cs-duo-card-line);border-radius:var(--cs-r);
+}
+.cs-ib-card--small{--cs-duo-ico:26px}
+.cs-ib-card--medium{--cs-duo-ico:34px}
+.cs-ib-card--large{--cs-duo-ico:42px}
+.cs-ib-ico{flex:0 0 auto;width:var(--cs-duo-ico);height:var(--cs-duo-ico);color:var(--cs-duo-check);line-height:0}
+.cs-ib-ico svg{width:100%;height:100%;display:block}
+.cs-ib-info{display:flex;flex-direction:column;gap:6px}
+.cs-ib-t{font-family:var(--cs-serif);font-weight:700;font-size:clamp(.96rem,3.1vw,1.16rem);
+  line-height:1.16;letter-spacing:-.01em;color:var(--cs-ink)}
+.cs-ib-b p{font-size:clamp(.78rem,2.4vw,.94rem);line-height:1.45;color:var(--cs-ink2)}
+
+.cs-ib-dots{display:flex;align-items:center;justify-content:center;gap:2px;margin-top:-2px}
+.cs-ib-dot{position:relative;width:22px;height:22px;padding:0;border:0;background:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none}
+.cs-ib-dot::before{content:"";position:absolute;inset:7px;border-radius:var(--cs-pill);
+  background:var(--cs-ink3);opacity:.35;transition:opacity .2s,background .2s,transform .2s}
+.cs-ib-dot.is-active::before{background:var(--cs-duo-check);opacity:1;transform:scale(1.15)}
+
+/* Reveal on scroll. The pre-animation state is only applied once the script is running,
+   so the cards stay visible when JavaScript does not. */
+.cs-ib-anim .cs-ib-card{opacity:0;transform:translateY(14px)}
+.cs-ib-anim.cs-ib-in .cs-ib-card{opacity:1;transform:none;
+  transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i, 0) * 80ms)}
+
+@media screen and (min-width:750px){
+  .cs-duo-trust{padding-top:36px;padding-bottom:32px;--cs-duo-card-pad:16px 12px}
+  .cs-ib-style-card{--cs-duo-card-pad:22px 18px}
+  .cs-ib-card--medium{--cs-duo-ico:38px}
+  .cs-ib-card--large{--cs-duo-ico:48px}
+  .cs-ib-wrap{gap:16px}
+  .cs-ib-track,.cs-ib-slider .cs-ib-track{
+    grid-auto-flow:row;grid-auto-columns:auto;
+    grid-template-columns:repeat(var(--cs-duo-cols, 3),minmax(0,1fr));
+    gap:var(--cs-duo-gap, 4px);
+    overflow:visible;padding:0;scroll-snap-type:none;
+  }
+  .cs-ib-dots{display:none}
+}
+
+@media screen and (max-width:749px){
+  /* mobile-full-page: the track owns the side padding so the cards can bleed off-screen */
+  .cs-ib-slider .cs-ib-wrap{padding:0}
+  .cs-ib-slider .cs-ib-head{padding:0 var(--cs-duo-slide-edge)}
 }
 {% endstylesheet %}
+
+{% javascript %}
+(function () {
+  function init(root) {
+    if (!root || root.dataset.csIbReady) return;
+    root.dataset.csIbReady = '1';
+
+    var track = root.querySelector('[data-cs-ib-track]');
+    var dots = root.querySelector('[data-cs-ib-dots]');
+
+    if ('IntersectionObserver' in window) {
+      root.classList.add('cs-ib-anim');
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            root.classList.add('cs-ib-in');
+            io.disconnect();
+            return;
+          }
+        }
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      io.observe(root);
+      // Safety net: never leave the cards hidden if the observer never fires.
+      setTimeout(function () { root.classList.add('cs-ib-in'); }, 2500);
+    }
+
+    if (!track || !dots) return;
+    var btns = Array.prototype.slice.call(dots.querySelectorAll('[data-cs-ib-page]'));
+    if (btns.length < 2) return;
+
+    function maxScroll() { return track.scrollWidth - track.clientWidth; }
+
+    function sync() {
+      var max = maxScroll();
+      var page = max > 4 ? Math.round((track.scrollLeft / max) * (btns.length - 1)) : 0;
+      for (var i = 0; i < btns.length; i++) {
+        var on = i === page;
+        btns[i].classList.toggle('is-active', on);
+        btns[i].setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+    }
+
+    btns.forEach(function (btn, i) {
+      btn.addEventListener('click', function () {
+        var max = maxScroll();
+        if (max <= 0) return;
+        track.scrollLeft = (max * i) / (btns.length - 1);
+      });
+    });
+
+    var timer;
+    track.addEventListener('scroll', function () {
+      clearTimeout(timer);
+      timer = setTimeout(sync, 70);
+    }, { passive: true });
+
+    window.addEventListener('resize', function () {
+      clearTimeout(timer);
+      timer = setTimeout(sync, 150);
+    });
+
+    sync();
+  }
+
+  function initAll() {
+    var nodes = document.querySelectorAll('[data-cs-ib]');
+    for (var i = 0; i < nodes.length; i++) init(nodes[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+  document.addEventListener('shopify:section:load', initAll);
+})();
+{% endjavascript %}

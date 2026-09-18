@@ -1,0 +1,257 @@
+{%- liquid
+  assign dct_pt = section.settings.padding_top | default: 40
+  assign dct_pb = section.settings.padding_bottom | default: 52
+  assign dct_pt_m = dct_pt | times: 0.75 | round
+  assign dct_pb_m = dct_pb | times: 0.75 | round
+  assign dct_scheme = section.settings.color_scheme | default: 'paper'
+  assign dct_link = section.settings.cta_link | default: '#'
+  assign dct_sticky_label = section.settings.sticky_label | default: section.settings.cta_label
+
+  assign dct_has = false
+  if section.settings.heading != blank or section.settings.body != blank or section.settings.cta_label != blank
+    assign dct_has = true
+  endif
+-%}
+
+{%- if dct_has or request.design_mode -%}
+  <div class="cs cs-duo-cta cs-dct--{{ dct_scheme }}"
+    data-cs-dct
+    style="--cs-dct-pt:{{ dct_pt_m }}px;--cs-dct-pb:{{ dct_pb_m }}px;--cs-dct-pt-d:{{ dct_pt }}px;--cs-dct-pb-d:{{ dct_pb }}px">
+    <div class="cs-wrap cs-dct-wrap">
+      <div class="cs-dct-blocks">
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="cs-dct-title {% if section.settings.heading_size == 'large' %}cs-h1{% else %}cs-h2{% endif %}">
+            <strong>{{ section.settings.heading }}</strong>
+            {%- if section.settings.highlight != blank -%} <em class="cs-dct-hl">{{ section.settings.highlight }}</em>{%- endif -%}
+          </h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <p class="cs-dct-sub">{{ section.settings.body | newline_to_br }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.cta_label != blank -%}
+          <div class="cs-dct-buttons">
+            <a class="cs-dct-btn"
+              href="{{ dct_link | escape }}"
+              data-cs-dct-btn
+              {%- if section.settings.sticky %} data-enable-sticky="true" data-sticky-label="{{ dct_sticky_label | escape }}" data-sticky-link="{{ dct_link | escape }}"{% endif -%}
+            >{{ section.settings.cta_label }}</a>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.cta_note != blank -%}
+          <p class="cs-dct-note">{{ section.settings.cta_note }}</p>
+        {%- endif -%}
+
+        {%- if request.design_mode and dct_has == false -%}
+          <p class="cs-dct-hint">Empty CTA band — Theme editor ▸ CraftStory Duo CTA ▸ Button ▸ Button label</p>
+        {%- endif -%}
+
+      </div>
+    </div>
+
+    {%- if section.settings.sticky and section.settings.cta_label != blank -%}
+      <div class="cs-dct-stickyhost" data-cs-dct-sticky></div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CraftStory Duo CTA",
+  "settings": [
+    { "type": "paragraph", "content": "The standalone call-to-action band. The reference landing page repeats this same band three times down the page, so place this section three times and give each one its own copy and colour. Keep CraftStory Setup as the first section of the template." },
+    { "type": "header", "content": "Text" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Ready to hear your story as a song?", "info": "Leave empty for a button-only band: two of the three bands on the reference page are nothing but the button." },
+    { "type": "text", "id": "highlight", "label": "Last words, emphasised", "info": "Added at the end of the heading in italic coral (gold on night), the way the hero emphasises one word." },
+    { "type": "select", "id": "heading_size", "label": "Heading size", "default": "regular", "options": [
+      { "value": "regular", "label": "Regular" },
+      { "value": "large", "label": "Large" }
+    ], "info": "The reference uses the large size for a band that opens a part of the page, and the regular size for a band that closes one." },
+    { "type": "textarea", "id": "body", "label": "Sub-line", "default": "One short form about the two of you, and we take it from there.", "info": "Optional. A line break here becomes a line break on the page, so you can split the line the way you want it read." },
+    { "type": "header", "content": "Button" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start My Custom Song", "info": "One button per band. Empty hides the button." },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" },
+    { "type": "text", "id": "cta_note", "label": "Line under the button", "default": "100% money-back guarantee · Delivered by email", "info": "Reassurance only. No customer counts, no ratings, no expiring offer, no turnaround promise we do not keep." },
+    { "type": "header", "content": "Sticky button" },
+    { "type": "paragraph", "content": "The reference theme carries this mechanism on every band but ships it switched off. Turn it on for ONE band only: each band that has it on adds its own bar at the bottom of the screen, and two bars stack on top of each other." },
+    { "type": "checkbox", "id": "sticky", "label": "Repeat this button as a bar at the bottom of the screen", "default": false, "info": "It appears once the visitor is more than 200px down the page and the real button has scrolled out of view, exactly as on the reference page." },
+    { "type": "text", "id": "sticky_label", "label": "Bar label", "info": "Empty uses the button label." },
+    { "type": "header", "content": "Band" },
+    { "type": "select", "id": "color_scheme", "label": "Colour", "default": "paper", "options": [
+      { "value": "paper", "label": "Cream (page background)" },
+      { "value": "white", "label": "White" },
+      { "value": "sand", "label": "Sand" },
+      { "value": "night", "label": "Night, cream text" }
+    ], "info": "The reference alternates white, light grey and black between its three bands. Cream, white, sand and night are the CraftStory equivalents. The button stays coral on all four." },
+    { "type": "header", "content": "Spacing" },
+    { "type": "paragraph", "content": "Desktop values. Phones automatically get 75% of them, which is how the reference page sets its own rhythm (40/52 desktop becomes 30/39 on a phone). Set the top to 0 when the band has to sit tight under the section above it." },
+    { "type": "range", "id": "padding_top", "label": "Space above", "min": 0, "max": 100, "step": 2, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Space below", "min": 0, "max": 100, "step": 2, "unit": "px", "default": 52 }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo CTA" }
+  ]
+}
+{% endschema %}
+
+{% stylesheet %}
+.cs-duo-cta{
+  --cs-dct-bg:var(--cs-paper);
+  --cs-dct-ink:var(--cs-ink);
+  --cs-dct-ink2:var(--cs-ink2);
+  --cs-dct-hl:var(--cs-coral);
+}
+.cs-duo-cta.cs-dct--white{--cs-dct-bg:var(--cs-card)}
+.cs-duo-cta.cs-dct--sand{--cs-dct-bg:var(--cs-paper2)}
+.cs-duo-cta.cs-dct--night{
+  --cs-dct-bg:var(--cs-night);
+  --cs-dct-ink:var(--cs-night-ink);
+  --cs-dct-ink2:var(--cs-night-ink2);
+  --cs-dct-hl:var(--cs-star);
+}
+.cs.cs-duo-cta{
+  background:var(--cs-dct-bg);
+  color:var(--cs-dct-ink);
+  padding-top:var(--cs-dct-pt,30px);
+  padding-bottom:var(--cs-dct-pb,39px);
+}
+.cs-duo-cta .cs-dct-wrap{width:100%}
+.cs-duo-cta .cs-dct-blocks{
+  max-width:720px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+}
+.cs-duo-cta .cs-dct-title{color:var(--cs-dct-ink);margin:0}
+.cs-duo-cta .cs-dct-title strong{font-weight:700}
+.cs-duo-cta .cs-dct-hl{font-style:italic;color:var(--cs-dct-hl)}
+.cs-duo-cta .cs-dct-sub{
+  margin:0;font-family:var(--cs-sans);color:var(--cs-dct-ink2);
+  font-size:clamp(1rem,2.2vw,1.12rem);line-height:1.5;
+}
+.cs-duo-cta .cs-dct-buttons{width:100%;display:flex;justify-content:center;margin-top:4px}
+.cs-duo-cta .cs-dct-btn{
+  display:inline-block;box-sizing:border-box;text-align:center;text-decoration:none;
+  background:var(--cs-coral);color:#fff;border:0;border-radius:12px;
+  font-family:var(--cs-sans);font-weight:600;letter-spacing:0;text-transform:none;line-height:1.4;
+  font-size:16px;padding:14px 40px;width:100%;max-width:100%;
+  cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.cs-duo-cta .cs-dct-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15);filter:brightness(1.05)}
+.cs-duo-cta .cs-dct-btn:active{transform:translateY(0);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.cs-duo-cta .cs-dct-note{
+  margin:0;font-family:var(--cs-sans);font-weight:600;
+  font-size:.86rem;line-height:1.45;color:var(--cs-dct-ink2);
+}
+.cs-duo-cta .cs-dct-hint{
+  margin:0;font-family:var(--cs-sans);font-size:.86rem;font-weight:600;color:var(--cs-dct-ink2);
+  border:1px dashed currentColor;border-radius:var(--cs-r);padding:10px 14px;
+}
+.cs-duo-cta .cs-dct-stickywrap{
+  position:fixed;bottom:20px;left:0;right:0;z-index:100;
+  display:flex;justify-content:center;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .3s ease,visibility .3s ease;
+  will-change:opacity,visibility;
+}
+.cs-duo-cta .cs-dct-stickywrap.cs-dct-on{opacity:1;visibility:visible;pointer-events:auto}
+.cs-duo-cta .cs-dct-stickybtn{
+  box-sizing:border-box;text-align:center;text-decoration:none;
+  background:var(--cs-coral);color:#fff;border:0;border-radius:12px;
+  font-family:var(--cs-sans);font-weight:600;letter-spacing:0;text-transform:none;line-height:1.4;
+  font-size:16px;padding:14px 40px;width:calc(100% - 20px);max-width:none;
+  cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);
+  transition:transform .2s ease,filter .2s ease;
+}
+.cs-duo-cta .cs-dct-stickybtn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+@media screen and (min-width:750px){
+  .cs.cs-duo-cta{
+    padding-top:var(--cs-dct-pt-d,40px);
+    padding-bottom:var(--cs-dct-pb-d,52px);
+  }
+  .cs-duo-cta .cs-dct-btn{font-size:18px;padding:16px 48px;width:auto;max-width:none;min-width:200px}
+  .cs-duo-cta .cs-dct-stickybtn{font-size:18px;padding:16px 48px;width:auto;min-width:200px}
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  function csDctInit(root) {
+    if (!root || root.getAttribute('data-cs-dct-ready') === '1') return;
+    var btn = root.querySelector('[data-cs-dct-btn][data-enable-sticky="true"]');
+    var host = root.querySelector('[data-cs-dct-sticky]');
+    if (!btn || !host) return;
+    root.setAttribute('data-cs-dct-ready', '1');
+
+    var label = btn.getAttribute('data-sticky-label') || (btn.textContent || '').trim();
+    var link = btn.getAttribute('data-sticky-link') || btn.getAttribute('href') || '';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'cs-dct-stickywrap';
+
+    var sticky = document.createElement('a');
+    sticky.className = 'cs-dct-stickybtn';
+    sticky.textContent = label;
+    if (link && link !== '#') {
+      sticky.href = link;
+    } else {
+      sticky.href = '#';
+      sticky.setAttribute('role', 'link');
+      sticky.setAttribute('aria-disabled', 'true');
+      sticky.addEventListener('click', function (e) { e.preventDefault(); });
+    }
+
+    wrap.appendChild(sticky);
+    host.appendChild(wrap);
+
+    var ticking = false;
+
+    function toggle() {
+      ticking = false;
+      var scrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
+      var viewportH = window.innerHeight || document.documentElement.clientHeight;
+      try {
+        var rect = btn.getBoundingClientRect();
+        var scrolledEnough = scrollY > 200;
+        var buttonHidden = rect.top >= viewportH || rect.bottom <= 0;
+        if (scrolledEnough && buttonHidden) {
+          if (!wrap.classList.contains('cs-dct-on')) wrap.classList.add('cs-dct-on');
+        } else if (wrap.classList.contains('cs-dct-on')) {
+          wrap.classList.remove('cs-dct-on');
+        }
+      } catch (e) {}
+    }
+
+    function requestTick() {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(toggle);
+      }
+    }
+
+    window.addEventListener('scroll', requestTick, { passive: true });
+    window.addEventListener('resize', requestTick, { passive: true });
+    toggle();
+  }
+
+  function csDctInitAll() {
+    var roots = document.querySelectorAll('[data-cs-dct]');
+    for (var i = 0; i < roots.length; i++) csDctInit(roots[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', csDctInitAll);
+  } else {
+    csDctInitAll();
+  }
+
+  document.addEventListener('shopify:section:load', function (e) {
+    var scope = e.target && e.target.querySelector ? e.target : document;
+    var roots = scope.querySelectorAll ? scope.querySelectorAll('[data-cs-dct]') : [];
+    for (var i = 0; i < roots.length; i++) csDctInit(roots[i]);
+  });
+})();
+{% endjavascript %}

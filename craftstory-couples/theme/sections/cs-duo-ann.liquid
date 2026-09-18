@@ -1,10 +1,60 @@
-{%- if section.settings.text != blank -%}
-<div class="cs cs-duo-ann">
-  <div class="cs-ann-in">
-    {%- if section.settings.link != blank -%}
-      <a class="cs-ann-t" href="{{ section.settings.link }}">{{ section.settings.text }}</a>
+{%- liquid
+  assign msgs = 0
+  if section.settings.text != blank
+    assign msgs = msgs | plus: 1
+  endif
+  for block in section.blocks
+    if block.settings.text != blank
+      assign msgs = msgs | plus: 1
+    endif
+  endfor
+  assign cols = msgs
+  if cols < 1
+    assign cols = 1
+  endif
+-%}
+{%- if msgs > 0 or request.design_mode -%}
+<div class="cs cs-duo-ann" role="region" aria-label="Announcement"
+     style="{% if section.settings.bg != blank %}--cs-duo-ann-bg:{{ section.settings.bg }};{% endif %}{% if section.settings.ink != blank %}--cs-duo-ann-ink:{{ section.settings.ink }};{% endif %}--cs-duo-ann-cols:{{ cols }};">
+  <div class="cs-ann-in cs-wrap">
+    {%- if msgs > 0 -%}
+      <ul class="cs-ann-track"{% if section.settings.autoplay and msgs > 1 %} data-cs-ann-auto data-cs-ann-speed="{{ section.settings.speed }}"{% endif %}>
+
+        {%- if section.settings.text != blank -%}
+          <li class="cs-ann-slide">
+            <p class="cs-ann-msg">
+              {%- if section.settings.icon != blank -%}
+                <img class="cs-ann-ico" src="{{ section.settings.icon | image_url: width: 60 }}" alt="" width="20" height="20" loading="lazy">
+              {%- endif -%}
+              {%- if section.settings.link != blank -%}
+                <a class="cs-ann-lnk" href="{{ section.settings.link }}"><span>{{ section.settings.text }}</span></a>
+              {%- else -%}
+                <span>{{ section.settings.text }}</span>
+              {%- endif -%}
+            </p>
+          </li>
+        {%- endif -%}
+
+        {%- for block in section.blocks -%}
+          {%- if block.settings.text != blank -%}
+            <li class="cs-ann-slide" {{ block.shopify_attributes }}>
+              <p class="cs-ann-msg">
+                {%- if block.settings.icon != blank -%}
+                  <img class="cs-ann-ico" src="{{ block.settings.icon | image_url: width: 60 }}" alt="" width="20" height="20" loading="lazy">
+                {%- endif -%}
+                {%- if block.settings.link != blank -%}
+                  <a class="cs-ann-lnk" href="{{ block.settings.link }}"><span>{{ block.settings.text }}</span></a>
+                {%- else -%}
+                  <span>{{ block.settings.text }}</span>
+                {%- endif -%}
+              </p>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+
+      </ul>
     {%- else -%}
-      <span class="cs-ann-t">{{ section.settings.text }}</span>
+      <p class="cs-ann-msg cs-ann-hint"><span>Write the bar's message — Theme editor &#9656; CraftStory Duo Banner &#9656; Message. While it is empty the bar never shows on the storefront.</span></p>
     {%- endif -%}
   </div>
 </div>
@@ -13,18 +63,107 @@
 {
   "name": "CraftStory Duo Banner",
   "settings": [
-    { "type": "paragraph", "content": "A thin bar above everything. Leave the text empty to hide it. Write only offers that are real — the store's copy rules forbid invented urgency." },
-    { "type": "text", "id": "text", "label": "Text", "default": "Founding-couple pricing — the first 50 songs" },
-    { "type": "text", "id": "link", "label": "Link (optional)" }
+    { "type": "paragraph", "content": "The thin bar above the header. One centred line, small caps, 6px of padding on mobile and 8px from 750px up. Leave the message empty and the whole bar disappears from the storefront." },
+    { "type": "header", "content": "Message" },
+    { "type": "text", "id": "text", "label": "Message", "default": "Custom songs and animated videos for couples", "info": "Empty hides the bar. Never a countdown, an expiring discount, a customer count or a rating — the store's copy rules forbid invented urgency and invented numbers." },
+    { "type": "url", "id": "link", "label": "Link (optional)" },
+    { "type": "image_picker", "id": "icon", "label": "Icon before the message (optional)", "info": "Shown at 18px on mobile, 20px on desktop." },
+    { "type": "header", "content": "Band" },
+    { "type": "color", "id": "bg", "label": "Band colour", "default": "#555555", "info": "Neutral dark grey by default. #1C1533 switches it to the CraftStory night." },
+    { "type": "color", "id": "ink", "label": "Text colour", "default": "#FFFFFF" },
+    { "type": "header", "content": "Several messages" },
+    { "type": "paragraph", "content": "Add message blocks to run more than one line. They sit side by side from 750px up and become a swipeable row on mobile." },
+    { "type": "checkbox", "id": "autoplay", "label": "Rotate the messages on mobile", "default": false, "info": "Off by default, and always off for visitors who ask for reduced motion." },
+    { "type": "range", "id": "speed", "label": "Seconds per message", "min": 2, "max": 10, "step": 1, "unit": "s", "default": 3 }
   ],
-  "presets": [ { "name": "CraftStory Duo Banner" } ]
+  "blocks": [
+    { "type": "message", "name": "Extra message", "limit": 4, "settings": [
+      { "type": "text", "id": "text", "label": "Message", "info": "Empty blocks are skipped." },
+      { "type": "url", "id": "link", "label": "Link (optional)" },
+      { "type": "image_picker", "id": "icon", "label": "Icon (optional)" }
+    ] }
+  ],
+  "presets": [ { "name": "CraftStory Duo Banner", "blocks": [] } ]
 }
 {% endschema %}
 {% stylesheet %}
-.cs-duo-ann{background:var(--cs-night);color:var(--cs-night-ink)}
-.cs-ann-in{max-width:1180px;margin:0 auto;padding:9px 22px;text-align:center}
-.cs-ann-t{font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--cs-star);text-decoration:none;display:inline-block;line-height:1.35}
-a.cs-ann-t:hover{text-decoration:underline}
-@media(max-width:480px){.cs-ann-t{font-size:.74rem;letter-spacing:.04em}}
+.cs-duo-ann{
+  --cs-duo-ann-bg:#555555;
+  --cs-duo-ann-ink:#FFFFFF;
+  --cs-duo-ann-size:12px;
+  --cs-duo-ann-ico:18px;
+  --cs-duo-ann-gap:16px;
+  background:var(--cs-duo-ann-bg);
+  color:var(--cs-duo-ann-ink);
+  padding:6px 0;
+}
+.cs-duo-ann .cs-ann-in{min-width:0}
+.cs-ann-track{
+  position:relative;list-style:none;margin:0;padding:0;min-width:0;
+  display:grid;grid-auto-flow:column;grid-auto-columns:100%;gap:var(--cs-duo-ann-gap);
+  overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;
+}
+.cs-ann-track::-webkit-scrollbar{display:none}
+.cs-ann-slide{min-width:0;scroll-snap-align:center;display:flex;align-items:center;justify-content:center}
+.cs-ann-msg{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin:0;text-align:center;
+  font-family:var(--cs-sans);font-size:var(--cs-duo-ann-size);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;line-height:1.3;color:inherit;
+}
+.cs-ann-ico{width:var(--cs-duo-ann-ico);height:var(--cs-duo-ann-ico);flex:0 0 auto;object-fit:contain}
+.cs-ann-lnk{color:inherit;text-decoration:none}
+.cs-ann-lnk:hover{text-decoration:underline}
+.cs-ann-hint{text-transform:none;letter-spacing:.01em;font-weight:500;opacity:.9}
+@media(min-width:750px){
+  .cs-duo-ann{padding:8px 0;--cs-duo-ann-size:13px;--cs-duo-ann-ico:20px}
+  .cs-ann-track{
+    grid-auto-flow:row;grid-auto-columns:auto;
+    grid-template-columns:repeat(var(--cs-duo-ann-cols,1),minmax(0,1fr));
+    overflow:visible;scroll-snap-type:none;
+  }
+}
 {% endstylesheet %}
+{% javascript %}
+(function () {
+  function init(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var tracks = scope.querySelectorAll('.cs-ann-track[data-cs-ann-auto]');
+    for (var i = 0; i < tracks.length; i++) start(tracks[i]);
+  }
+
+  function start(track) {
+    if (track.dataset.csAnnOn === '1') return;
+    if (track.children.length < 2) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    track.dataset.csAnnOn = '1';
+
+    var wait = (parseFloat(track.dataset.csAnnSpeed) || 3) * 1000;
+    var at = 0;
+    var held = false;
+    var timer = window.setInterval(function () {
+      if (!track.isConnected) { window.clearInterval(timer); return; }
+      if (held || document.hidden) return;
+      if (track.scrollWidth <= track.clientWidth + 2) return;
+      at = (at + 1) % track.children.length;
+      var slide = track.children[at];
+      if (!slide) return;
+      if (track.scrollTo) track.scrollTo({ left: slide.offsetLeft, behavior: 'smooth' });
+      else track.scrollLeft = slide.offsetLeft;
+    }, wait);
+
+    function hold() { held = true; }
+    function free() { held = false; }
+    track.addEventListener('pointerenter', hold);
+    track.addEventListener('pointerleave', free);
+    track.addEventListener('touchstart', hold, { passive: true });
+    track.addEventListener('touchend', free, { passive: true });
+    track.addEventListener('focusin', hold);
+    track.addEventListener('focusout', free);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); });
+  else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}

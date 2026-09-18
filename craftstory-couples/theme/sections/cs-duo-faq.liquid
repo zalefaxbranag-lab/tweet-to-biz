@@ -1,72 +1,373 @@
-<div class="cs cs-duo-faq">
-  <div class="cs-wrap">
-    <div class="cs-sec">
-      <div class="cs-sec-head">
-        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
-        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
-      </div>
+{%- liquid
+  # Parity notes (reference: unique-song.com homepage, section id ...__collapsible_content_Gq8rdt)
+  #   - one centred heading, no eyebrow, no sub-line, no CTA under the list
+  #   - 7 rows, all closed on load, each row its own <details>: several can be open at once
+  #   - rows separated by a top border (their "accordion--top-border"), no cards
+  #   - band padding 27px on phones / 36px from 750px up (Shopify's stored-value x 0.75 rule)
+  #   - the plus marker is a single 10x10 icon, no minus twin: the open state is a transform
+  #   - they ship NO FAQPage structured data (only Organization + WebSite), so ours is opt-in
 
-      <div class="cs-df-list">
-        {%- for block in section.blocks -%}
-          {%- if block.type == 'qa' and block.settings.q != blank -%}
-            <details class="cs-df-item" {{ block.shopify_attributes }}{% if block.settings.open %} open{% endif %}>
-              <summary class="cs-df-q"><span>{{ block.settings.q }}</span><span class="cs-df-mark" aria-hidden="true"></span></summary>
-              {%- if block.settings.a != blank -%}<div class="cs-df-a">{{ block.settings.a }}</div>{%- endif -%}
-            </details>
+  assign dfaq_rows = 0
+  assign dfaq_needs_delivery = false
+  for block in section.blocks
+    if block.type == 'qa' and block.settings.q != blank
+      assign dfaq_rows = dfaq_rows | plus: 1
+      if block.settings.delivery_line and section.settings.delivery == blank
+        assign dfaq_needs_delivery = true
+      endif
+    endif
+  endfor
+
+  assign dfaq_hclass = 'cs-h1'
+  if section.settings.heading_size == 'md'
+    assign dfaq_hclass = 'cs-h2'
+  endif
+
+  assign dfaq_pt = section.settings.padding_top | default: 36
+  assign dfaq_pb = section.settings.padding_bottom | default: 36
+-%}
+{%- if dfaq_rows > 0 or section.settings.heading != blank or request.design_mode -%}
+<div class="cs cs-duo-faq cs-dfaq--{{ section.settings.bg | default: 'paper2' }}" style="--cs-duo-faq-pt:{{ dfaq_pt }}px;--cs-duo-faq-pb:{{ dfaq_pb }}px;">
+  <div class="cs-dfaq-band">
+    <div class="cs-wrap cs-dfaq-wrap">
+
+      {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.sub != blank -%}
+        <div class="cs-dfaq-head cs-dfaq-head--{{ section.settings.align | default: 'center' }}">
+          {%- if section.settings.eyebrow != blank -%}
+            <span class="cs-eyebrow{% if section.settings.bg == 'night' %} cs-on-night{% endif %}">&#10038; {{ section.settings.eyebrow }}</span>
           {%- endif -%}
-        {%- endfor -%}
-      </div>
+          {%- if section.settings.heading != blank -%}
+            <h2 class="{{ dfaq_hclass }} cs-dfaq-h">
+              {%- if section.settings.heading_bold -%}<strong>{{ section.settings.heading }}</strong>{%- else -%}{{ section.settings.heading }}{%- endif -%}
+            </h2>
+          {%- endif -%}
+          {%- if section.settings.sub != blank -%}
+            <p class="cs-dfaq-sub">{{ section.settings.sub }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if dfaq_rows > 0 -%}
+        <div class="cs-dfaq-list cs-dfaq-list--{{ section.settings.rows_style | default: 'border' }}" data-cs-dfaq data-cs-dfaq-single="{% if section.settings.single_open %}1{% else %}0{% endif %}">
+          {%- assign dfaq_i = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'qa' and block.settings.q != blank -%}
+              {%- assign dfaq_i = dfaq_i | plus: 1 -%}
+              <div class="cs-dfaq-row" style="--cs-duo-faq-i:{{ dfaq_i }};" data-cs-dfaq-row {{ block.shopify_attributes }}>
+                <details class="cs-dfaq-details" data-cs-dfaq-details{% if block.settings.open %} open{% endif %}>
+                  <summary
+                    class="cs-dfaq-summary"
+                    id="cs-dfaq-s-{{ section.id }}-{{ block.id }}"
+                    aria-controls="cs-dfaq-a-{{ section.id }}-{{ block.id }}"
+                    aria-expanded="{% if block.settings.open %}true{% else %}false{% endif %}"
+                    data-cs-dfaq-summary
+                  >
+                    <span class="cs-dfaq-title">
+                      {%- if block.settings.icon != blank -%}
+                        <span class="cs-dfaq-ico" aria-hidden="true">{{ block.settings.icon }}</span>
+                      {%- endif -%}
+                      <span class="cs-dfaq-q">{{ block.settings.q }}</span>
+                    </span>
+                    <svg class="cs-dfaq-plus" viewBox="0 0 10 10" aria-hidden="true" focusable="false" role="presentation">
+                      <rect class="cs-dfaq-plus-h" x="0" y="4.25" width="10" height="1.5" rx="0.75"></rect>
+                      <rect class="cs-dfaq-plus-v" x="4.25" y="0" width="1.5" height="10" rx="0.75"></rect>
+                    </svg>
+                  </summary>
+                  <div class="cs-dfaq-panel" data-cs-dfaq-panel>
+                    <div
+                      class="cs-dfaq-a rte"
+                      id="cs-dfaq-a-{{ section.id }}-{{ block.id }}"
+                      role="region"
+                      aria-labelledby="cs-dfaq-s-{{ section.id }}-{{ block.id }}"
+                    >
+                      {%- if block.settings.a != blank -%}{{ block.settings.a }}{%- endif -%}
+                      {%- if block.settings.delivery_line and section.settings.delivery != blank -%}
+                        <p>{{ section.settings.delivery }}</p>
+                      {%- endif -%}
+                      {%- if block.settings.a == blank and request.design_mode -%}
+                        <p class="cs-dfaq-hint">This row has no answer yet. Theme editor &#9656; this question &#9656; Answer.</p>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </details>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
 
       {%- if section.settings.cta_label != blank -%}
-        <div class="cs-df-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
+        <div class="cs-dfaq-cta">
+          <a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}"{% if section.settings.cta_popup %} data-cs-open{% endif %}>{{ section.settings.cta_label }}</a>
+        </div>
       {%- endif -%}
+
+      {%- if request.design_mode -%}
+        {%- if dfaq_rows == 0 -%}
+          <p class="cs-dfaq-hint">No questions yet. Theme editor &#9656; CraftStory Duo FAQ &#9656; Add block &#9656; Question. The reference page shows 7 rows.</p>
+        {%- endif -%}
+        {%- if dfaq_needs_delivery -%}
+          <p class="cs-dfaq-hint">A row is set to show the delivery-time sentence, but "Delivery-time sentence" is empty, so nothing is added. Theme editor &#9656; CraftStory Duo FAQ &#9656; Delivery-time sentence &mdash; write the turnaround you actually keep, or untick the row's "Add the delivery-time sentence".</p>
+        {%- endif -%}
+      {%- endif -%}
+
     </div>
   </div>
 </div>
+{%- endif -%}
+
+{%- if section.settings.rich_snippet and dfaq_rows > 0 -%}
+  {%- capture dfaq_ld -%}
+    {%- assign dfaq_first = true -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'qa' and block.settings.q != blank and block.settings.a != blank -%}
+        {%- capture dfaq_answer -%}{{ block.settings.a }}{% if block.settings.delivery_line and section.settings.delivery != blank %} <p>{{ section.settings.delivery }}</p>{% endif %}{%- endcapture -%}
+        {%- comment -%} paragraph and line breaks become spaces, so the plain text reads like the visible answer {%- endcomment -%}
+        {%- assign dfaq_answer = dfaq_answer | replace: '</p>', '</p> ' | replace: '<br>', ' ' | replace: '<br/>', ' ' | replace: '<br />', ' ' | strip_html | strip_newlines | replace: '  ', ' ' | strip -%}
+        {%- unless dfaq_first -%},{%- endunless -%}
+        {"@type":"Question","name":{{ block.settings.q | strip_html | strip_newlines | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ dfaq_answer | json }}}}
+        {%- assign dfaq_first = false -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- assign dfaq_ld = dfaq_ld | strip_newlines | strip -%}
+  {%- if dfaq_ld != blank -%}
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ dfaq_ld }}]}</script>
+  {%- endif -%}
+{%- endif -%}
 {% schema %}
 {
   "name": "CraftStory Duo FAQ",
+  "tag": "section",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Before you start" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "The questions everyone asks" },
+    { "type": "paragraph", "content": "Structural clone of the reference FAQ: one centred heading, 7 rows separated by a top border, every row closed on load, several rows can be open at once, and a single plus marker that becomes a minus. The reference shows no eyebrow, no sub-line and no button here, so those three are empty by default." },
+    { "type": "header", "content": "Heading" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Frequently Asked Questions" },
+    { "type": "checkbox", "id": "heading_bold", "label": "Bold heading", "default": true, "info": "The reference wraps its heading in <strong>." },
+    { "type": "select", "id": "heading_size", "label": "Heading size", "default": "lg", "options": [
+      { "value": "lg", "label": "Large (matches the reference)" },
+      { "value": "md", "label": "Medium" }
+    ] },
+    { "type": "select", "id": "align", "label": "Heading alignment", "default": "center", "options": [
+      { "value": "center", "label": "Centred (matches the reference)" },
+      { "value": "left", "label": "Left" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (optional)", "info": "Empty by default: the reference has no eyebrow above this heading." },
+    { "type": "text", "id": "sub", "label": "Line under the heading (optional)", "info": "Empty by default: the reference has none." },
+    { "type": "header", "content": "Rows" },
+    { "type": "checkbox", "id": "single_open", "label": "Only one row open at a time", "default": false, "info": "Off matches the reference: each row is independent, so a visitor can leave several open." },
+    { "type": "select", "id": "rows_style", "label": "Row style", "default": "border", "options": [
+      { "value": "border", "label": "Top border between rows (matches the reference)" },
+      { "value": "cards", "label": "Separate cards" }
+    ] },
+    { "type": "header", "content": "Delivery time" },
+    { "type": "paragraph", "content": "The reference answers a delivery time and a rush fee in two of their rows. Ours ship without either, because the turnaround is yours to decide. Write one sentence here and it is added to the end of every row that has \"Add the delivery-time sentence\" ticked, so the same wording can never drift between rows." },
+    { "type": "text", "id": "delivery", "label": "Delivery-time sentence", "info": "Empty by default on purpose. Example shape: The finished song and video are ready within X hours. Nothing is added while this is empty." },
     { "type": "header", "content": "Call to action" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
-    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" }
+    { "type": "text", "id": "cta_label", "label": "Button label (optional)", "info": "Empty by default: the reference shows no button under its FAQ. Fill it only if you want one here." },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "A text field, not a link picker, so an internal path such as /pages/couples works." },
+    { "type": "checkbox", "id": "cta_popup", "label": "Button opens the preview pop-up", "default": true, "info": "Adds data-cs-open, the attribute the funnel listens for." },
+    { "type": "header", "content": "Band" },
+    { "type": "select", "id": "bg", "label": "Background", "default": "paper2", "options": [
+      { "value": "paper2", "label": "Sand (matches the reference's secondary band)" },
+      { "value": "paper", "label": "Paper" },
+      { "value": "card", "label": "White" },
+      { "value": "night", "label": "Night" }
+    ] },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Top padding", "default": 36, "info": "Phones use 75% of this value, the same rule the reference follows: 36 renders as 27px below 750px and 36px above it." },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Bottom padding", "default": 36 },
+    { "type": "header", "content": "Search engines" },
+    { "type": "checkbox", "id": "rich_snippet", "label": "Add FAQPage structured data", "default": false, "info": "Off by default because the reference page carries none (its only structured data is Organization and WebSite). Turn it on only while every question and answer on this page is true and visible, since the markup has to match what a visitor reads." }
   ],
   "blocks": [
-    { "type": "qa", "name": "Question", "limit": 12, "settings": [
-      { "type": "text", "id": "q", "label": "Question", "default": "A question" },
-      { "type": "richtext", "id": "a", "label": "Answer", "default": "<p>An answer.</p>" },
-      { "type": "checkbox", "id": "open", "label": "Open by default", "default": false }
+    { "type": "qa", "name": "Question", "limit": 14, "settings": [
+      { "type": "text", "id": "q", "label": "Question", "default": "A question your buyer actually asks" },
+      { "type": "richtext", "id": "a", "label": "Answer", "default": "<p>The answer, in plain words.</p>" },
+      { "type": "checkbox", "id": "open", "label": "Open by default", "default": false, "info": "Off matches the reference: all of their rows load closed." },
+      { "type": "checkbox", "id": "delivery_line", "label": "Add the delivery-time sentence", "default": false, "info": "Appends the section's \"Delivery-time sentence\" to this answer. Nothing is added while that setting is empty." },
+      { "type": "text", "id": "icon", "label": "Icon before the question (optional)", "info": "Empty by default: the reference renders an empty icon slot on every row. One character or emoji if you ever want one." }
     ] }
   ],
   "presets": [
     { "name": "CraftStory Duo FAQ", "blocks": [
-      { "type": "qa", "settings": { "q": "Do I have to be good with words?", "a": "<p>No. You are not writing anything. You answer five plain questions about the two of you, in your own words, and we turn those answers into lyrics.</p>", "open": true } },
-      { "type": "qa", "settings": { "q": "Do the two of us really appear in the music video?", "a": "<p>Yes — that is the part nobody else does. The couple on screen is built to look like you, so the video tells your story instead of a stock one.</p>" } },
-      { "type": "qa", "settings": { "q": "Can I choose the style?", "a": "<p>You pick the genre and the mood. Country, soul, pop, acoustic, rap — whatever they would actually put on.</p>" } },
-      { "type": "qa", "settings": { "q": "What if I do not like it?", "a": "<p>You hear a free preview before you pay anything. If it is not right, you owe nothing, and if you have already ordered and you are not happy with it, you get a full refund.</p>" } },
-      { "type": "qa", "settings": { "q": "What exactly do I receive?", "a": "<p>A full-length song and a music video, both about the two of you, yours to keep and to share.</p>" } },
-      { "type": "qa", "settings": { "q": "Is it a good wedding gift?", "a": "<p>It is made for the moments where a card is not enough: a first dance, a wedding morning, an anniversary, or the gift the guests give together.</p>" } }
+      { "type": "qa", "settings": { "q": "What makes this song and video ours?", "a": "<p>Both are built from your own answers about the two of you: your names, how you met, the lines you say to each other. Nothing is picked off a shelf, so nobody else has this song and nobody else has this video.</p>" } },
+      { "type": "qa", "settings": { "q": "How long does it take?", "a": "<p>You hear a free preview before you pay anything, so you know what you are getting on the same visit.</p>", "delivery_line": true } },
+      { "type": "qa", "settings": { "q": "What if we need it sooner?", "a": "<p>Tell us the date you need it for before you order and we will tell you straight away whether we can make it.</p>" } },
+      { "type": "qa", "settings": { "q": "What occasions does this work for?", "a": "<p>The moments where a card is not enough: a wedding and its first dance, an anniversary, an engagement, Valentine's Day, or a gift the two families give together.</p>" } },
+      { "type": "qa", "settings": { "q": "How is it made?", "a": "<p>You answer a handful of plain questions about the two of you. Your answers become the lyrics, the lyrics become a finished song, and the song becomes an animated music video with a couple on screen built to look like you.</p>" } },
+      { "type": "qa", "settings": { "q": "How do we get it?", "a": "<p>We email you a private link. Open it on any phone, tablet or computer to listen and watch, then share it however you like. Nothing to install.</p>" } },
+      { "type": "qa", "settings": { "q": "Can we play it at the wedding?", "a": "<p>Yes. It is yours &mdash; the first dance, the reception, an anniversary dinner, or the car on the way home. Play it as often as you want.</p>" } }
     ] }
   ]
 }
 {% endschema %}
 {% stylesheet %}
-.cs-duo-faq{background:var(--cs-paper2)}
-.cs-df-list{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
-.cs-df-item{background:var(--cs-card);border:1px solid var(--cs-line);border-radius:var(--cs-r);box-shadow:var(--cs-sh-sm);overflow:hidden}
-.cs-df-q{cursor:pointer;list-style:none;display:flex;gap:14px;align-items:center;justify-content:space-between;padding:16px clamp(16px,2vw,22px);font-family:var(--cs-serif);font-weight:600;font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.25;min-height:56px}
-.cs-df-q::-webkit-details-marker{display:none}
-.cs-df-mark{position:relative;width:16px;height:16px;flex:0 0 16px}
-.cs-df-mark:before,.cs-df-mark:after{content:"";position:absolute;background:var(--cs-gold);border-radius:2px;transition:transform .2s ease}
-.cs-df-mark:before{top:7px;left:0;width:16px;height:2px}
-.cs-df-mark:after{left:7px;top:0;width:2px;height:16px}
-.cs-df-item[open] .cs-df-mark:after{transform:scaleY(0)}
-.cs-df-a{padding:0 clamp(16px,2vw,22px) 18px;color:var(--cs-ink2);font-size:1rem;line-height:1.6}
-.cs-df-a p{margin:0 0 .7em}
-.cs-df-a p:last-child{margin-bottom:0}
-.cs-df-cta{display:flex;justify-content:center;margin-top:clamp(24px,4vw,38px)}
-@media(max-width:560px){.cs-df-cta{width:100%}.cs-df-cta .cs-btn{width:100%}}
-.cs-duo-faq .cs-sec{padding:clamp(34px,7vw,100px) 0}
+.cs-duo-faq{--cs-duo-faq-max:820px;--cs-duo-faq-pt:36px;--cs-duo-faq-pb:36px}
+.cs-dfaq--paper2{background:var(--cs-paper2)}
+.cs-dfaq--paper{background:var(--cs-paper)}
+.cs-dfaq--card{background:var(--cs-card)}
+.cs-dfaq--night{background:var(--cs-night);color:var(--cs-night-ink)}
+.cs-dfaq-band{padding-top:calc(var(--cs-duo-faq-pt) * .75);padding-bottom:calc(var(--cs-duo-faq-pb) * .75)}
+@media screen and (min-width:750px){.cs-dfaq-band{padding-top:var(--cs-duo-faq-pt);padding-bottom:var(--cs-duo-faq-pb)}}
+.cs-dfaq-wrap{max-width:var(--cs-duo-faq-max)}
+.cs-dfaq-head{margin:0 auto clamp(16px,2.2vw,24px)}
+.cs-dfaq-head--center{text-align:center}
+.cs-dfaq-head--left{text-align:left}
+.cs-dfaq-h{margin:0}
+.cs-dfaq-h strong{font-weight:700}
+.cs-dfaq--night .cs-dfaq-h{color:var(--cs-night-ink)}
+.cs-dfaq-head .cs-eyebrow{margin-bottom:10px}
+.cs-dfaq-sub{margin-top:10px;color:var(--cs-ink2);font-size:1.05rem;line-height:1.55}
+.cs-dfaq--night .cs-dfaq-sub{color:var(--cs-night-ink2)}
+.cs-dfaq-list--border .cs-dfaq-row{border-top:1px solid var(--cs-line)}
+.cs-dfaq-list--border .cs-dfaq-row:last-child{border-bottom:1px solid var(--cs-line)}
+.cs-dfaq--night .cs-dfaq-list--border .cs-dfaq-row{border-color:var(--cs-night-line)}
+.cs-dfaq-list--cards{display:flex;flex-direction:column;gap:10px}
+.cs-dfaq--night .cs-dfaq-list--cards .cs-dfaq-row{background:var(--cs-night-line);border-color:var(--cs-night-line)}
+.cs-dfaq-list--cards .cs-dfaq-row{border:1px solid var(--cs-line);border-radius:var(--cs-r);background:var(--cs-card);box-shadow:var(--cs-sh-sm);overflow:hidden;padding:0 clamp(14px,2vw,20px)}
+.cs-dfaq-details{display:block}
+.cs-dfaq-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;list-style:none;padding:17px 2px;min-height:56px;-webkit-tap-highlight-color:transparent}
+.cs-dfaq-summary::-webkit-details-marker{display:none}
+.cs-dfaq-summary::marker{content:""}
+.cs-dfaq-summary:focus-visible{outline:2px solid var(--cs-gold);outline-offset:2px;border-radius:6px}
+.cs-dfaq-title{display:flex;align-items:center;gap:10px;min-width:0}
+.cs-dfaq-ico{font-size:1.15rem;line-height:1;flex:0 0 auto}
+.cs-dfaq-q{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.02rem,1.7vw,1.22rem);line-height:1.26;letter-spacing:-.01em;overflow-wrap:anywhere}
+.cs-dfaq--night .cs-dfaq-q{color:var(--cs-night-ink)}
+.cs-dfaq-plus{width:15px;height:15px;flex:0 0 15px;fill:var(--cs-gold)}
+.cs-dfaq-plus rect{transform-box:fill-box;transform-origin:center;transition:transform .2s ease}
+.cs-dfaq--night .cs-dfaq-plus{fill:var(--cs-star)}
+.cs-dfaq-details[open] .cs-dfaq-plus-v{transform:scaleY(0)}
+.cs-dfaq-js .cs-dfaq-details[open] .cs-dfaq-plus-v{transform:none}
+.cs-dfaq-js .cs-dfaq-row.is-open .cs-dfaq-plus-v{transform:scaleY(0)}
+.cs-dfaq-panel{overflow:hidden}
+.cs-dfaq-js .cs-dfaq-panel{max-height:0;opacity:0;transition:max-height .3s ease,opacity .24s ease}
+.cs-dfaq-js .cs-dfaq-row.is-open .cs-dfaq-panel{opacity:1}
+.cs-dfaq-a{padding:0 2px 20px;color:var(--cs-ink2);font-size:1rem;line-height:1.62;max-width:64ch}
+.cs-dfaq--night .cs-dfaq-a{color:var(--cs-night-ink2)}
+.cs-dfaq-a p{margin:0 0 .7em}
+.cs-dfaq-a p:last-child{margin-bottom:0}
+.cs-dfaq-a a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.cs-dfaq-a ul,.cs-dfaq-a ol{margin:0 0 .7em;padding-left:1.2em}
+.cs-dfaq-cta{display:flex;justify-content:center;margin-top:clamp(20px,3vw,30px)}
+.cs-dfaq-hint{margin-top:14px;font-size:.86rem;line-height:1.5;color:var(--cs-ink2);background:var(--cs-gold-soft);border:1px dashed var(--cs-gold);border-radius:var(--cs-r);padding:10px 12px}
+@media (prefers-reduced-motion:no-preference){
+  .cs-dfaq-row{animation:cs-dfaq-in .5s ease both;animation-delay:calc(var(--cs-duo-faq-i,0) * .05s)}
+}
+@keyframes cs-dfaq-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media (max-width:560px){
+  .cs-dfaq-cta{width:100%}
+  .cs-dfaq-cta .cs-btn{width:100%}
+  .cs-dfaq-summary{padding:15px 0;gap:12px}
+  .cs-dfaq-a{padding:0 0 18px}
+}
 {% endstylesheet %}
+{% javascript %}
+(function () {
+  var REDUCE = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function parts(row) {
+    return {
+      d: row.querySelector('[data-cs-dfaq-details]'),
+      s: row.querySelector('[data-cs-dfaq-summary]'),
+      w: row.querySelector('[data-cs-dfaq-panel]')
+    };
+  }
+
+  function rowsOf(list) {
+    return [].slice.call(list.querySelectorAll('[data-cs-dfaq-row]'));
+  }
+
+  function once(el, fn) {
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', handler);
+      fn();
+    }
+    function handler(ev) {
+      if (ev.target !== el || ev.propertyName !== 'max-height') return;
+      finish();
+    }
+    el.addEventListener('transitionend', handler);
+    setTimeout(finish, 420);
+  }
+
+  function open(row, p) {
+    p.d.open = true;
+    row.classList.add('is-open');
+    p.s.setAttribute('aria-expanded', 'true');
+    if (REDUCE) { p.w.style.maxHeight = 'none'; return; }
+    p.w.style.maxHeight = '0px';
+    void p.w.offsetHeight;
+    p.w.style.maxHeight = p.w.scrollHeight + 'px';
+    once(p.w, function () {
+      // let the panel grow with its content (images, resize) once it is fully open
+      if (row.classList.contains('is-open')) p.w.style.maxHeight = 'none';
+    });
+  }
+
+  function close(row, p) {
+    row.classList.remove('is-open');
+    p.s.setAttribute('aria-expanded', 'false');
+    if (REDUCE) { p.w.style.maxHeight = '0px'; p.d.open = false; return; }
+    p.w.style.maxHeight = p.w.scrollHeight + 'px';
+    void p.w.offsetHeight;
+    p.w.style.maxHeight = '0px';
+    once(p.w, function () {
+      // the row may have been reopened mid-animation
+      if (!row.classList.contains('is-open')) p.d.open = false;
+    });
+  }
+
+  function closeOthers(list, keep) {
+    rowsOf(list).forEach(function (row) {
+      if (row === keep) return;
+      var p = parts(row);
+      if (p.d && p.s && p.w && p.d.open) close(row, p);
+    });
+  }
+
+  function setup(list) {
+    if (!list || list.dataset.csDfaqOn === '1') return;
+    list.dataset.csDfaqOn = '1';
+    list.classList.add('cs-dfaq-js');
+    var single = list.getAttribute('data-cs-dfaq-single') === '1';
+
+    rowsOf(list).forEach(function (row) {
+      var p = parts(row);
+      if (!p.d || !p.s || !p.w) return;
+
+      if (p.d.open) {
+        row.classList.add('is-open');
+        p.w.style.maxHeight = 'none';
+        p.s.setAttribute('aria-expanded', 'true');
+      } else {
+        p.s.setAttribute('aria-expanded', 'false');
+      }
+
+      p.s.addEventListener('click', function (e) {
+        // we drive the open state ourselves so the panel can animate both ways
+        e.preventDefault();
+        if (p.d.open && row.classList.contains('is-open')) {
+          close(row, p);
+        } else {
+          if (single) closeOthers(list, row);
+          open(row, p);
+        }
+      });
+    });
+  }
+
+  function init(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var list = scope.querySelectorAll('[data-cs-dfaq]');
+    for (var i = 0; i < list.length; i++) setup(list[i]);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); });
+  else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}

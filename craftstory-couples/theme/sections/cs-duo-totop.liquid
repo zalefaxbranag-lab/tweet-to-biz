@@ -1,0 +1,249 @@
+{%- comment -%}
+  CraftStory Duo — Back to top
+  Mirrors the competitor's "scroll-to-top-btn" section: a single floating corner button,
+  shown past a scroll threshold, hidden again at the top of the page.
+  Reference facts it reproduces: z-index 101 (one above the sticky CTA at 100),
+  corner offsets 2.0rem desktop / 1.5rem under 750px, 200px scroll threshold,
+  opacity+visibility fade of .3s ease driven by a single state class.
+  It lifts itself above the sticky mobile CTA bar (cs-duo-bar, z-index 60, bottom 0)
+  and above the sticky CTA button (cs-duo-cta, z-index 100, bottom 20px) whenever
+  either of those is on screen, so it never sits on top of them.
+{%- endcomment -%}
+
+{%- liquid
+  assign tt_label = section.settings.label | default: 'Back to top'
+  assign tt_after = section.settings.show_after
+  assign tt_side = section.settings.side | default: 'right'
+  assign tt_look = section.settings.look | default: 'paper'
+  assign tt_size = section.settings.size | default: 48
+  assign tt_z = section.settings.stack | default: 101
+  assign tt_x_d = section.settings.offset_x | default: 2
+  assign tt_y_d = section.settings.offset_y | default: 2
+  assign tt_x_m = section.settings.offset_x_mobile | default: 1.5
+  assign tt_y_m = section.settings.offset_y_mobile | default: 1.5
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .cs-duo-tt{
+    --cs-duo-tt-x:{{ tt_x_d }}rem;
+    --cs-duo-tt-y:{{ tt_y_d }}rem;
+    --cs-duo-tt-size:{{ tt_size }}px;
+    z-index:{{ tt_z }};
+  }
+  @media screen and (max-width: 749px){
+    #shopify-section-{{ section.id }} .cs-duo-tt{
+      --cs-duo-tt-x:{{ tt_x_m }}rem;
+      --cs-duo-tt-y:{{ tt_y_m }}rem;
+    }
+  }
+</style>
+
+<div
+  class="cs cs-duo-tt cs-dtt-{{ tt_side }} cs-dtt-look-{{ tt_look }}{% if request.design_mode %} cs-dtt-on{% endif %}"
+  data-cs-tt
+  data-cs-tt-after="{{ tt_after | default: 200 }}"
+  {%- if request.design_mode %} data-cs-tt-force="1"{% endif -%}
+>
+  <button type="button" class="cs-dtt-btn" data-cs-tt-btn>
+    <svg class="cs-dtt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 19V6"/>
+      <path d="M5.5 12.5 12 6l6.5 6.5"/>
+    </svg>
+    <span class="cs-dtt-sr">{{ tt_label }}</span>
+  </button>
+  {%- if request.design_mode -%}
+    <span class="cs-dtt-hint">Shown after {{ tt_after | default: 200 }}px of scroll on the live page</span>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "CraftStory Duo To Top",
+  "settings": [
+    { "type": "paragraph", "content": "A floating button that takes the visitor back to the top of the page. It appears once the page has been scrolled past the distance below, and it lifts itself above the sticky bottom bar and the sticky button so it never covers them. Keep this section last in the template." },
+    { "type": "text", "id": "label", "label": "Accessible label", "default": "Back to top", "info": "Read out by screen readers and shown on hover. Not printed on the button." },
+    { "type": "range", "id": "show_after", "label": "Show after scrolling", "min": 0, "max": 1000, "step": 50, "unit": "px", "default": 200 },
+    { "type": "select", "id": "side", "label": "Corner", "default": "right", "options": [
+      { "value": "right", "label": "Bottom right" },
+      { "value": "left", "label": "Bottom left" }
+    ] },
+    { "type": "select", "id": "look", "label": "Style", "default": "paper", "options": [
+      { "value": "paper", "label": "Paper (white, outlined)" },
+      { "value": "night", "label": "Night" },
+      { "value": "coral", "label": "Coral" }
+    ] },
+    { "type": "range", "id": "size", "label": "Button size", "min": 40, "max": 64, "step": 2, "unit": "px", "default": 48 },
+    { "type": "header", "content": "Position" },
+    { "type": "range", "id": "offset_x", "label": "Side offset — desktop", "min": 0, "max": 6, "step": 0.5, "unit": "rem", "default": 2 },
+    { "type": "range", "id": "offset_y", "label": "Bottom offset — desktop", "min": 0, "max": 6, "step": 0.5, "unit": "rem", "default": 2 },
+    { "type": "range", "id": "offset_x_mobile", "label": "Side offset — mobile", "min": 0, "max": 6, "step": 0.5, "unit": "rem", "default": 1.5 },
+    { "type": "range", "id": "offset_y_mobile", "label": "Bottom offset — mobile", "min": 0, "max": 6, "step": 0.5, "unit": "rem", "default": 1.5 },
+    { "type": "range", "id": "stack", "label": "Stacking order", "min": 60, "max": 160, "step": 1, "default": 101, "info": "Leave at 101. The sticky button sits at 100 and the bottom bar at 60, so 101 keeps this button on top of both." }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo To Top" }
+  ]
+}
+{% endschema %}
+
+{% stylesheet %}
+.cs-duo-tt{
+  position:fixed;
+  bottom:calc(var(--cs-duo-tt-y, 2rem) + var(--cs-duo-tt-lift, env(safe-area-inset-bottom, 0px)));
+  width:var(--cs-duo-tt-size, 48px);height:var(--cs-duo-tt-size, 48px);
+  line-height:0;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transform:translateY(6px);
+  transition:opacity .3s ease,visibility .3s ease,transform .3s ease,bottom .22s ease;
+  will-change:opacity,visibility,transform;
+  --cs-duo-tt-bg:var(--cs-card);
+  --cs-duo-tt-ink:var(--cs-ink);
+  --cs-duo-tt-line:var(--cs-line);
+}
+.cs.cs-duo-tt{background:none;font-size:inherit;padding:0;margin:0}
+.cs-duo-tt.cs-dtt-right{right:var(--cs-duo-tt-x, 2rem);left:auto}
+.cs-duo-tt.cs-dtt-left{left:var(--cs-duo-tt-x, 2rem);right:auto}
+.cs-duo-tt.cs-dtt-on{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.cs-duo-tt.cs-dtt-look-night{--cs-duo-tt-bg:var(--cs-night);--cs-duo-tt-ink:var(--cs-night-ink);--cs-duo-tt-line:var(--cs-night-line)}
+.cs-duo-tt.cs-dtt-look-coral{--cs-duo-tt-bg:var(--cs-coral);--cs-duo-tt-ink:var(--cs-card);--cs-duo-tt-line:var(--cs-coral-deep)}
+.cs-duo-tt .cs-dtt-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;padding:0;margin:0;cursor:pointer;
+  font-family:var(--cs-sans);
+  background:var(--cs-duo-tt-bg);color:var(--cs-duo-tt-ink);
+  border:1px solid var(--cs-duo-tt-line);border-radius:var(--cs-pill);
+  box-shadow:var(--cs-sh-sm);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+  -webkit-appearance:none;appearance:none;
+}
+.cs-duo-tt .cs-dtt-btn:hover{transform:translateY(-2px);box-shadow:var(--cs-sh)}
+.cs-duo-tt .cs-dtt-btn:active{transform:translateY(0)}
+.cs-duo-tt .cs-dtt-btn:focus-visible{outline:2px solid var(--cs-gold);outline-offset:3px}
+.cs-duo-tt .cs-dtt-ico{width:55%;height:55%;display:block}
+.cs-duo-tt .cs-dtt-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.cs-duo-tt .cs-dtt-hint{
+  position:absolute;bottom:calc(100% + 8px);right:0;white-space:nowrap;
+  font-family:var(--cs-sans);font-size:.72rem;font-weight:600;line-height:1.3;
+  color:var(--cs-ink2);background:var(--cs-card);border:1px solid var(--cs-line);
+  border-radius:var(--cs-pill);padding:5px 10px;box-shadow:var(--cs-sh-sm);
+}
+.cs-duo-tt.cs-dtt-left .cs-dtt-hint{right:auto;left:0}
+/* The mobile menu overlay sits at z-index 70, below this button: never float over it. */
+html.cs-head-locked .cs-duo-tt.cs-dtt-on{opacity:0;visibility:hidden;pointer-events:none}
+@media (prefers-reduced-motion: reduce){
+  .cs-duo-tt{transition:none;transform:none}
+  .cs-duo-tt.cs-dtt-on{transform:none}
+  .cs-duo-tt .cs-dtt-btn{transition:none}
+  .cs-duo-tt .cs-dtt-btn:hover,.cs-duo-tt .cs-dtt-btn:active{transform:none}
+}
+@media print{.cs-duo-tt{display:none}}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.csDuoTotopBound) return;
+  window.csDuoTotopBound = true;
+
+  var GAP = 10; // breathing room between this button and any bottom-docked bar
+
+  function reduced() {
+    try {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) { return false; }
+  }
+
+  function buttons() { return document.querySelectorAll('[data-cs-tt]'); }
+
+  function scrollTop() {
+    return Math.max(0, window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
+  }
+
+  // Height of whatever CraftStory element is currently docked at the bottom of the viewport.
+  function dockedHeight() {
+    var h = 0;
+    try {
+      var bar = document.querySelector('[data-cs-dbar]');
+      if (bar && bar.classList.contains('cs-dbar-on')) h = Math.max(h, bar.offsetHeight || 0);
+      var sticky = document.querySelector('.cs-dct-stickywrap.cs-dct-on');
+      if (sticky) h = Math.max(h, (sticky.offsetHeight || 0) + 20); // its own bottom offset
+    } catch (e) {}
+    return h;
+  }
+
+  function place(el, h) {
+    try {
+      if (h > 0) el.style.setProperty('--cs-duo-tt-lift', (h + GAP) + 'px');
+      else el.style.removeProperty('--cs-duo-tt-lift'); // falls back to the safe-area inset
+    } catch (e) {}
+  }
+
+  function sync() {
+    var y = scrollTop();
+    var h = dockedHeight();
+    Array.prototype.forEach.call(buttons(), function (el) {
+      var after = parseInt(el.getAttribute('data-cs-tt-after'), 10);
+      if (isNaN(after)) after = 200;
+      var on = el.getAttribute('data-cs-tt-force') === '1' || y > after;
+      if (on) el.classList.add('cs-dtt-on');
+      else el.classList.remove('cs-dtt-on');
+      place(el, h);
+    });
+  }
+
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    var raf = window.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); };
+    raf(function () { ticking = false; sync(); });
+  }
+
+  function focusTop() {
+    try {
+      var target = document.querySelector('#MainContent, main, [role="main"], [data-cs-head], body');
+      if (!target) return;
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+    } catch (e) {}
+  }
+
+  function toTop() {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: reduced() ? 'auto' : 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
+    focusTop();
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-cs-tt-btn]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    toTop();
+  });
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('orientationchange', onScroll);
+
+  // The bottom bar and the sticky button toggle a class on themselves; follow those.
+  function watchDocked() {
+    if (!('MutationObserver' in window)) return;
+    var targets = document.querySelectorAll('[data-cs-dbar], .cs-dct-stickywrap');
+    if (!targets.length) return;
+    var mo = new MutationObserver(function () { sync(); });
+    Array.prototype.forEach.call(targets, function (t) {
+      mo.observe(t, { attributes: true, attributeFilter: ['class', 'style'] });
+    });
+  }
+
+  function init() { sync(); watchDocked(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  document.addEventListener('shopify:section:load', init);
+  document.addEventListener('shopify:section:unload', function () { sync(); });
+})();
+{% endjavascript %}

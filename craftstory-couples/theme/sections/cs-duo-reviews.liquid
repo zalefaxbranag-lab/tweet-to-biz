@@ -1,112 +1,610 @@
 {%- liquid
+  assign cols_d = section.settings.cols_desktop | default: 5
+  assign cols_m = section.settings.cols_mobile | default: 2
+  assign gap_d = section.settings.gap_desktop | default: 28
+  assign gap_m = section.settings.gap_mobile | default: 12
+
   assign filled = 0
   for block in section.blocks
-    if block.settings.image != blank or block.settings.quote != blank
-      assign filled = filled | plus: 1
+    if block.type == 'video'
+      if block.settings.video != blank or block.settings.video_url != blank or block.settings.poster != blank
+        assign filled = filled | plus: 1
+      endif
+    else
+      if block.settings.image != blank or block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank
+        assign filled = filled | plus: 1
+      endif
     endif
   endfor
+
+  assign pages = filled | minus: cols_d | plus: 1
+  if pages < 1
+    assign pages = 1
+  endif
+
+  assign uid = section.id | replace: '_', '' | downcase
 -%}
 {%- if filled > 0 or request.design_mode -%}
-<div class="cs cs-duo-rev">
+<div class="cs cs-duo-rvs">
   <div class="cs-wrap">
-    <div class="cs-sec">
-      <div class="cs-sec-head">
-        {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
-        {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
-        {%- if section.settings.proof_line != blank -%}
-          <p class="cs-rev-proof"><span class="cs-rev-stars" aria-hidden="true">★★★★★</span> {{ section.settings.proof_line }}</p>
-        {%- endif -%}
-      </div>
+    <div class="cs-rvs-sec">
+
+      {%- if section.settings.heading != blank or section.settings.brand != blank -%}
+        <div class="cs-rvs-head cs-rvs-head--{{ section.settings.align }}">
+          <h2 class="cs-h1 cs-rvs-title">
+            {%- if section.settings.count != blank and section.settings.heading_count != blank -%}
+              <strong>{{ section.settings.heading_count | replace: '{count}', section.settings.count }}&nbsp;</strong>
+            {%- elsif section.settings.heading != blank -%}
+              <strong>{{ section.settings.heading }}&nbsp;</strong>
+            {%- endif -%}
+            {%- if section.settings.brand != blank -%}<em>{{ section.settings.brand }}</em>{%- endif -%}
+          </h2>
+        </div>
+      {%- endif -%}
 
       {%- if filled > 0 -%}
-        <div class="cs-rev-track" data-cs-rev>
-          {%- for block in section.blocks -%}
-            {%- if block.settings.image != blank or block.settings.quote != blank -%}
-              <figure class="cs-rev-card" {{ block.shopify_attributes }}>
-                {%- if block.settings.image != blank -%}
-                  <img class="cs-rev-shot" src="{{ block.settings.image | image_url: width: 900 }}"
-                       alt="{{ block.settings.image.alt | default: 'Customer review' | escape }}" loading="lazy">
-                {%- else -%}
-                  <blockquote class="cs-rev-q">
-                    {%- if block.settings.stars != blank -%}<span class="cs-rev-stars" aria-hidden="true">{{ block.settings.stars }}</span>{%- endif -%}
-                    <p>{{ block.settings.quote }}</p>
-                    {%- if block.settings.name != blank -%}
-                      <footer class="cs-rev-by">{{ block.settings.name }}{% if block.settings.meta != blank %}<span class="cs-rev-meta">{{ block.settings.meta }}</span>{% endif %}</footer>
-                    {%- endif -%}
-                  </blockquote>
+        <div class="cs-rvs-slider"
+             id="cs-rvs-{{ uid }}"
+             role="region"
+             aria-roledescription="carousel"
+             aria-label="{{ section.settings.carousel_label | default: 'Customer reviews' | escape }}"
+             data-cs-rvs
+             data-slides="{{ filled }}"
+             data-pause-offscreen="{% if section.settings.pause_offscreen %}true{% else %}false{% endif %}"
+             style="--cs-rvs-cols-d:{{ cols_d }};--cs-rvs-cols-m:{{ cols_m }};--cs-rvs-gap-d:{{ gap_d }}px;--cs-rvs-gap-m:{{ gap_m }}px">
+
+          <ul class="cs-rvs-track" data-cs-rvs-track tabindex="0" aria-live="polite" aria-atomic="true">
+            {%- assign n = 0 -%}
+            {%- for block in section.blocks -%}
+
+              {%- if block.type == 'video' -%}
+                {%- if block.settings.video != blank or block.settings.video_url != blank or block.settings.poster != blank -%}
+                  {%- assign n = n | plus: 1 -%}
+                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="group" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
+                    <figure class="cs-rvs-card cs-rvs-card--video" data-cs-rvs-video>
+                      <div class="cs-rvs-frame">
+                        {%- if block.settings.video != blank -%}
+                          {{ block.settings.video | video_tag: controls: true, playsinline: true, loop: true, preload: 'none', image_size: '1100x', class: 'cs-rvs-media' }}
+                        {%- elsif block.settings.video_url != blank -%}
+                          <video class="cs-rvs-media" controls playsinline loop preload="none"{% if block.settings.poster != blank %} poster="{{ block.settings.poster | image_url: width: 1100 }}"{% endif %}>
+                            <source src="{{ block.settings.video_url | escape }}" type="video/mp4">
+                          </video>
+                        {%- elsif block.settings.poster != blank -%}
+                          <img class="cs-rvs-media" src="{{ block.settings.poster | image_url: width: 1100 }}" alt="{{ block.settings.poster.alt | default: block.settings.hook | escape }}" loading="lazy">
+                        {%- endif -%}
+
+                        <div class="cs-rvs-cover" data-cs-rvs-cover>
+                          {%- if block.settings.poster != blank and block.settings.video != blank -%}
+                            <img class="cs-rvs-poster" src="{{ block.settings.poster | image_url: width: 1100 }}" alt="{{ block.settings.poster.alt | default: block.settings.hook | escape }}" loading="lazy">
+                          {%- endif -%}
+                          <span class="cs-rvs-veil" aria-hidden="true"></span>
+                          {%- if block.settings.hook != blank -%}
+                            <p class="cs-rvs-hook">{{ block.settings.hook }}</p>
+                          {%- endif -%}
+                          {%- if block.settings.video != blank or block.settings.video_url != blank -%}
+                            <button type="button" class="cs-rvs-playbtn" data-cs-rvs-play aria-label="{{ block.settings.play_label | default: 'Play this review' | escape }}">
+                              <span class="cs-rvs-playbtn-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="currentColor" focusable="false" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                              </span>
+                            </button>
+                          {%- endif -%}
+                        </div>
+                      </div>
+
+                      {%- if block.settings.caption != blank -%}
+                        <figcaption class="cs-rvs-cap">{{ block.settings.caption }}</figcaption>
+                      {%- endif -%}
+                    </figure>
+                  </li>
                 {%- endif -%}
-              </figure>
+
+              {%- else -%}
+                {%- if block.settings.image != blank or block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank -%}
+                  {%- assign n = n | plus: 1 -%}
+                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="group" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
+                    {%- if block.settings.image != blank -%}
+                      {%- assign shot_ar = block.settings.image.aspect_ratio | default: 0.947 -%}
+                      {%- assign shot_pad = 100.0 | divided_by: shot_ar -%}
+                      <div class="cs-rvs-card cs-rvs-card--shot" style="--cs-rvs-shot-pad:{{ shot_pad }}%">
+                        <img class="cs-rvs-shot" src="{{ block.settings.image | image_url: width: 900 }}"
+                             srcset="{{ block.settings.image | image_url: width: 375 }} 375w, {{ block.settings.image | image_url: width: 550 }} 550w, {{ block.settings.image | image_url: width: 750 }} 750w, {{ block.settings.image | image_url: width: 1100 }} 1100w"
+                             sizes="(min-width: 990px) calc(1136px / {{ cols_d }}), (min-width: 750px) calc(100vw / {{ cols_d }}), calc(100vw / {{ cols_m }})"
+                             alt="{{ block.settings.image.alt | default: block.settings.name | escape }}" loading="lazy">
+                      </div>
+                    {%- else -%}
+                      <figure class="cs-rvs-card cs-rvs-card--quote">
+                        <div class="cs-rvs-quote-body">
+                          {%- assign star_n = block.settings.stars | plus: 0 -%}
+                          {%- if star_n > 0 -%}
+                            {%- assign star_row = '' -%}
+                            {%- for s in (1..star_n) -%}{%- assign star_row = star_row | append: '★' -%}{%- endfor -%}
+                            <span class="cs-rvs-stars" aria-label="{{ star_n }} out of 5">
+                              <span aria-hidden="true">{{ star_row }}</span>
+                            </span>
+                          {%- endif -%}
+
+                          <blockquote class="cs-rvs-quote">
+                            {%- if block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank -%}
+                              <p>
+                                {%- if block.settings.quote_before != blank -%}{{ block.settings.quote_before }} {% endif -%}
+                                {%- if block.settings.quote_bold != blank -%}<strong>{{ block.settings.quote_bold }}</strong>{% if block.settings.quote_after != blank %} {% endif %}{%- endif -%}
+                                {%- if block.settings.quote_after != blank -%}{{ block.settings.quote_after }}{%- endif -%}
+                              </p>
+                            {%- elsif request.design_mode -%}
+                              <p class="cs-rvs-todo">Paste the customer's exact words in this block. Split the sentence into the three quote fields so one phrase lands in bold.</p>
+                            {%- endif -%}
+                          </blockquote>
+
+                          {%- if block.settings.name != blank or block.settings.avatar != blank -%}
+                            <figcaption class="cs-rvs-by">
+                              {%- if block.settings.avatar != blank -%}
+                                <img class="cs-rvs-avatar" src="{{ block.settings.avatar | image_url: width: 120 }}" alt="{{ block.settings.avatar.alt | default: block.settings.name | escape }}" loading="lazy" width="44" height="44">
+                              {%- elsif block.settings.name != blank -%}
+                                <span class="cs-rvs-avatar cs-rvs-avatar--ph" aria-hidden="true">{{ block.settings.name | strip | slice: 0 | upcase }}</span>
+                              {%- endif -%}
+                              <span class="cs-rvs-by-txt">
+                                {%- if block.settings.name != blank -%}<span class="cs-rvs-name">{{ block.settings.name }}</span>{%- endif -%}
+                                {%- if block.settings.badge != blank -%}
+                                  <span class="cs-rvs-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                                    {{ block.settings.badge }}
+                                  </span>
+                                {%- endif -%}
+                              </span>
+                            </figcaption>
+                          {%- endif -%}
+                        </div>
+                      </figure>
+                    {%- endif -%}
+                  </li>
+                {%- endif -%}
+              {%- endif -%}
+
+            {%- endfor -%}
+          </ul>
+
+          <div class="cs-rvs-nav"{% if pages <= 1 %} hidden{% endif %} data-cs-rvs-nav>
+            <ul class="cs-rvs-dots" role="tablist" aria-label="{{ section.settings.dots_label | default: 'Select a slide to show' | escape }}" data-cs-rvs-dots>
+              {%- for i in (1..pages) -%}
+                <li role="presentation">
+                  <button class="cs-rvs-dot{% if forloop.first %} is-active{% endif %}" type="button" role="tab"
+                          aria-controls="cs-rvs-{{ uid }}-{{ i }}" aria-label="Go to slide {{ i }}"
+                          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% unless forloop.first %} tabindex="-1"{% endunless %}></button>
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- if section.settings.show_arrows -%}
+              <div class="cs-rvs-arrows">
+                <button class="cs-rvs-arrow cs-rvs-arrow--prev" type="button" aria-label="Previous slide" aria-controls="cs-rvs-{{ uid }}" data-cs-rvs-prev disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                </button>
+                <button class="cs-rvs-arrow cs-rvs-arrow--next" type="button" aria-label="Next slide" aria-controls="cs-rvs-{{ uid }}" data-cs-rvs-next>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
             {%- endif -%}
-          {%- endfor -%}
+          </div>
         </div>
+
       {%- elsif request.design_mode -%}
-        <div class="cs-rev-empty">
+        <div class="cs-rvs-empty">
           <strong>No reviews yet — this section stays hidden on the storefront.</strong>
-          Add a real customer's words, or a screenshot of their message, to a block.
-          It appears the moment you do.
+          Add a <em>UGC video card</em> for a clip a customer sent you, or a <em>Testimonial card</em> for their words.
+          The carousel, the dots and the swipe appear the moment one block has real content.
         </div>
       {%- endif -%}
 
-      {%- if section.settings.cta_label != blank and filled > 0 -%}
-        <div class="cs-rev-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
-      {%- endif -%}
     </div>
   </div>
 </div>
 {%- endif -%}
+
 {% schema %}
 {
   "name": "CraftStory Duo Reviews",
+  "max_blocks": 20,
   "settings": [
-    { "type": "paragraph", "content": "A swipeable row of customer reviews. Two formats per block: a screenshot of a real message, or a typed quote. The whole section hides itself on the storefront while every block is empty, so the page never shows an empty shelf." },
-    { "type": "paragraph", "content": "Only real customer words go here. Invented reviews, invented names and invented counts are illegal in the US and the UK, get ad accounts rejected, and are already forbidden by this store's copy rules. The fastest honest fill: email every buyer on delivery day and ask for one line plus permission to quote it." },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "In their words" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "What happens when they press play." },
-    { "type": "text", "id": "proof_line", "label": "Proof line", "info": "Leave empty until the number is real. Example once it is: \"4.9 from 63 couples\"." },
-    { "type": "header", "content": "Call to action" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
-    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" }
+    { "type": "paragraph", "content": "The review carousel: vertical UGC video cards (hook line at the top of the frame, big round play button, caption underneath) alternating with white testimonial cards (quote with one phrase in bold, name, avatar, verified badge). Dots underneath, swipe on touch, arrow keys on desktop." },
+    { "type": "paragraph", "content": "It ships with zero blocks on purpose. Every text field is empty and the whole section hides itself on the storefront until at least one block has real content. Never type a quote, a name, a star rating or a customer count that you cannot show a real message for: invented reviews are illegal in the US and the UK and get ad accounts banned." },
+
+    { "type": "header", "content": "Heading" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Why Couples Love", "info": "Used while the count below is empty. Keep it free of numbers." },
+    { "type": "text", "id": "count", "label": "Customer count", "info": "LEAVE EMPTY until the number is real. Example once it is: 400. Fill it and the heading switches to the version below." },
+    { "type": "text", "id": "heading_count", "label": "Heading with the count", "default": "Why +{count} Couples Love", "info": "{count} is replaced by the number above. Only ever shown when that field is filled." },
+    { "type": "text", "id": "brand", "label": "Brand name (serif italic)", "default": "CraftStory" },
+    { "type": "select", "id": "align", "label": "Heading alignment", "default": "center", "options": [
+      { "value": "left", "label": "Left" },
+      { "value": "center", "label": "Centered" }
+    ] },
+
+    { "type": "header", "content": "Carousel" },
+    { "type": "range", "id": "cols_desktop", "label": "Cards per view (desktop)", "min": 3, "max": 6, "step": 1, "default": 5 },
+    { "type": "range", "id": "cols_mobile", "label": "Cards per view (mobile)", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "gap_desktop", "label": "Gap (desktop)", "min": 8, "max": 40, "step": 2, "default": 28, "unit": "px" },
+    { "type": "range", "id": "gap_mobile", "label": "Gap (mobile)", "min": 6, "max": 24, "step": 2, "default": 12, "unit": "px" },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show previous / next arrows", "default": false, "info": "Off matches the reference layout, which navigates with the dots and the swipe only." },
+    { "type": "checkbox", "id": "pause_offscreen", "label": "Pause a clip when it is swiped off screen", "default": true },
+
+    { "type": "header", "content": "Labels for screen readers" },
+    { "type": "text", "id": "carousel_label", "label": "Carousel label", "default": "Customer reviews" },
+    { "type": "text", "id": "dots_label", "label": "Dots label", "default": "Select a slide to show" }
   ],
   "blocks": [
-    { "type": "review", "name": "Review", "limit": 16, "settings": [
-      { "type": "paragraph", "content": "Either drop a screenshot, or type the quote. A screenshot wins when you have one." },
-      { "type": "image_picker", "id": "image", "label": "Screenshot of the message" },
-      { "type": "textarea", "id": "quote", "label": "Quote (their exact words)" },
-      { "type": "text", "id": "stars", "label": "Stars", "default": "★★★★★" },
-      { "type": "text", "id": "name", "label": "Who said it" },
-      { "type": "text", "id": "meta", "label": "Context", "info": "For example: 10th anniversary" }
-    ] }
+    {
+      "type": "video",
+      "name": "UGC video card",
+      "settings": [
+        { "type": "paragraph", "content": "A vertical clip a real customer sent you and agreed to let you publish. Upload it, or paste an MP4 link. The poster image is what shows before play." },
+        { "type": "video", "id": "video", "label": "Clip (upload)" },
+        { "type": "text", "id": "video_url", "label": "Clip (MP4 link)", "info": "Used only when nothing is uploaded above." },
+        { "type": "image_picker", "id": "poster", "label": "Poster image" },
+        { "type": "text", "id": "hook", "label": "Hook line over the top of the frame", "info": "Their words, not yours. Example shape: \"She had no idea I was recording\". Leave empty for a clean frame." },
+        { "type": "text", "id": "caption", "label": "Caption under the card" },
+        { "type": "text", "id": "play_label", "label": "Play button label (screen readers)", "default": "Play this review" }
+      ]
+    },
+    {
+      "type": "quote",
+      "name": "Testimonial card",
+      "settings": [
+        { "type": "paragraph", "content": "One real customer, in their own words. Split their sentence across the three quote fields so the middle phrase renders in bold, exactly like the reference cards." },
+        { "type": "image_picker", "id": "image", "label": "Screenshot of their message", "info": "Optional. When set it replaces the typed card and keeps its own shape — this is how the reference site ships its review cards." },
+        { "type": "textarea", "id": "quote_before", "label": "Quote — first part" },
+        { "type": "text", "id": "quote_bold", "label": "Quote — the phrase in bold" },
+        { "type": "textarea", "id": "quote_after", "label": "Quote — last part" },
+        { "type": "text", "id": "name", "label": "Reviewer name", "info": "A real first name, with their permission. Never invent one." },
+        { "type": "image_picker", "id": "avatar", "label": "Avatar", "info": "Their real photo, with their permission. Falls back to the first letter of the name." },
+        { "type": "text", "id": "badge", "label": "Verified badge text", "info": "LEAVE EMPTY unless you can show the order behind this review. Wording once you can: Verified Customer." },
+        { "type": "select", "id": "stars", "label": "Stars", "default": "0", "info": "Only the rating this customer actually gave. Leave it on No stars otherwise.", "options": [
+          { "value": "0", "label": "No stars" },
+          { "value": "4", "label": "4 stars" },
+          { "value": "5", "label": "5 stars" }
+        ] }
+      ]
+    }
   ],
   "presets": [
-    { "name": "CraftStory Duo Reviews", "blocks": [
-      { "type": "review" }, { "type": "review" }, { "type": "review" }, { "type": "review" }
-    ] }
+    { "name": "CraftStory Duo Reviews" }
   ]
 }
 {% endschema %}
+
 {% stylesheet %}
-.cs-duo-rev{background:var(--cs-paper2)}
-.cs-rev-proof{display:flex;align-items:center;justify-content:center;gap:.5em;font-weight:600;color:var(--cs-ink2);font-size:1rem}
-.cs-rev-stars{color:var(--cs-star);letter-spacing:.08em;font-size:1.02em;line-height:1}
-.cs-rev-track{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.6vw,18px);align-items:start}
-.cs-rev-card{margin:0;background:var(--cs-card);border:1px solid var(--cs-line);border-radius:var(--cs-r-lg);box-shadow:var(--cs-sh-sm);overflow:hidden}
-.cs-rev-shot{width:100%;height:auto;display:block}
-.cs-rev-q{margin:0;padding:clamp(16px,2vw,22px);display:flex;flex-direction:column;gap:10px}
-.cs-rev-q p{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1rem,1.4vw,1.1rem);line-height:1.35;color:var(--cs-ink)}
-.cs-rev-by{font-size:.86rem;font-weight:700;color:var(--cs-ink2);display:flex;flex-direction:column;gap:1px;margin-top:auto}
-.cs-rev-meta{font-weight:600;color:var(--cs-ink3);font-size:.81rem}
-.cs-rev-empty{max-width:640px;margin:0 auto;text-align:center;background:var(--cs-card);border:1px dashed var(--cs-ink3);border-radius:var(--cs-r-lg);padding:22px;color:var(--cs-ink2);font-size:.94rem;line-height:1.55}
-.cs-rev-empty strong{display:block;color:var(--cs-ink);margin-bottom:5px}
-.cs-rev-cta{display:flex;justify-content:center;margin-top:clamp(24px,3.4vw,38px)}
-@media(max-width:1040px){.cs-rev-track{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){
-  .cs-duo-rev .cs-sec{padding:clamp(34px,7vw,52px) 0}
-  .cs-rev-track{display:flex;grid-template-columns:none;gap:12px;overflow-x:auto;
-    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-    padding:2px 22px 4px;margin:0 -22px}
-  .cs-rev-track::-webkit-scrollbar{display:none}
-  .cs-rev-card{flex:0 0 78%;scroll-snap-align:center}
-  .cs-rev-cta{width:100%}
-  .cs-rev-cta .cs-btn{width:100%}
+.cs-duo-rvs{
+  background:var(--cs-paper);
+  --cs-rvs-card-r:8px;
+  --cs-rvs-veil:linear-gradient(180deg,rgba(28,21,51,.52) 0%,rgba(28,21,51,.14) 42%,rgba(28,21,51,0) 62%,rgba(28,21,51,.30) 100%);
+  --cs-duo-green:#3E9C6A
+}
+.cs-rvs-sec{padding:27px 0}
+.cs-rvs-head{margin:0 0 18px}
+.cs-rvs-head--center{text-align:center}
+.cs-rvs-title{color:var(--cs-ink);font-weight:600}
+.cs-rvs-title strong{font-weight:600}
+.cs-rvs-title em{font-style:italic;font-weight:600;color:var(--cs-coral)}
+
+.cs-rvs-slider{--cs-rvs-cols:var(--cs-rvs-cols-m,2);--cs-rvs-gap:var(--cs-rvs-gap-m,12px);position:relative}
+
+.cs-rvs-track{
+  position:relative;list-style:none;margin:0;padding:2px 0 4px;
+  display:flex;align-items:center;gap:var(--cs-rvs-gap);
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none
+}
+.cs-rvs-track::-webkit-scrollbar{display:none}
+.cs-rvs-track:focus-visible{outline:2px solid var(--cs-coral);outline-offset:3px;border-radius:var(--cs-r)}
+
+.cs-rvs-slide{
+  flex:0 0 calc((100% - (var(--cs-rvs-cols) - 1) * var(--cs-rvs-gap)) / var(--cs-rvs-cols));
+  min-width:0;scroll-snap-align:start
+}
+
+.cs-rvs-card{margin:0;border-radius:var(--cs-rvs-card-r);position:relative}
+
+/* vertical UGC video card */
+.cs-rvs-card--video{display:flex;flex-direction:column;gap:9px}
+.cs-rvs-frame{
+  position:relative;aspect-ratio:9/16;overflow:hidden;
+  border-radius:var(--cs-rvs-card-r);background:var(--cs-night);
+  box-shadow:var(--cs-sh-sm)
+}
+.cs-rvs-media,.cs-rvs-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-rvs-frame video.cs-rvs-media{background:var(--cs-night)}
+.cs-rvs-cover{position:absolute;inset:0;display:block;border-radius:inherit;overflow:hidden;transition:opacity .22s}
+.cs-rvs-veil{position:absolute;inset:0;background:var(--cs-rvs-veil);pointer-events:none}
+.cs-rvs-hook{
+  position:absolute;top:0;left:0;right:0;margin:0;padding:11px 11px 14px;
+  color:var(--cs-card);font-family:var(--cs-sans);font-weight:800;line-height:1.2;
+  font-size:clamp(.72rem,1.5vw,.9rem);text-align:center;text-wrap:balance;
+  text-shadow:0 1px 6px rgba(28,21,51,.55);pointer-events:none
+}
+.cs-rvs-playbtn{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:clamp(44px,26%,62px);aspect-ratio:1;border:0;padding:0;border-radius:var(--cs-pill);
+  background:var(--cs-card);color:var(--cs-coral);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 26px -10px rgba(36,27,58,.55);
+  transition:transform .18s,background .18s
+}
+.cs-rvs-playbtn:hover{transform:translate(-50%,-50%) scale(1.07)}
+.cs-rvs-playbtn:focus-visible{outline:2px solid var(--cs-card);outline-offset:3px}
+.cs-rvs-playbtn-ico{display:flex;width:42%}
+.cs-rvs-playbtn-ico svg{width:100%;height:auto;margin-left:6%}
+.cs-rvs-card--video.is-playing .cs-rvs-cover{opacity:0;pointer-events:none}
+.cs-rvs-cap{
+  font-family:var(--cs-sans);font-size:clamp(.76rem,1.4vw,.88rem);line-height:1.35;
+  font-weight:600;color:var(--cs-ink2);text-align:center;text-wrap:balance
+}
+
+/* white testimonial card */
+.cs-rvs-card--quote{
+  display:grid;background:var(--cs-card);border:1px solid var(--cs-line);
+  box-shadow:var(--cs-sh-sm);overflow:hidden
+}
+.cs-rvs-card--quote::before{content:"";grid-area:1/1;padding-top:105.59%}
+.cs-rvs-quote-body{
+  grid-area:1/1;display:flex;flex-direction:column;gap:9px;
+  padding:clamp(12px,1.5vw,18px)
+}
+.cs-rvs-stars{color:var(--cs-star);letter-spacing:.06em;line-height:1;font-size:clamp(.8rem,1.5vw,.95rem)}
+.cs-rvs-quote{margin:0;flex:1 1 auto}
+.cs-rvs-quote p{
+  font-family:var(--cs-serif);font-weight:500;color:var(--cs-ink);
+  font-size:clamp(.82rem,1.25vw,1rem);line-height:1.38
+}
+.cs-rvs-quote p strong{font-weight:700;color:var(--cs-ink)}
+.cs-rvs-todo{font-family:var(--cs-sans)!important;font-size:.8rem!important;color:var(--cs-ink3)!important;font-weight:600!important}
+.cs-rvs-by{display:flex;align-items:center;gap:9px;margin:0;min-width:0}
+.cs-rvs-avatar{
+  flex:0 0 auto;width:34px;height:34px;border-radius:var(--cs-pill);
+  object-fit:cover;background:var(--cs-paper2)
+}
+.cs-rvs-avatar--ph{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--cs-serif);font-weight:600;font-size:.95rem;color:var(--cs-ink2);
+  border:1px solid var(--cs-line)
+}
+.cs-rvs-by-txt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.cs-rvs-name{
+  font-family:var(--cs-sans);font-weight:800;font-size:clamp(.76rem,1.2vw,.88rem);
+  color:var(--cs-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.cs-rvs-badge{
+  display:inline-flex;align-items:center;gap:.32em;
+  font-family:var(--cs-sans);font-weight:700;font-size:clamp(.62rem,1vw,.72rem);
+  color:var(--cs-duo-green);line-height:1.1
+}
+.cs-rvs-badge svg{width:.9em;height:.9em;flex:0 0 auto}
+
+/* screenshot card — keeps the picture's own shape, like the reference */
+.cs-rvs-card--shot{display:grid;overflow:hidden;box-shadow:var(--cs-sh-sm);background:var(--cs-card)}
+.cs-rvs-card--shot::before{content:"";grid-area:1/1;padding-top:var(--cs-rvs-shot-pad,105.59%)}
+.cs-rvs-shot{grid-area:1/1;width:100%;height:100%;object-fit:cover;display:block}
+
+/* dots and arrows */
+.cs-rvs-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px}
+.cs-rvs-nav[hidden]{display:none}
+.cs-rvs-dots{display:flex;align-items:center;justify-content:center;gap:8px;list-style:none;margin:0;padding:0}
+.cs-rvs-dot{
+  width:9px;height:9px;padding:0;border:0;border-radius:var(--cs-pill);cursor:pointer;
+  background:var(--cs-ink3);opacity:.34;transition:opacity .18s,background .18s,width .18s
+}
+.cs-rvs-dot:hover{opacity:.6}
+.cs-rvs-dot.is-active{background:var(--cs-coral);opacity:1;width:24px}
+.cs-rvs-dot:focus-visible{outline:2px solid var(--cs-coral);outline-offset:3px}
+.cs-rvs-arrows{display:flex;align-items:center;gap:8px}
+.cs-rvs-arrow{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border:1.4px solid var(--cs-line);background:var(--cs-card);color:var(--cs-ink);
+  border-radius:var(--cs-pill);cursor:pointer;transition:border-color .18s,opacity .18s
+}
+.cs-rvs-arrow svg{width:17px;height:17px}
+.cs-rvs-arrow:hover{border-color:var(--cs-ink)}
+.cs-rvs-arrow[disabled]{opacity:.35;cursor:default}
+.cs-rvs-arrow:focus-visible{outline:2px solid var(--cs-coral);outline-offset:2px}
+
+.cs-rvs-empty{
+  max-width:640px;margin:0 auto;text-align:center;background:var(--cs-card);
+  border:1px dashed var(--cs-ink3);border-radius:var(--cs-r-lg);padding:22px;
+  color:var(--cs-ink2);font-size:.94rem;line-height:1.55
+}
+.cs-rvs-empty strong{display:block;color:var(--cs-ink);margin-bottom:5px}
+.cs-rvs-empty em{color:var(--cs-ink);font-style:normal;font-weight:700}
+
+@media screen and (min-width:750px){
+  .cs-rvs-sec{padding:36px 0}
+  .cs-rvs-head{margin-bottom:24px}
+  .cs-rvs-slider{--cs-rvs-cols:var(--cs-rvs-cols-d,5);--cs-rvs-gap:var(--cs-rvs-gap-d,28px)}
+  .cs-rvs-nav{margin-top:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cs-rvs-track{scroll-behavior:auto}
 }
 {% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var SMOOTH = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function setup(slider) {
+    if (!slider || slider.dataset.csRvsOn === '1') return;
+    slider.dataset.csRvsOn = '1';
+
+    var track = slider.querySelector('[data-cs-rvs-track]');
+    var nav = slider.querySelector('[data-cs-rvs-nav]');
+    var dotList = slider.querySelector('[data-cs-rvs-dots]');
+    var prev = slider.querySelector('[data-cs-rvs-prev]');
+    var next = slider.querySelector('[data-cs-rvs-next]');
+    if (!track) return;
+
+    var slides = [].slice.call(track.children);
+    if (!slides.length) return;
+
+    var at = 0;
+    var pages = 1;
+    var perView = 1;
+
+    function step() {
+      if (slides.length < 2) return slides[0].getBoundingClientRect().width;
+      return slides[1].getBoundingClientRect().left - slides[0].getBoundingClientRect().left;
+    }
+
+    // Cards are sized so N fit exactly per view: step = (trackWidth + gap) / N,
+    // so N falls straight out of the geometry — no CSS-variable read needed.
+    function measure() {
+      var gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      var s = step();
+      perView = s > 0 ? Math.max(1, Math.round((track.clientWidth + gap) / s)) : 1;
+      pages = Math.max(1, slides.length - perView + 1);
+      return pages;
+    }
+
+    function buildDots() {
+      if (!dotList) return;
+      if (nav) {
+        if (pages <= 1) nav.setAttribute('hidden', '');
+        else nav.removeAttribute('hidden');
+      }
+      if (dotList.children.length === pages) return;
+      dotList.textContent = '';
+      for (var i = 0; i < pages; i++) {
+        var li = document.createElement('li');
+        li.setAttribute('role', 'presentation');
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cs-rvs-dot';
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        if (slides[i] && slides[i].id) b.setAttribute('aria-controls', slides[i].id);
+        b.dataset.csRvsGo = String(i);
+        li.appendChild(b);
+        dotList.appendChild(li);
+      }
+      paint();
+    }
+
+    function paint() {
+      if (dotList) {
+        var dots = dotList.querySelectorAll('.cs-rvs-dot');
+        for (var i = 0; i < dots.length; i++) {
+          var on = i === at;
+          dots[i].classList.toggle('is-active', on);
+          dots[i].setAttribute('aria-selected', on ? 'true' : 'false');
+          if (on) dots[i].removeAttribute('tabindex');
+          else dots[i].setAttribute('tabindex', '-1');
+        }
+      }
+      if (prev) prev.disabled = at <= 0;
+      if (next) next.disabled = at >= pages - 1;
+    }
+
+    function goTo(i) {
+      i = Math.max(0, Math.min(pages - 1, i));
+      var slide = slides[i];
+      if (!slide) return;
+      var delta = slide.getBoundingClientRect().left - track.getBoundingClientRect().left
+        - parseFloat(getComputedStyle(track).paddingLeft || '0');
+      var left = track.scrollLeft + delta;
+      if (track.scrollTo) track.scrollTo({ left: left, behavior: SMOOTH ? 'smooth' : 'auto' });
+      else track.scrollLeft = left;
+      at = i;
+      paint();
+    }
+
+    var ticking = false;
+    track.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        ticking = false;
+        var s = step();
+        if (!s) return;
+        var i = Math.round(track.scrollLeft / s);
+        i = Math.max(0, Math.min(pages - 1, i));
+        if (i !== at) { at = i; paint(); }
+      });
+    }, { passive: true });
+
+    if (dotList) {
+      dotList.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-cs-rvs-go]') : null;
+        if (b) goTo(parseInt(b.dataset.csRvsGo, 10) || 0);
+      });
+    }
+    if (prev) prev.addEventListener('click', function () { goTo(at - 1); });
+    if (next) next.addEventListener('click', function () { goTo(at + 1); });
+
+    track.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); goTo(at + 1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(at - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+      else if (e.key === 'End') { e.preventDefault(); goTo(pages - 1); }
+    });
+
+    // click-to-play, one clip at a time
+    var cards = slider.querySelectorAll('[data-cs-rvs-video]');
+    function pauseAll(except) {
+      for (var i = 0; i < cards.length; i++) {
+        var v = cards[i].querySelector('video');
+        if (v && v !== except && !v.paused) v.pause();
+      }
+    }
+    for (var c = 0; c < cards.length; c++) {
+      (function (card) {
+        var btn = card.querySelector('[data-cs-rvs-play]');
+        var video = card.querySelector('video');
+        if (!btn || !video) return;
+        btn.addEventListener('click', function () {
+          pauseAll(video);
+          card.classList.add('is-playing');
+          var p = video.play();
+          if (p && p.catch) p.catch(function () { card.classList.remove('is-playing'); });
+        });
+        video.addEventListener('pause', function () {
+          if (video.currentTime === 0) card.classList.remove('is-playing');
+        });
+        video.addEventListener('ended', function () { card.classList.remove('is-playing'); });
+      })(cards[c]);
+    }
+
+    if (slider.dataset.pauseOffscreen === 'true' && window.IntersectionObserver && cards.length) {
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) continue;
+          var v = entries[i].target.querySelector('video');
+          if (v && !v.paused) v.pause();
+        }
+      }, { root: track, threshold: 0.35 });
+      for (var k = 0; k < cards.length; k++) io.observe(cards[k]);
+    }
+
+    measure();
+    buildDots();
+    paint();
+
+    var rt;
+    window.addEventListener('resize', function () {
+      window.clearTimeout(rt);
+      rt = window.setTimeout(function () {
+        if (!track.isConnected) return;
+        var was = pages;
+        measure();
+        if (pages !== was) { at = Math.min(at, pages - 1); buildDots(); }
+        paint();
+      }, 150);
+    });
+  }
+
+  function init(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var list = scope.querySelectorAll('[data-cs-rvs]');
+    for (var i = 0; i < list.length; i++) setup(list[i]);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); });
+  else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
