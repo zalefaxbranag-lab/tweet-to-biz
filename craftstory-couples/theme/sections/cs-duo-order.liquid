@@ -32,15 +32,26 @@
      valeur explicite : sans cela, l'enfant qui n'en a pas reste a 0 et remonte
      en tete — le bug qui avait deja fait passer la ligne d'attribution
      au-dessus du titre. */
-  .cs-duo-hero .cs-dh-title{order:1}
-  .cs-duo-hero .cs-dh-sub{order:2}
-  .cs-duo-hero .cs-dh-videowrap{order:3}
-  .cs-duo-hero .cs-dh-ctas{order:4}
-  .cs-duo-hero .cs-dh-proof{order:5}
-  .cs-duo-hero .cs-dh-trust{order:6}
-  .cs-duo-hero .cs-dh-badge,
-  .cs-duo-hero .cs-dh-eyebrow{order:0}
-  .cs-duo-hero .cs-dh-proofhint{order:7}
+  /* Specificite volontairement haute plus !important : la premiere version de ce
+     pont ne s'appliquait pas a l'ecran. On ne laisse plus la place au doute, et
+     `order` n'a aucun effet de bord ailleurs. Chaque enfant porte une valeur
+     explicite : sans cela, celui qui n'en a pas reste a 0 et remonte en tete. */
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-title{order:1 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-sub{order:2 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-videowrap{order:3 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-ctas{order:4 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-proof{order:5 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-trust{order:6 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-badge,
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-eyebrow{order:0 !important}
+  .cs.cs-duo-hero .cs-dh-inner > .cs-dh-proofhint{order:7 !important}
+  /* filet de securite si le markup change de conteneur un jour */
+  .cs.cs-duo-hero .cs-dh-title{order:1 !important}
+  .cs.cs-duo-hero .cs-dh-sub{order:2 !important}
+  .cs.cs-duo-hero .cs-dh-videowrap{order:3 !important}
+  .cs.cs-duo-hero .cs-dh-ctas{order:4 !important}
+  .cs.cs-duo-hero .cs-dh-proof{order:5 !important}
+  .cs.cs-duo-hero .cs-dh-trust{order:6 !important}
 
   /* La section racine porte la classe `cs`, or cs-head ne pose box-sizing que
      sur `.cs *`, un selecteur de descendants qui ne l'atteint pas. Avec
