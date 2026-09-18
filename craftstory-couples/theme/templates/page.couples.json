@@ -75,29 +75,70 @@
         "b2": {
           "type": "step",
           "settings": {
-            "text": "We write your song and animate your music video"
+            "text": "We write and record the song"
           }
         },
         "b3": {
           "type": "step",
           "settings": {
-            "text": "It lands in your inbox, ready to play to them"
+            "text": "We make the music video"
+          }
+        },
+        "b4": {
+          "type": "step",
+          "settings": {
+            "text": "Hear your free preview"
           }
         }
       },
       "block_order": [
         "b1",
         "b2",
-        "b3"
+        "b3",
+        "b4"
       ]
     },
     "reviews": {
       "type": "cs-duo-reviews",
       "settings": {
-        "heading": "Why Couples Love",
-        "count": "12,000+",
-        "brand": "CraftStory"
-      }
+        "eyebrow": "In their words",
+        "heading": "What happens when couples press play.",
+        "proof_line": "Loved by 12,000+ families at CraftStory",
+        "cta_label": "Create Our Music Video",
+        "cta_link": "#"
+      },
+      "blocks": {
+        "r1": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r2": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r3": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "r4": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "r4"
+      ]
     },
     "occasions": {
       "type": "cs-duo-occasions",
@@ -195,7 +236,13 @@
         "o8",
         "o9"
       ],
-      "settings": {}
+      "settings": {
+        "eyebrow": "Every kind of us",
+        "heading": "A song for the moment you are actually in.",
+        "body": "Not only weddings. The morning of. The ten years after. The year you nearly didn't make it.",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
     },
     "cta1": {
       "type": "cs-duo-cta",
@@ -268,7 +315,17 @@
         "in2",
         "in3"
       ],
-      "settings": {}
+      "settings": {
+        "eyebrow": "Hear it first",
+        "heading": "What's included in your song",
+        "body": "Press play. Every one of these came from one couple answering five questions.",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "play_label": "Play or pause",
+        "prev_label": "Previous song",
+        "next_label": "Next song",
+        "seek_label": "Seek"
+      }
     },
     "vsl": {
       "type": "cs-duo-vsl",
@@ -300,7 +357,16 @@
         "m2",
         "m3"
       ],
-      "settings": {}
+      "settings": {
+        "eyebrow": "Watch this first",
+        "heading": "Here is what they get — and how they react when it plays.",
+        "body": "Three real songs, three music videos, three first listens. Sound on.",
+        "vsl_video_url": "",
+        "play_label": "Play with sound on",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_note": "Free preview first — pay only if you love it"
+      }
     },
     "demos": {
       "type": "cs-duo-demos",
@@ -362,7 +428,15 @@
         "rx2",
         "rx3"
       ],
-      "settings": {}
+      "settings": {
+        "eyebrow": "Real songs, real reactions",
+        "heading": "Hear three of them. Then watch three people hear theirs.",
+        "body": "Every song below came from one couple answering five questions.",
+        "music_title": "The music videos",
+        "reaction_title": "The first listen",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#"
+      }
     },
     "trust": {
       "type": "cs-duo-trust",
@@ -455,7 +529,19 @@
         "i4",
         "i5"
       ],
-      "settings": {}
+      "settings": {
+        "eyebrow": "What you get",
+        "heading": "One song. One music video. Both about them.",
+        "body": "This is the one gift they cannot get for themselves, and the one they cannot guess.",
+        "free_line": "Your preview is free",
+        "show_price": false,
+        "price_was": "",
+        "price": "",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_note": "You decide after you have heard it",
+        "guarantee": "Full refund if you are not happy with it"
+      }
     },
     "faq": {
       "type": "cs-duo-faq",
@@ -488,7 +574,7 @@
           "type": "qa",
           "settings": {
             "q": "How long does it take?",
-            "a": "<p>You hear a free preview on the same visit, before you pay anything.</p>",
+            "a": "<p>Your free preview arrives within minutes. The finished song and music video follow within 48 hours — one delivery time, the same everywhere on this page.</p>",
             "open": false,
             "delivery_line": true
           }
@@ -497,7 +583,7 @@
           "type": "qa",
           "settings": {
             "q": "What if I do not like it?",
-            "a": "<p>The free preview comes first, so you decide after hearing it. If it is not right, you owe nothing.</p>",
+            "a": "<p>You hear a free preview before you pay anything. If it is not right, you owe nothing, and if you have already ordered and you are not happy with it, you get a full refund.</p>",
             "open": false,
             "guarantee_line": true
           }
@@ -528,7 +614,25 @@
         "q6",
         "q7"
       ],
-      "settings": {}
+      "settings": {
+        "heading": "The questions everyone asks",
+        "heading_bold": true,
+        "heading_size": "lg",
+        "align": "center",
+        "eyebrow": "Before you start",
+        "sub": "",
+        "single_open": false,
+        "rows_style": "border",
+        "delivery": "",
+        "guarantee": "",
+        "cta_label": "Create Your Free Preview",
+        "cta_link": "#",
+        "cta_popup": true,
+        "bg": "paper2",
+        "padding_top": 36,
+        "padding_bottom": 36,
+        "rich_snippet": false
+      }
     },
     "help": {
       "type": "cs-duo-help",
@@ -548,7 +652,11 @@
     "bar": {
       "type": "cs-duo-bar",
       "settings": {
-        "cta_label": "Create Our Music Video"
+        "cta_label": "Create Our Music Video",
+        "title": "Your preview is free",
+        "note": "No payment up front",
+        "cta_link": "#",
+        "show_desktop": false
       }
     },
     "order": {
