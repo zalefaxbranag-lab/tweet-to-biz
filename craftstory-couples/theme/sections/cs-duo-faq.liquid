@@ -4,16 +4,24 @@
   #   - 7 rows, all closed on load, each row its own <details>: several can be open at once
   #   - rows separated by a top border (their "accordion--top-border"), no cards
   #   - band padding 27px on phones / 36px from 750px up (Shopify's stored-value x 0.75 rule)
-  #   - the plus marker is a single 10x10 icon, no minus twin: the open state is a transform
+  #   - the plus marker is a single 10x10 icon inset 1 unit inside the box, arms 1 unit thick,
+  #     no minus twin: the open state is a transform. It inherits the text colour (fill="currentColor")
+  #   - each question is a heading: div.summary__title > h2.h4.accordion__title (7 of them)
+  #   - rows are animate-item--child inside animate-section animate--hidden always-display, so
+  #     --index:N staggers a reveal that fires when the band is scrolled to, not on page load
   #   - they ship NO FAQPage structured data (only Organization + WebSite), so ours is opt-in
 
   assign dfaq_rows = 0
   assign dfaq_needs_delivery = false
+  assign dfaq_needs_guarantee = false
   for block in section.blocks
     if block.type == 'qa' and block.settings.q != blank
       assign dfaq_rows = dfaq_rows | plus: 1
       if block.settings.delivery_line and section.settings.delivery == blank
         assign dfaq_needs_delivery = true
+      endif
+      if block.settings.guarantee_line and section.settings.guarantee == blank
+        assign dfaq_needs_guarantee = true
       endif
     endif
   endfor
@@ -57,32 +65,33 @@
                 <details class="cs-dfaq-details" data-cs-dfaq-details{% if block.settings.open %} open{% endif %}>
                   <summary
                     class="cs-dfaq-summary"
-                    id="cs-dfaq-s-{{ section.id }}-{{ block.id }}"
-                    aria-controls="cs-dfaq-a-{{ section.id }}-{{ block.id }}"
+                    id="cs-dfaq-s-{{ block.id }}-{{ section.id }}"
+                    aria-controls="cs-dfaq-a-{{ block.id }}-{{ section.id }}"
                     aria-expanded="{% if block.settings.open %}true{% else %}false{% endif %}"
                     data-cs-dfaq-summary
                   >
-                    <span class="cs-dfaq-title">
-                      {%- if block.settings.icon != blank -%}
-                        <span class="cs-dfaq-ico" aria-hidden="true">{{ block.settings.icon }}</span>
-                      {%- endif -%}
-                      <span class="cs-dfaq-q">{{ block.settings.q }}</span>
-                    </span>
+                    <div class="cs-dfaq-title">
+                      <span class="cs-dfaq-ico" aria-hidden="true">{{ block.settings.icon }}</span>
+                      <h2 class="cs-dfaq-q">{{ block.settings.q }}</h2>
+                    </div>
                     <svg class="cs-dfaq-plus" viewBox="0 0 10 10" aria-hidden="true" focusable="false" role="presentation">
-                      <rect class="cs-dfaq-plus-h" x="0" y="4.25" width="10" height="1.5" rx="0.75"></rect>
-                      <rect class="cs-dfaq-plus-v" x="4.25" y="0" width="1.5" height="10" rx="0.75"></rect>
+                      <rect class="cs-dfaq-plus-h" x="1" y="4.5" width="8" height="1" rx="0.5"></rect>
+                      <rect class="cs-dfaq-plus-v" x="4.5" y="1" width="1" height="8" rx="0.5"></rect>
                     </svg>
                   </summary>
                   <div class="cs-dfaq-panel" data-cs-dfaq-panel>
                     <div
                       class="cs-dfaq-a rte"
-                      id="cs-dfaq-a-{{ section.id }}-{{ block.id }}"
+                      id="cs-dfaq-a-{{ block.id }}-{{ section.id }}"
                       role="region"
-                      aria-labelledby="cs-dfaq-s-{{ section.id }}-{{ block.id }}"
+                      aria-labelledby="cs-dfaq-s-{{ block.id }}-{{ section.id }}"
                     >
                       {%- if block.settings.a != blank -%}{{ block.settings.a }}{%- endif -%}
                       {%- if block.settings.delivery_line and section.settings.delivery != blank -%}
                         <p>{{ section.settings.delivery }}</p>
+                      {%- endif -%}
+                      {%- if block.settings.guarantee_line and section.settings.guarantee != blank -%}
+                        <p>{{ section.settings.guarantee }}</p>
                       {%- endif -%}
                       {%- if block.settings.a == blank and request.design_mode -%}
                         <p class="cs-dfaq-hint">This row has no answer yet. Theme editor &#9656; this question &#9656; Answer.</p>
@@ -106,6 +115,9 @@
         {%- if dfaq_rows == 0 -%}
           <p class="cs-dfaq-hint">No questions yet. Theme editor &#9656; CraftStory Duo FAQ &#9656; Add block &#9656; Question. The reference page shows 7 rows.</p>
         {%- endif -%}
+        {%- if dfaq_needs_guarantee -%}
+          <p class="cs-dfaq-hint">A row is set to show the guarantee sentence, but "Guarantee sentence" is empty, so nothing is added. Theme editor &#9656; CraftStory Duo FAQ &#9656; Guarantee sentence &mdash; write the promise you will actually honour, or untick the row's "Add the guarantee sentence".</p>
+        {%- endif -%}
         {%- if dfaq_needs_delivery -%}
           <p class="cs-dfaq-hint">A row is set to show the delivery-time sentence, but "Delivery-time sentence" is empty, so nothing is added. Theme editor &#9656; CraftStory Duo FAQ &#9656; Delivery-time sentence &mdash; write the turnaround you actually keep, or untick the row's "Add the delivery-time sentence".</p>
         {%- endif -%}
@@ -121,9 +133,9 @@
     {%- assign dfaq_first = true -%}
     {%- for block in section.blocks -%}
       {%- if block.type == 'qa' and block.settings.q != blank and block.settings.a != blank -%}
-        {%- capture dfaq_answer -%}{{ block.settings.a }}{% if block.settings.delivery_line and section.settings.delivery != blank %} <p>{{ section.settings.delivery }}</p>{% endif %}{%- endcapture -%}
+        {%- capture dfaq_answer -%}{{ block.settings.a }}{% if block.settings.delivery_line and section.settings.delivery != blank %} <p>{{ section.settings.delivery }}</p>{% endif %}{% if block.settings.guarantee_line and section.settings.guarantee != blank %} <p>{{ section.settings.guarantee }}</p>{% endif %}{%- endcapture -%}
         {%- comment -%} paragraph and line breaks become spaces, so the plain text reads like the visible answer {%- endcomment -%}
-        {%- assign dfaq_answer = dfaq_answer | replace: '</p>', '</p> ' | replace: '<br>', ' ' | replace: '<br/>', ' ' | replace: '<br />', ' ' | strip_html | strip_newlines | replace: '  ', ' ' | strip -%}
+        {%- assign dfaq_answer = dfaq_answer | replace: '</p>', '</p> ' | replace: '<br>', ' ' | replace: '<br/>', ' ' | replace: '<br />', ' ' | strip_html | strip_newlines | replace: '  ', ' ' | replace: '  ', ' ' | replace: '  ', ' ' | strip -%}
         {%- unless dfaq_first -%},{%- endunless -%}
         {"@type":"Question","name":{{ block.settings.q | strip_html | strip_newlines | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ dfaq_answer | json }}}}
         {%- assign dfaq_first = false -%}
@@ -140,7 +152,7 @@
   "name": "CraftStory Duo FAQ",
   "tag": "section",
   "settings": [
-    { "type": "paragraph", "content": "Structural clone of the reference FAQ: one centred heading, 7 rows separated by a top border, every row closed on load, several rows can be open at once, and a single plus marker that becomes a minus. The reference shows no eyebrow, no sub-line and no button here, so those three are empty by default." },
+    { "type": "paragraph", "content": "Structural clone of the reference FAQ: one centred heading, 7 rows separated by a top border, every row closed on load, several rows can be open at once, and a single plus marker that becomes a minus. Each question is a heading and the rows reveal themselves, staggered, when the band is scrolled to, the way the reference's animate-item rows do. The reference shows no eyebrow, no sub-line and no button here, so those three are empty by default." },
     { "type": "header", "content": "Heading" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Frequently Asked Questions" },
     { "type": "checkbox", "id": "heading_bold", "label": "Bold heading", "default": true, "info": "The reference wraps its heading in <strong>." },
@@ -163,6 +175,9 @@
     { "type": "header", "content": "Delivery time" },
     { "type": "paragraph", "content": "The reference answers a delivery time and a rush fee in two of their rows. Ours ship without either, because the turnaround is yours to decide. Write one sentence here and it is added to the end of every row that has \"Add the delivery-time sentence\" ticked, so the same wording can never drift between rows." },
     { "type": "text", "id": "delivery", "label": "Delivery-time sentence", "info": "Empty by default on purpose. Example shape: The finished song and video are ready within X hours. Nothing is added while this is empty." },
+    { "type": "header", "content": "Guarantee" },
+    { "type": "paragraph", "content": "The same mechanism for anything you promise after the sale, such as a refund. Write it once here and it is added to the end of every row that has \"Add the guarantee sentence\" ticked. Empty by default, so no refund or guarantee wording ships until you write the one you will honour." },
+    { "type": "text", "id": "guarantee", "label": "Guarantee sentence", "info": "Empty by default on purpose. Nothing is added while this is empty." },
     { "type": "header", "content": "Call to action" },
     { "type": "text", "id": "cta_label", "label": "Button label (optional)", "info": "Empty by default: the reference shows no button under its FAQ. Fill it only if you want one here." },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "A text field, not a link picker, so an internal path such as /pages/couples works." },
@@ -185,6 +200,7 @@
       { "type": "richtext", "id": "a", "label": "Answer", "default": "<p>The answer, in plain words.</p>" },
       { "type": "checkbox", "id": "open", "label": "Open by default", "default": false, "info": "Off matches the reference: all of their rows load closed." },
       { "type": "checkbox", "id": "delivery_line", "label": "Add the delivery-time sentence", "default": false, "info": "Appends the section's \"Delivery-time sentence\" to this answer. Nothing is added while that setting is empty." },
+      { "type": "checkbox", "id": "guarantee_line", "label": "Add the guarantee sentence", "default": false, "info": "Appends the section's \"Guarantee sentence\" to this answer. Nothing is added while that setting is empty." },
       { "type": "text", "id": "icon", "label": "Icon before the question (optional)", "info": "Empty by default: the reference renders an empty icon slot on every row. One character or emoji if you ever want one." }
     ] }
   ],
@@ -192,7 +208,7 @@
     { "name": "CraftStory Duo FAQ", "blocks": [
       { "type": "qa", "settings": { "q": "What makes this song and video ours?", "a": "<p>Both are built from your own answers about the two of you: your names, how you met, the lines you say to each other. Nothing is picked off a shelf, so nobody else has this song and nobody else has this video.</p>" } },
       { "type": "qa", "settings": { "q": "How long does it take?", "a": "<p>You hear a free preview before you pay anything, so you know what you are getting on the same visit.</p>", "delivery_line": true } },
-      { "type": "qa", "settings": { "q": "What if we need it sooner?", "a": "<p>Tell us the date you need it for before you order and we will tell you straight away whether we can make it.</p>" } },
+      { "type": "qa", "settings": { "q": "What if we need it sooner?", "a": "<p>Tell us the date you need it for before you order.</p>" } },
       { "type": "qa", "settings": { "q": "What occasions does this work for?", "a": "<p>The moments where a card is not enough: a wedding and its first dance, an anniversary, an engagement, Valentine's Day, or a gift the two families give together.</p>" } },
       { "type": "qa", "settings": { "q": "How is it made?", "a": "<p>You answer a handful of plain questions about the two of you. Your answers become the lyrics, the lyrics become a finished song, and the song becomes an animated music video with a couple on screen built to look like you.</p>" } },
       { "type": "qa", "settings": { "q": "How do we get it?", "a": "<p>We email you a private link. Open it on any phone, tablet or computer to listen and watch, then share it however you like. Nothing to install.</p>" } },
@@ -209,7 +225,7 @@
 .cs-dfaq--night{background:var(--cs-night);color:var(--cs-night-ink)}
 .cs-dfaq-band{padding-top:calc(var(--cs-duo-faq-pt) * .75);padding-bottom:calc(var(--cs-duo-faq-pb) * .75)}
 @media screen and (min-width:750px){.cs-dfaq-band{padding-top:var(--cs-duo-faq-pt);padding-bottom:var(--cs-duo-faq-pb)}}
-.cs-dfaq-wrap{max-width:var(--cs-duo-faq-max)}
+.cs-duo-faq .cs-dfaq-wrap{max-width:var(--cs-duo-faq-max)}
 .cs-dfaq-head{margin:0 auto clamp(16px,2.2vw,24px)}
 .cs-dfaq-head--center{text-align:center}
 .cs-dfaq-head--left{text-align:left}
@@ -220,7 +236,6 @@
 .cs-dfaq-sub{margin-top:10px;color:var(--cs-ink2);font-size:1.05rem;line-height:1.55}
 .cs-dfaq--night .cs-dfaq-sub{color:var(--cs-night-ink2)}
 .cs-dfaq-list--border .cs-dfaq-row{border-top:1px solid var(--cs-line)}
-.cs-dfaq-list--border .cs-dfaq-row:last-child{border-bottom:1px solid var(--cs-line)}
 .cs-dfaq--night .cs-dfaq-list--border .cs-dfaq-row{border-color:var(--cs-night-line)}
 .cs-dfaq-list--cards{display:flex;flex-direction:column;gap:10px}
 .cs-dfaq--night .cs-dfaq-list--cards .cs-dfaq-row{background:var(--cs-night-line);border-color:var(--cs-night-line)}
@@ -232,18 +247,18 @@
 .cs-dfaq-summary:focus-visible{outline:2px solid var(--cs-gold);outline-offset:2px;border-radius:6px}
 .cs-dfaq-title{display:flex;align-items:center;gap:10px;min-width:0}
 .cs-dfaq-ico{font-size:1.15rem;line-height:1;flex:0 0 auto}
-.cs-dfaq-q{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.02rem,1.7vw,1.22rem);line-height:1.26;letter-spacing:-.01em;overflow-wrap:anywhere}
+.cs-dfaq-ico:empty{display:none}
+.cs-duo-faq .cs-dfaq-q{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.02rem,1.7vw,1.22rem);line-height:1.26;letter-spacing:-.01em;overflow-wrap:anywhere;margin:0}
 .cs-dfaq--night .cs-dfaq-q{color:var(--cs-night-ink)}
-.cs-dfaq-plus{width:15px;height:15px;flex:0 0 15px;fill:var(--cs-gold)}
+.cs-dfaq-plus{width:15px;height:15px;flex:0 0 15px;fill:currentColor}
 .cs-dfaq-plus rect{transform-box:fill-box;transform-origin:center;transition:transform .2s ease}
-.cs-dfaq--night .cs-dfaq-plus{fill:var(--cs-star)}
 .cs-dfaq-details[open] .cs-dfaq-plus-v{transform:scaleY(0)}
 .cs-dfaq-js .cs-dfaq-details[open] .cs-dfaq-plus-v{transform:none}
 .cs-dfaq-js .cs-dfaq-row.is-open .cs-dfaq-plus-v{transform:scaleY(0)}
 .cs-dfaq-panel{overflow:hidden}
 .cs-dfaq-js .cs-dfaq-panel{max-height:0;opacity:0;transition:max-height .3s ease,opacity .24s ease}
 .cs-dfaq-js .cs-dfaq-row.is-open .cs-dfaq-panel{opacity:1}
-.cs-dfaq-a{padding:0 2px 20px;color:var(--cs-ink2);font-size:1rem;line-height:1.62;max-width:64ch}
+.cs-dfaq-a{padding:0 2px 20px;color:var(--cs-ink2);font-size:1rem;line-height:1.62}
 .cs-dfaq--night .cs-dfaq-a{color:var(--cs-night-ink2)}
 .cs-dfaq-a p{margin:0 0 .7em}
 .cs-dfaq-a p:last-child{margin-bottom:0}
@@ -252,7 +267,9 @@
 .cs-dfaq-cta{display:flex;justify-content:center;margin-top:clamp(20px,3vw,30px)}
 .cs-dfaq-hint{margin-top:14px;font-size:.86rem;line-height:1.5;color:var(--cs-ink2);background:var(--cs-gold-soft);border:1px dashed var(--cs-gold);border-radius:var(--cs-r);padding:10px 12px}
 @media (prefers-reduced-motion:no-preference){
-  .cs-dfaq-row{animation:cs-dfaq-in .5s ease both;animation-delay:calc(var(--cs-duo-faq-i,0) * .05s)}
+  /* the reveal only exists once JS has added .cs-dfaq-reveal, so rows are never stuck hidden */
+  .cs-dfaq-reveal .cs-dfaq-row{opacity:0}
+  .cs-dfaq-reveal .cs-dfaq-row.cs-dfaq-shown{animation:cs-dfaq-in .5s ease both;animation-delay:calc(var(--cs-duo-faq-i,0) * .05s)}
 }
 @keyframes cs-dfaq-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 @media (max-width:560px){
@@ -329,6 +346,30 @@
     });
   }
 
+  // the reference keeps its rows hidden until the band is scrolled to, then stagger them by --index
+  function reveal(list, rows) {
+    if (REDUCE || !('IntersectionObserver' in window) || !rows.length) return;
+    var shown = false;
+    var io = null;
+    var safety = null;
+    function show() {
+      if (shown) return;
+      shown = true;
+      if (io) io.disconnect();
+      if (safety) clearTimeout(safety);
+      for (var i = 0; i < rows.length; i++) rows[i].classList.add('cs-dfaq-shown');
+    }
+    list.classList.add('cs-dfaq-reveal');
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) { show(); return; }
+      }
+    }, { rootMargin: '0px 0px -60px 0px' });
+    io.observe(list);
+    // never leave the answers invisible if the observer never fires
+    safety = setTimeout(show, 2500);
+  }
+
   function setup(list) {
     if (!list || list.dataset.csDfaqOn === '1') return;
     list.dataset.csDfaqOn = '1';
@@ -358,6 +399,8 @@
         }
       });
     });
+
+    reveal(list, rowsOf(list));
   }
 
   function init(root) {

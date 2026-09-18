@@ -8,7 +8,7 @@
   Different component from cs-duo-steps (the card grid) — no shared class names.
 {%- endcomment -%}
 
-{%- assign dhw_img_d = section.settings.image -%}
+{%- assign dhw_img_d = section.settings.image | default: section.settings.image_mobile -%}
 {%- assign dhw_img_m = section.settings.image_mobile | default: section.settings.image -%}
 {%- assign dhw_has_img = false -%}
 {%- if dhw_img_d != blank or dhw_img_m != blank -%}{%- assign dhw_has_img = true -%}{%- endif -%}
@@ -25,30 +25,30 @@
     style="--cs-dhw-scrim:{{ section.settings.overlay_opacity | divided_by: 100.0 }}">
 
     {%- if dhw_has_img -%}
-      <div class="cs-dhw-media cs-dhw-media--d" aria-hidden="true">
+      <div class="cs-dhw-media cs-dhw-media--d">
         {%- if dhw_img_d != blank -%}
           <img
-            src="{{ dhw_img_d | image_url: width: 2000 }}"
-            srcset="{{ dhw_img_d | image_url: width: 750 }} 750w, {{ dhw_img_d | image_url: width: 1100 }} 1100w, {{ dhw_img_d | image_url: width: 1500 }} 1500w, {{ dhw_img_d | image_url: width: 2000 }} 2000w, {{ dhw_img_d | image_url: width: 3000 }} 3000w"
+            src="{{ dhw_img_d | image_url: width: 3840 }}"
+            srcset="{{ dhw_img_d | image_url: width: 375 }} 375w, {{ dhw_img_d | image_url: width: 550 }} 550w, {{ dhw_img_d | image_url: width: 750 }} 750w, {{ dhw_img_d | image_url: width: 1100 }} 1100w, {{ dhw_img_d | image_url: width: 1500 }} 1500w, {{ dhw_img_d | image_url: width: 1780 }} 1780w, {{ dhw_img_d | image_url: width: 2000 }} 2000w, {{ dhw_img_d | image_url: width: 3000 }} 3000w, {{ dhw_img_d | image_url: width: 3840 }} 3840w"
             sizes="100vw"
             width="{{ dhw_img_d.width }}"
             height="{{ dhw_img_d.height }}"
             alt="{{ dhw_img_d.alt | escape }}"
-            loading="lazy"
-            decoding="async">
+            loading="eager"
+            fetchpriority="high">
         {%- endif -%}
       </div>
-      <div class="cs-dhw-media cs-dhw-media--m" aria-hidden="true">
+      <div class="cs-dhw-media cs-dhw-media--m">
         {%- if dhw_img_m != blank -%}
           <img
-            src="{{ dhw_img_m | image_url: width: 1100 }}"
-            srcset="{{ dhw_img_m | image_url: width: 375 }} 375w, {{ dhw_img_m | image_url: width: 550 }} 550w, {{ dhw_img_m | image_url: width: 750 }} 750w, {{ dhw_img_m | image_url: width: 1100 }} 1100w"
+            src="{{ dhw_img_m | image_url: width: 3840 }}"
+            srcset="{{ dhw_img_m | image_url: width: 375 }} 375w, {{ dhw_img_m | image_url: width: 550 }} 550w, {{ dhw_img_m | image_url: width: 750 }} 750w, {{ dhw_img_m | image_url: width: 1100 }} 1100w, {{ dhw_img_m | image_url: width: 1500 }} 1500w, {{ dhw_img_m | image_url: width: 1780 }} 1780w, {{ dhw_img_m | image_url: width: 2000 }} 2000w, {{ dhw_img_m | image_url: width: 3000 }} 3000w, {{ dhw_img_m | image_url: width: 3840 }} 3840w"
             sizes="(min-width: 750px) 50vw, 100vw"
             width="{{ dhw_img_m.width }}"
             height="{{ dhw_img_m.height }}"
             alt="{{ dhw_img_m.alt | escape }}"
-            loading="lazy"
-            decoding="async">
+            loading="eager"
+            fetchpriority="high">
         {%- endif -%}
       </div>
     {%- else -%}
@@ -83,9 +83,9 @@
                     {%- assign dhw_n = dhw_n | plus: 1 -%}
                     <li class="cs-dhw-line" {{ block.shopify_attributes }}>
                       {%- if block.settings.label != blank -%}
-                        <span class="cs-dhw-n">{{ block.settings.label }}</span>
+                        <span class="cs-dhw-n">{{ block.settings.label }}&nbsp;</span>
                       {%- elsif section.settings.show_numbers -%}
-                        <span class="cs-dhw-n">{{ section.settings.number_word | default: 'Step' }} {{ dhw_n }}:</span>
+                        <span class="cs-dhw-n">{{ section.settings.number_word | default: 'Step' }} {{ dhw_n }}:&nbsp;</span>
                       {%- endif -%}
                       {%- if block.settings.text != blank -%}
                         <span class="cs-dhw-t">{{ block.settings.text }}</span>
@@ -100,7 +100,7 @@
 
           {%- if section.settings.cta_label != blank -%}
             <div class="cs-dhw-btns">
-              <a class="cs-btn cs-btn-primary cs-dhw-cta" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a>
+              <a class="cs-btn cs-btn-primary cs-dhw-cta" href="{{ section.settings.cta_link | default: '#' | escape }}">{{ section.settings.cta_label }}</a>
             </div>
           {%- endif -%}
 
@@ -143,12 +143,12 @@
     { "type": "checkbox", "id": "show_numbers", "label": "Number the lines automatically", "default": true },
     { "type": "text", "id": "number_word", "label": "Word before the number", "default": "Step", "info": "Rendered as \"Step 1:\", \"Step 2:\" and so on. A block's own label overrides it." },
     { "type": "header", "content": "Button" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start My Custom Song" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start My Custom Song", "info": "Kept on one line, as in the reference. About 30 characters is the most that fits on a 375px phone." },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" }
   ],
   "blocks": [
     { "type": "step", "name": "Step line", "limit": 6, "settings": [
-      { "type": "text", "id": "text", "label": "Line", "default": "Fill out the form" },
+      { "type": "text", "id": "text", "label": "Line", "info": "The words after the number, for example: Fill out the form" },
       { "type": "text", "id": "label", "label": "Label instead of the automatic number", "info": "Optional. Leave it empty to get \"Step 1:\", \"Step 2:\" and so on." }
     ] }
   ],
@@ -156,7 +156,7 @@
     { "name": "CraftStory Duo How It Works", "blocks": [
       { "type": "step", "settings": { "text": "Fill out the form" } },
       { "type": "step", "settings": { "text": "We create your song and your animated music video" } },
-      { "type": "step", "settings": { "text": "Receive it by email — ready to share" } }
+      { "type": "step", "settings": { "text": "Receive it by email —\u00a0ready to share" } }
     ] }
   ]
 }
@@ -181,7 +181,7 @@
 .cs-duo-how .cs-dhw-hl{font-style:italic;color:var(--cs-duo-how-hl)}
 .cs-duo-how .cs-dhw-lines{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(8px,1.4vw,12px)}
 .cs-duo-how .cs-dhw-line{font-size:clamp(1.02rem,1.9vw,1.2rem);line-height:1.45;color:var(--cs-duo-how-on);text-shadow:0 1px 12px rgba(28,21,51,.4)}
-.cs-duo-how .cs-dhw-n{font-weight:800;font-variant-numeric:tabular-nums;margin-right:.4em;white-space:nowrap}
+.cs-duo-how .cs-dhw-n{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cs-duo-how .cs-dhw-eyebrow{text-shadow:none}
 .cs-duo-how .cs-dhw-hint{font-size:.86rem;font-weight:600;color:var(--cs-night-ink2)}
 .cs-duo-how .cs-dhw-btns{margin-top:clamp(4px,1vw,10px)}
@@ -190,7 +190,7 @@
   .cs-duo-how .cs-dhw-media--d{display:none}
   .cs-duo-how .cs-dhw-media--m{display:block}
   .cs-duo-how .cs-dhw{padding-bottom:20px}
-  .cs-duo-how .cs-dhw--m-stack{flex-direction:column;min-height:0;overflow:visible;padding-bottom:0}
+  .cs-duo-how .cs-dhw--m-stack{flex-direction:column;min-height:0;overflow:visible}
   .cs-duo-how .cs-dhw--m-stack .cs-dhw-media{position:relative;inset:auto;aspect-ratio:1/1;width:100%}
   .cs-duo-how .cs-dhw--m-stack.cs-dhw--noimg .cs-dhw-media{aspect-ratio:auto;min-height:190px}
   .cs-duo-how .cs-dhw--m-stack::after{display:none}
@@ -199,9 +199,6 @@
   .cs-duo-how .cs-dhw--m-stack .cs-dhw-box{max-width:none;width:100%;padding:0 22px}
   .cs-duo-how .cs-dhw--m-stack .cs-dhw-h,
   .cs-duo-how .cs-dhw--m-stack .cs-dhw-line{text-shadow:none}
-  .cs-duo-how .cs-dhw--m-stack .cs-dhw-btns{width:100%}
-  .cs-duo-how .cs-dhw--m-stack .cs-dhw-cta{width:100%}
-  .cs-duo-how .cs-dhw-cta{white-space:normal;text-align:center}
   .cs-duo-how .cs-dhw--m-stack.cs-dhw--panel-night .cs-dhw-content{background:var(--cs-night)}
   .cs-duo-how .cs-dhw--m-stack.cs-dhw--panel-coral{--cs-duo-how-hl:var(--cs-star)}
   .cs-duo-how .cs-dhw--m-stack.cs-dhw--panel-coral .cs-dhw-content{background:var(--cs-coral)}

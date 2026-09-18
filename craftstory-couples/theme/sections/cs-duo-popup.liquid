@@ -1,7 +1,9 @@
 {%- liquid
   assign pop_live = false
-  if section.settings.enable and request.design_mode == false
-    assign pop_live = true
+  if section.settings.enable
+    unless request.design_mode
+      assign pop_live = true
+    endunless
   endif
   assign pop_pad = section.settings.pad | default: 12
   assign pop_radius = section.settings.radius | default: 0
@@ -15,6 +17,17 @@
       assign pop_points = pop_points | plus: 1
     endif
   endfor
+  comment
+    The list renders when at least one bullet has text. In the theme editor it also
+    renders while every bullet is still blank, so a block the owner has just added
+    is visible and selectable instead of vanishing.
+  endcomment
+  assign pop_show_points = false
+  if pop_points > 0
+    assign pop_show_points = true
+  elsif request.design_mode and section.blocks.size > 0
+    assign pop_show_points = true
+  endif
 -%}
 
 {%- if section.settings.enable or request.design_mode -%}
@@ -35,13 +48,6 @@
   <div class="cs-pop-modal" role="dialog" aria-modal="true"
        aria-label="{{ section.settings.dialog_label | default: 'CraftStory Couples' | escape }}"
        tabindex="-1" data-cs-pop-dialog>
-
-    <button type="button" class="cs-pop-close" data-cs-pop-close
-            aria-label="{{ section.settings.close_label | default: 'Close' | escape }}">
-      <svg class="cs-pop-x" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
-        <path d="M4 4l10 10M14 4L4 14"/>
-      </svg>
-    </button>
 
     {%- if section.settings.image != blank -%}
       <div class="cs-pop-media">
@@ -69,7 +75,7 @@
         <p class="cs-pop-offer">{{ section.settings.offer_line }}</p>
       {%- endif -%}
 
-      {%- if pop_points > 0 -%}
+      {%- if pop_show_points -%}
         <ul class="cs-pop-points">
           {%- for block in section.blocks -%}
             {%- if block.settings.text != blank -%}
@@ -78,6 +84,13 @@
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
                 </span>
                 <span>{{ block.settings.text }}</span>
+              </li>
+            {%- elsif request.design_mode -%}
+              <li class="cs-pop-point cs-pop-point--todo" {{ block.shopify_attributes }}>
+                <span class="cs-pop-tick" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                </span>
+                <span>Empty bullet. Type its line in the block on the left. Blank bullets are left out on the storefront, and this placeholder is only visible here in the editor.</span>
               </li>
             {%- endif -%}
           {%- endfor -%}
@@ -117,6 +130,19 @@
       {%- endif -%}
 
     </div>
+
+    {%- comment -%}
+      Close last, the way the reference's only real modal orders it: its close
+      button is the final child of the content element, after the form. It is
+      absolutely positioned against .cs-pop-modal in both, so the placement is
+      invisible, but it keeps Close as the last tab stop instead of the first.
+    {%- endcomment -%}
+    <button type="button" class="cs-pop-close" data-cs-pop-close
+            aria-label="{{ section.settings.close_label | default: 'Close' | escape }}">
+      <svg class="cs-pop-x" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <path d="M4 4l10 10M14 4L4 14"/>
+      </svg>
+    </button>
   </div>
 </div>
 {%- endif -%}
@@ -144,11 +170,11 @@
 
     { "type": "header", "content": "Content" },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "For couples" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Hear a sample before you order" },
-    { "type": "textarea", "id": "body", "label": "Text", "default": "Listen to a demo and see how the song and the animated video come together." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Hear your free preview first" },
+    { "type": "textarea", "id": "body", "label": "Text", "default": "Listen to your free preview and see how the song and the music video come together." },
     { "type": "text", "id": "offer_line", "label": "Offer line", "info": "EMPTY ON PURPOSE. This is the one line for your real offer, and it is not rendered at all while it is empty. Never a countdown, an expiry, an 'only N left', a rating or a customer count — the store's copy rules forbid invented urgency and invented numbers." },
     { "type": "text", "id": "cta_icon", "label": "Icon before the button label", "default": "♫" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Hear a Sample" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path the button should open, for example /pages/couples-start. Clicking it also counts as closing the popup, so it does not reopen on the next page." },
     { "type": "text", "id": "decline_label", "label": "Decline link under the button", "default": "No thanks" },
     { "type": "text", "id": "note", "label": "Small line at the bottom", "info": "Optional, hidden while empty. Keep it to promises we already keep elsewhere on the page." },
@@ -177,7 +203,16 @@
 {% endschema %}
 
 {% stylesheet %}
+/* The root carries .cs for the type scale, but .cs also paints background:var(--cs-paper)
+   and pins font-size/line-height. On a position:fixed;inset:0 root that would cover the
+   whole viewport in opaque cream instead of letting the page show through the scrim, so
+   it is neutralised here the same way cs-duo-tt does it. Two classes, so it always wins
+   over the one-class .cs rule regardless of how Shopify orders the bundle. */
+.cs.cs-duo-popup{background:none;font-size:inherit}
 .cs-duo-popup{
+  /* Clears this theme's own floating furniture (cs-duo-totop sits at 101). Third-party
+     app launchers routinely use eight- and nine-digit z-indexes and will float above
+     this scrim; if one of those apps is installed, raise this token to clear it. */
   --cs-duo-pop-z:9990;
   --cs-duo-pop-pad:12px;
   --cs-duo-pop-r:0px;
@@ -201,6 +236,8 @@
   --cs-duo-pop-ink:var(--cs-night-ink);
   --cs-duo-pop-ink2:var(--cs-night-ink2);
   --cs-duo-pop-border:color-mix(in srgb, var(--cs-night-ink) 14%, transparent);
+  /* Without this the dark card keeps the light theme's ink-tinted shadow. */
+  --cs-duo-pop-shc:color-mix(in srgb, var(--cs-night) 55%, transparent);
 }
 .cs-pop-overlay{
   position:absolute;inset:0;background:var(--cs-night);opacity:.62;cursor:pointer;
@@ -251,6 +288,9 @@
 .cs-pop-point{display:flex;align-items:flex-start;gap:9px;font-size:.95rem;color:var(--cs-duo-pop-ink2);line-height:1.45}
 .cs-pop-tick{flex:0 0 auto;width:18px;height:18px;margin-top:1px;color:var(--cs-coral)}
 .cs-pop-tick svg{width:18px;height:18px;display:block}
+/* design mode only: never rendered for a visitor */
+.cs-pop-point--todo{opacity:.7;font-style:italic}
+.cs-pop-point--todo .cs-pop-tick{color:var(--cs-duo-pop-ink2)}
 .cs-pop-cta{width:100%;margin-top:3px}
 .cs-pop-cta-ico{font-size:1.05em;line-height:1}
 .cs-pop-decline{
@@ -269,7 +309,9 @@
 .cs-duo-popup .cs-pop-overlay{opacity:0;transition:opacity .22s ease}
 .cs-duo-popup.cs-pop-open .cs-pop-modal{opacity:1;transform:none}
 .cs-duo-popup.cs-pop-open .cs-pop-overlay{opacity:.62}
-.cs-pop-preview{position:static;display:block;padding:24px 16px;background:var(--cs-paper)}
+/* Two classes, to outrank the .cs.cs-duo-popup background reset above: the static
+   editor preview is a normal in-flow block and does want the paper sheet. */
+.cs-duo-popup.cs-pop-preview{position:static;display:block;padding:24px 16px;background:var(--cs-paper)}
 .cs-pop-preview .cs-pop-overlay{display:none}
 .cs-pop-preview .cs-pop-modal{margin:0 auto;opacity:1;transform:none;max-height:none}
 html.cs-pop-lock{overflow:hidden}
@@ -390,19 +432,25 @@ html.cs-pop-lock{overflow:hidden}
     var overlay = root.querySelector('[data-cs-pop-overlay]');
     if (overlay) overlay.addEventListener('click', function () { close(); });
 
+    // Taking the offer counts as closing it: close() already records the dismissal and
+    // releases the scroll lock. Navigation is not prevented, so a real link still opens;
+    // a link that goes nowhere yet leaves a closed popup rather than a stuck one.
     var accept = root.querySelector('[data-cs-pop-accept]');
-    if (accept) accept.addEventListener('click', function () { remember(root); done = true; });
+    if (accept) accept.addEventListener('click', function () { close(); });
 
     function onScroll() {
       var want = parseInt(root.getAttribute('data-cs-pop-scroll'), 10) || 40;
       var doc = document.documentElement;
       var reach = doc.scrollHeight - window.innerHeight;
-      var pct = reach > 0 ? (window.pageYOffset || doc.scrollTop) / reach * 100 : 100;
+      // A page with nothing to scroll never reaches the configured depth. Without this
+      // the first (priming) call would compute 100% and open the popup immediately.
+      if (reach <= 0) return;
+      var pct = (window.pageYOffset || doc.scrollTop) / reach * 100;
       if (pct >= want) show();
     }
 
     function onOut(e) {
-      if (e.relatedTarget || e.toElement) return;
+      if (e.relatedTarget) return;
       if (e.clientY > 0) return;
       show();
     }

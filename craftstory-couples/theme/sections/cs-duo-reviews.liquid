@@ -3,6 +3,23 @@
   assign cols_m = section.settings.cols_mobile | default: 2
   assign gap_d = section.settings.gap_desktop | default: 28
   assign gap_m = section.settings.gap_mobile | default: 12
+  assign pad_d = section.settings.pad_desktop | default: 0
+  assign pad_m = section.settings.pad_mobile | default: 0
+
+  assign per_move_d = section.settings.per_move_desktop | default: 1
+  assign per_move_m = section.settings.per_move_mobile | default: 2
+  if per_move_d < 1
+    assign per_move_d = 1
+  endif
+  if per_move_m < 1
+    assign per_move_m = 1
+  endif
+  if per_move_d > cols_d
+    assign per_move_d = cols_d
+  endif
+  if per_move_m > cols_m
+    assign per_move_m = cols_m
+  endif
 
   assign filled = 0
   for block in section.blocks
@@ -11,14 +28,16 @@
         assign filled = filled | plus: 1
       endif
     else
-      if block.settings.image != blank or block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank
+      if block.settings.image != blank or block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank or block.settings.quote != blank or block.settings.meta != blank
         assign filled = filled | plus: 1
       endif
     endif
   endfor
 
-  assign pages = filled | minus: cols_d | plus: 1
-  if pages < 1
+  assign rest = filled | minus: cols_d
+  if rest > 0
+    assign pages = rest | plus: per_move_d | minus: 1 | divided_by: per_move_d | plus: 1
+  else
     assign pages = 1
   endif
 
@@ -26,11 +45,11 @@
 -%}
 {%- if filled > 0 or request.design_mode -%}
 <div class="cs cs-duo-rvs">
-  <div class="cs-wrap">
-    <div class="cs-rvs-sec">
+  <div class="cs-rvs-sec">
 
-      {%- if section.settings.heading != blank or section.settings.brand != blank -%}
-        <div class="cs-rvs-head cs-rvs-head--{{ section.settings.align }}">
+    {%- if section.settings.heading != blank or section.settings.brand != blank -%}
+      <div class="cs-wrap">
+        <div class="cs-rvs-head cs-rvs-head--{{ section.settings.align }}"{% if section.settings.highlight_color != blank %} style="--cs-rvs-hl:{{ section.settings.highlight_color }}"{% endif %}>
           <h2 class="cs-h1 cs-rvs-title">
             {%- if section.settings.count != blank and section.settings.heading_count != blank -%}
               <strong>{{ section.settings.heading_count | replace: '{count}', section.settings.count }}&nbsp;</strong>
@@ -40,37 +59,57 @@
             {%- if section.settings.brand != blank -%}<em>{{ section.settings.brand }}</em>{%- endif -%}
           </h2>
         </div>
-      {%- endif -%}
+      </div>
+    {%- endif -%}
 
-      {%- if filled > 0 -%}
-        <div class="cs-rvs-slider"
-             id="cs-rvs-{{ uid }}"
-             role="region"
-             aria-roledescription="carousel"
-             aria-label="{{ section.settings.carousel_label | default: 'Customer reviews' | escape }}"
-             data-cs-rvs
-             data-slides="{{ filled }}"
-             data-pause-offscreen="{% if section.settings.pause_offscreen %}true{% else %}false{% endif %}"
-             style="--cs-rvs-cols-d:{{ cols_d }};--cs-rvs-cols-m:{{ cols_m }};--cs-rvs-gap-d:{{ gap_d }}px;--cs-rvs-gap-m:{{ gap_m }}px">
+    {%- if filled == 0 and request.design_mode -%}
+      <div class="cs-wrap">
+        <div class="cs-rvs-empty">
+          <strong>No reviews yet &mdash; this section stays hidden on the storefront.</strong>
+          Fill a <em>UGC video card</em> with a clip a customer sent you, or a <em>Testimonial card</em> with their words.
+          The carousel, the dots and the swipe appear the moment one block has real content.
+        </div>
+      </div>
+    {%- endif -%}
 
-          <ul class="cs-rvs-track" data-cs-rvs-track tabindex="0" aria-live="polite" aria-atomic="true">
+    <div class="cs-wrap">
+      <div class="cs-rvs-slider{% unless section.settings.show_arrows %} cs-rvs-slider--arrows-hidden{% endunless %}"
+           id="cs-rvs-{{ uid }}"
+           role="region"
+           aria-roledescription="carousel"
+           aria-label="{{ section.settings.carousel_label | default: 'Customer reviews' | escape }}"
+           data-cs-rvs
+           data-per-move-desktop="{{ per_move_d }}"
+           data-per-move-mobile="{{ per_move_m }}"
+           data-pause-offscreen="{% if section.settings.pause_offscreen %}true{% else %}false{% endif %}"
+           style="--cs-rvs-cols-d:{{ cols_d }};--cs-rvs-cols-m:{{ cols_m }};--cs-rvs-gap-d:{{ gap_d }}px;--cs-rvs-gap-m:{{ gap_m }}px;--cs-rvs-pad-d:{{ pad_d }}px;--cs-rvs-pad-m:{{ pad_m }}px">
+
+        <div class="cs-rvs-track" id="cs-rvs-{{ uid }}-track" data-cs-rvs-track tabindex="0" aria-live="polite" aria-atomic="true">
+          <ul class="cs-rvs-list" id="cs-rvs-{{ uid }}-list" role="presentation" data-cs-rvs-list>
             {%- assign n = 0 -%}
             {%- for block in section.blocks -%}
 
               {%- if block.type == 'video' -%}
                 {%- if block.settings.video != blank or block.settings.video_url != blank or block.settings.poster != blank -%}
                   {%- assign n = n | plus: 1 -%}
-                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="group" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
+                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="tabpanel" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
                     <figure class="cs-rvs-card cs-rvs-card--video" data-cs-rvs-video>
                       <div class="cs-rvs-frame">
                         {%- if block.settings.video != blank -%}
-                          {{ block.settings.video | video_tag: controls: true, playsinline: true, loop: true, preload: 'none', image_size: '1100x', class: 'cs-rvs-media' }}
+                          {{ block.settings.video | video_tag: playsinline: true, loop: true, preload: 'none', image_size: '1100x', class: 'cs-rvs-media' }}
                         {%- elsif block.settings.video_url != blank -%}
-                          <video class="cs-rvs-media" controls playsinline loop preload="none"{% if block.settings.poster != blank %} poster="{{ block.settings.poster | image_url: width: 1100 }}"{% endif %}>
-                            <source src="{{ block.settings.video_url | escape }}" type="video/mp4">
+                          {%- assign clip_url = block.settings.video_url | strip -%}
+                          {%- assign clip_lower = clip_url | downcase -%}
+                          {%- if clip_lower contains '.m3u8' -%}
+                            {%- assign clip_type = 'application/x-mpegURL' -%}
+                          {%- else -%}
+                            {%- assign clip_type = 'video/mp4' -%}
+                          {%- endif -%}
+                          <video class="cs-rvs-media" playsinline loop preload="none"{% if block.settings.poster != blank %} poster="{{ block.settings.poster | image_url: width: 1100 }}"{% endif %}>
+                            <source src="{{ clip_url | escape }}" type="{{ clip_type }}">
                           </video>
                         {%- elsif block.settings.poster != blank -%}
-                          <img class="cs-rvs-media" src="{{ block.settings.poster | image_url: width: 1100 }}" alt="{{ block.settings.poster.alt | default: block.settings.hook | escape }}" loading="lazy">
+                          <img class="cs-rvs-media" src="{{ block.settings.poster | image_url: width: 1100 }}" width="{{ block.settings.poster.width }}" height="{{ block.settings.poster.height }}" alt="{{ block.settings.poster.alt | default: block.settings.hook | escape }}" loading="lazy">
                         {%- endif -%}
 
                         <div class="cs-rvs-cover" data-cs-rvs-cover>
@@ -83,8 +122,8 @@
                           {%- endif -%}
                           {%- if block.settings.video != blank or block.settings.video_url != blank -%}
                             <button type="button" class="cs-rvs-playbtn" data-cs-rvs-play aria-label="{{ block.settings.play_label | default: 'Play this review' | escape }}">
-                              <span class="cs-rvs-playbtn-ico" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="currentColor" focusable="false" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                              <span class="cs-rvs-play-button" aria-hidden="true">
+                                <svg viewBox="0 0 10 14" fill="currentColor" focusable="false" aria-hidden="true"><path d="M0 1.2 10 7 0 12.8Z"/></svg>
                               </span>
                             </button>
                           {%- endif -%}
@@ -96,25 +135,46 @@
                       {%- endif -%}
                     </figure>
                   </li>
+                {%- elsif request.design_mode -%}
+                  <li class="cs-rvs-slide" role="presentation" {{ block.shopify_attributes }}>
+                    <div class="cs-rvs-card cs-rvs-card--todo">
+                      <strong>UGC video card</strong>
+                      Upload the clip, or paste its link, and add a poster image. This placeholder is only visible here in the editor.
+                    </div>
+                  </li>
                 {%- endif -%}
 
               {%- else -%}
-                {%- if block.settings.image != blank or block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank -%}
+                {%- comment -%}
+                  Block types "quote" and the classic "review" share this branch. The classic block
+                  stores its words in "quote" and its context line in "meta", so both are read here
+                  and nothing an owner already typed is orphaned.
+                {%- endcomment -%}
+                {%- assign q_before = block.settings.quote_before -%}
+                {%- if q_before == blank and block.settings.quote != blank -%}
+                  {%- assign q_before = block.settings.quote -%}
+                {%- endif -%}
+
+                {%- if block.settings.image != blank or q_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank or block.settings.name != blank or block.settings.meta != blank -%}
                   {%- assign n = n | plus: 1 -%}
-                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="group" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
+                  <li class="cs-rvs-slide" id="cs-rvs-{{ uid }}-{{ n }}" role="tabpanel" aria-roledescription="slide" aria-label="{{ n }} of {{ filled }}" {{ block.shopify_attributes }}>
                     {%- if block.settings.image != blank -%}
                       {%- assign shot_ar = block.settings.image.aspect_ratio | default: 0.947 -%}
                       {%- assign shot_pad = 100.0 | divided_by: shot_ar -%}
                       <div class="cs-rvs-card cs-rvs-card--shot" style="--cs-rvs-shot-pad:{{ shot_pad }}%">
                         <img class="cs-rvs-shot" src="{{ block.settings.image | image_url: width: 900 }}"
                              srcset="{{ block.settings.image | image_url: width: 375 }} 375w, {{ block.settings.image | image_url: width: 550 }} 550w, {{ block.settings.image | image_url: width: 750 }} 750w, {{ block.settings.image | image_url: width: 1100 }} 1100w"
-                             sizes="(min-width: 990px) calc(1136px / {{ cols_d }}), (min-width: 750px) calc(100vw / {{ cols_d }}), calc(100vw / {{ cols_m }})"
+                             sizes="(min-width: 1180px) calc(1136px / {{ cols_d }}), (min-width: 750px) calc(100vw / {{ cols_d }}), calc(100vw / {{ cols_m }})"
+                             width="{{ block.settings.image.width }}" height="{{ block.settings.image.height }}"
                              alt="{{ block.settings.image.alt | default: block.settings.name | escape }}" loading="lazy">
                       </div>
                     {%- else -%}
                       <figure class="cs-rvs-card cs-rvs-card--quote">
                         <div class="cs-rvs-quote-body">
                           {%- assign star_n = block.settings.stars | plus: 0 -%}
+                          {%- if star_n > 5 -%}
+                            {%- assign star_n = 5 -%}
+                          {%- endif -%}
                           {%- if star_n > 0 -%}
                             {%- assign star_row = '' -%}
                             {%- for s in (1..star_n) -%}{%- assign star_row = star_row | append: '★' -%}{%- endfor -%}
@@ -124,9 +184,9 @@
                           {%- endif -%}
 
                           <blockquote class="cs-rvs-quote">
-                            {%- if block.settings.quote_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank -%}
+                            {%- if q_before != blank or block.settings.quote_bold != blank or block.settings.quote_after != blank -%}
                               <p>
-                                {%- if block.settings.quote_before != blank -%}{{ block.settings.quote_before }} {% endif -%}
+                                {%- if q_before != blank -%}{{ q_before }} {% endif -%}
                                 {%- if block.settings.quote_bold != blank -%}<strong>{{ block.settings.quote_bold }}</strong>{% if block.settings.quote_after != blank %} {% endif %}{%- endif -%}
                                 {%- if block.settings.quote_after != blank -%}{{ block.settings.quote_after }}{%- endif -%}
                               </p>
@@ -135,7 +195,7 @@
                             {%- endif -%}
                           </blockquote>
 
-                          {%- if block.settings.name != blank or block.settings.avatar != blank -%}
+                          {%- if block.settings.name != blank or block.settings.avatar != blank or block.settings.meta != blank -%}
                             <figcaption class="cs-rvs-by">
                               {%- if block.settings.avatar != blank -%}
                                 <img class="cs-rvs-avatar" src="{{ block.settings.avatar | image_url: width: 120 }}" alt="{{ block.settings.avatar.alt | default: block.settings.name | escape }}" loading="lazy" width="44" height="44">
@@ -144,6 +204,7 @@
                               {%- endif -%}
                               <span class="cs-rvs-by-txt">
                                 {%- if block.settings.name != blank -%}<span class="cs-rvs-name">{{ block.settings.name }}</span>{%- endif -%}
+                                {%- if block.settings.meta != blank -%}<span class="cs-rvs-meta">{{ block.settings.meta }}</span>{%- endif -%}
                                 {%- if block.settings.badge != blank -%}
                                   <span class="cs-rvs-badge">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
@@ -157,45 +218,48 @@
                       </figure>
                     {%- endif -%}
                   </li>
+                {%- elsif request.design_mode -%}
+                  <li class="cs-rvs-slide" role="presentation" {{ block.shopify_attributes }}>
+                    <div class="cs-rvs-card cs-rvs-card--todo">
+                      <strong>Testimonial card</strong>
+                      Type one real customer's own words across the three quote fields, or drop a screenshot of their message. This placeholder is only visible here in the editor.
+                    </div>
+                  </li>
                 {%- endif -%}
               {%- endif -%}
 
             {%- endfor -%}
           </ul>
+        </div>
 
-          <div class="cs-rvs-nav"{% if pages <= 1 %} hidden{% endif %} data-cs-rvs-nav>
-            <ul class="cs-rvs-dots" role="tablist" aria-label="{{ section.settings.dots_label | default: 'Select a slide to show' | escape }}" data-cs-rvs-dots>
-              {%- for i in (1..pages) -%}
-                <li role="presentation">
-                  <button class="cs-rvs-dot{% if forloop.first %} is-active{% endif %}" type="button" role="tab"
-                          aria-controls="cs-rvs-{{ uid }}-{{ i }}" aria-label="Go to slide {{ i }}"
-                          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% unless forloop.first %} tabindex="-1"{% endunless %}></button>
-                </li>
-              {%- endfor -%}
-            </ul>
+        <div class="cs-rvs-nav"{% if pages <= 1 %} hidden{% endif %} data-cs-rvs-nav>
+          <ul class="cs-rvs-dots" role="tablist" aria-label="{{ section.settings.dots_label | default: 'Select a slide to show' | escape }}" data-cs-rvs-dots>
+            {%- for i in (1..pages) -%}
+              {%- assign ctl = forloop.index0 | times: per_move_d | plus: 1 -%}
+              {%- if ctl > filled -%}
+                {%- assign ctl = filled -%}
+              {%- endif -%}
+              <li role="presentation">
+                <button class="cs-rvs-dot{% if forloop.first %} is-active{% endif %}" type="button" role="tab"
+                        data-cs-rvs-go="{{ forloop.index0 }}"
+                        {% if ctl > 0 %}aria-controls="cs-rvs-{{ uid }}-{{ ctl }}" {% endif %}aria-label="Go to slide {{ forloop.index }}"
+                        aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% unless forloop.first %} tabindex="-1"{% endunless %}></button>
+              </li>
+            {%- endfor -%}
+          </ul>
 
-            {%- if section.settings.show_arrows -%}
-              <div class="cs-rvs-arrows">
-                <button class="cs-rvs-arrow cs-rvs-arrow--prev" type="button" aria-label="Previous slide" aria-controls="cs-rvs-{{ uid }}" data-cs-rvs-prev disabled>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-                </button>
-                <button class="cs-rvs-arrow cs-rvs-arrow--next" type="button" aria-label="Next slide" aria-controls="cs-rvs-{{ uid }}" data-cs-rvs-next>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-            {%- endif -%}
+          <div class="cs-rvs-arrows">
+            <button class="cs-rvs-arrow cs-rvs-arrow--prev" type="button" aria-label="Previous slide" aria-controls="cs-rvs-{{ uid }}-track" data-cs-rvs-prev disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <button class="cs-rvs-arrow cs-rvs-arrow--next" type="button" aria-label="Next slide" aria-controls="cs-rvs-{{ uid }}-track" data-cs-rvs-next>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
           </div>
         </div>
-
-      {%- elsif request.design_mode -%}
-        <div class="cs-rvs-empty">
-          <strong>No reviews yet — this section stays hidden on the storefront.</strong>
-          Add a <em>UGC video card</em> for a clip a customer sent you, or a <em>Testimonial card</em> for their words.
-          The carousel, the dots and the swipe appear the moment one block has real content.
-        </div>
-      {%- endif -%}
-
+      </div>
     </div>
+
   </div>
 </div>
 {%- endif -%}
@@ -213,17 +277,22 @@
     { "type": "text", "id": "count", "label": "Customer count", "info": "LEAVE EMPTY until the number is real. Example once it is: 400. Fill it and the heading switches to the version below." },
     { "type": "text", "id": "heading_count", "label": "Heading with the count", "default": "Why +{count} Couples Love", "info": "{count} is replaced by the number above. Only ever shown when that field is filled." },
     { "type": "text", "id": "brand", "label": "Brand name (serif italic)", "default": "CraftStory" },
-    { "type": "select", "id": "align", "label": "Heading alignment", "default": "center", "options": [
+    { "type": "select", "id": "align", "label": "Heading alignment", "default": "left", "options": [
       { "value": "left", "label": "Left" },
       { "value": "center", "label": "Centered" }
     ] },
+    { "type": "color", "id": "highlight_color", "label": "Colour of the brand name", "info": "Leave empty to keep the house coral." },
 
     { "type": "header", "content": "Carousel" },
     { "type": "range", "id": "cols_desktop", "label": "Cards per view (desktop)", "min": 3, "max": 6, "step": 1, "default": 5 },
     { "type": "range", "id": "cols_mobile", "label": "Cards per view (mobile)", "min": 1, "max": 3, "step": 1, "default": 2 },
     { "type": "range", "id": "gap_desktop", "label": "Gap (desktop)", "min": 8, "max": 40, "step": 2, "default": 28, "unit": "px" },
     { "type": "range", "id": "gap_mobile", "label": "Gap (mobile)", "min": 6, "max": 24, "step": 2, "default": 12, "unit": "px" },
-    { "type": "checkbox", "id": "show_arrows", "label": "Show previous / next arrows", "default": false, "info": "Off matches the reference layout, which navigates with the dots and the swipe only." },
+    { "type": "range", "id": "per_move_desktop", "label": "Cards per swipe (desktop)", "min": 1, "max": 3, "step": 1, "default": 1, "info": "How far one swipe or one dot jumps. It also sets how many dots there are." },
+    { "type": "range", "id": "per_move_mobile", "label": "Cards per swipe (mobile)", "min": 1, "max": 3, "step": 1, "default": 2, "info": "2 matches the reference layout: a mobile swipe moves a full pair of cards." },
+    { "type": "range", "id": "pad_desktop", "label": "Side padding (desktop)", "min": 0, "max": 48, "step": 4, "default": 0, "unit": "px" },
+    { "type": "range", "id": "pad_mobile", "label": "Side padding (mobile)", "min": 0, "max": 48, "step": 4, "default": 0, "unit": "px" },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show previous / next arrows", "default": false, "info": "Off matches the reference layout, which navigates with the dots and the swipe only. The arrows stay in the markup either way." },
     { "type": "checkbox", "id": "pause_offscreen", "label": "Pause a clip when it is swiped off screen", "default": true },
 
     { "type": "header", "content": "Labels for screen readers" },
@@ -242,6 +311,18 @@
         { "type": "text", "id": "hook", "label": "Hook line over the top of the frame", "info": "Their words, not yours. Example shape: \"She had no idea I was recording\". Leave empty for a clean frame." },
         { "type": "text", "id": "caption", "label": "Caption under the card" },
         { "type": "text", "id": "play_label", "label": "Play button label (screen readers)", "default": "Play this review" }
+      ]
+    },
+    {
+      "type": "review",
+      "name": "Testimonial card (classic)",
+      "settings": [
+        { "type": "paragraph", "content": "The earlier review block, kept so nothing already saved is lost. Prefer \"Testimonial card\" for anything new: it splits the quote into three fields so one phrase renders in bold." },
+        { "type": "image_picker", "id": "image", "label": "Screenshot of the message" },
+        { "type": "textarea", "id": "quote", "label": "Quote (their exact words)" },
+        { "type": "text", "id": "name", "label": "Who said it", "info": "A real first name, with their permission. Never invent one." },
+        { "type": "text", "id": "meta", "label": "Context", "info": "For example: 10th anniversary" },
+        { "type": "text", "id": "stars", "label": "Stars", "info": "Type the number this customer actually gave, 4 or 5, and nothing at all otherwise. Star characters typed here are ignored." }
       ]
     },
     {
@@ -279,22 +360,34 @@
 }
 .cs-rvs-sec{padding:27px 0}
 .cs-rvs-head{margin:0 0 18px}
+.cs-rvs-head--left{text-align:left}
 .cs-rvs-head--center{text-align:center}
 .cs-rvs-title{color:var(--cs-ink);font-weight:600}
 .cs-rvs-title strong{font-weight:600}
-.cs-rvs-title em{font-style:italic;font-weight:600;color:var(--cs-coral)}
+.cs-rvs-title em{font-style:italic;font-weight:600;color:var(--cs-rvs-hl,var(--cs-coral))}
 
-.cs-rvs-slider{--cs-rvs-cols:var(--cs-rvs-cols-m,2);--cs-rvs-gap:var(--cs-rvs-gap-m,12px);position:relative}
+.cs-rvs-slider{
+  --cs-rvs-cols:var(--cs-rvs-cols-m,2);
+  --cs-rvs-gap:var(--cs-rvs-gap-m,12px);
+  --cs-rvs-pad:var(--cs-rvs-pad-m,0px);
+  position:relative
+}
 
 .cs-rvs-track{
-  position:relative;list-style:none;margin:0;padding:2px 0 4px;
-  display:flex;align-items:center;gap:var(--cs-rvs-gap);
+  position:relative;
+  padding-left:var(--cs-rvs-pad);padding-right:var(--cs-rvs-pad);
+  scroll-padding-left:var(--cs-rvs-pad);
   overflow-x:auto;overscroll-behavior-x:contain;
   scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
   scrollbar-width:none
 }
 .cs-rvs-track::-webkit-scrollbar{display:none}
 .cs-rvs-track:focus-visible{outline:2px solid var(--cs-coral);outline-offset:3px;border-radius:var(--cs-r)}
+
+.cs-rvs-list{
+  list-style:none;margin:0;padding:2px 0 4px;
+  display:flex;align-items:center;gap:var(--cs-rvs-gap)
+}
 
 .cs-rvs-slide{
   flex:0 0 calc((100% - (var(--cs-rvs-cols) - 1) * var(--cs-rvs-gap)) / var(--cs-rvs-cols));
@@ -306,11 +399,14 @@
 /* vertical UGC video card */
 .cs-rvs-card--video{display:flex;flex-direction:column;gap:9px}
 .cs-rvs-frame{
-  position:relative;aspect-ratio:9/16;overflow:hidden;
+  position:relative;overflow:hidden;
   border-radius:var(--cs-rvs-card-r);background:var(--cs-night);
   box-shadow:var(--cs-sh-sm)
 }
-.cs-rvs-media,.cs-rvs-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* The card height follows the clip's own intrinsic ratio: no crop, nothing forced.
+   The track centres cards of unequal height, exactly as the reference does. */
+.cs-rvs-media{width:100%;height:auto;display:block}
+.cs-rvs-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cs-rvs-frame video.cs-rvs-media{background:var(--cs-night)}
 .cs-rvs-cover{position:absolute;inset:0;display:block;border-radius:inherit;overflow:hidden;transition:opacity .22s}
 .cs-rvs-veil{position:absolute;inset:0;background:var(--cs-rvs-veil);pointer-events:none}
@@ -330,9 +426,10 @@
 }
 .cs-rvs-playbtn:hover{transform:translate(-50%,-50%) scale(1.07)}
 .cs-rvs-playbtn:focus-visible{outline:2px solid var(--cs-card);outline-offset:3px}
-.cs-rvs-playbtn-ico{display:flex;width:42%}
-.cs-rvs-playbtn-ico svg{width:100%;height:auto;margin-left:6%}
+.cs-rvs-play-button{display:flex;width:34%}
+.cs-rvs-play-button svg{width:100%;height:auto;margin-left:8%}
 .cs-rvs-card--video.is-playing .cs-rvs-cover{opacity:0;pointer-events:none}
+.cs-rvs-card--video.is-playing .cs-rvs-media{cursor:pointer}
 .cs-rvs-cap{
   font-family:var(--cs-sans);font-size:clamp(.76rem,1.4vw,.88rem);line-height:1.35;
   font-weight:600;color:var(--cs-ink2);text-align:center;text-wrap:balance
@@ -371,12 +468,25 @@
   font-family:var(--cs-sans);font-weight:800;font-size:clamp(.76rem,1.2vw,.88rem);
   color:var(--cs-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap
 }
+.cs-rvs-meta{
+  font-family:var(--cs-sans);font-weight:600;font-size:clamp(.66rem,1vw,.76rem);
+  color:var(--cs-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
 .cs-rvs-badge{
   display:inline-flex;align-items:center;gap:.32em;
   font-family:var(--cs-sans);font-weight:700;font-size:clamp(.62rem,1vw,.72rem);
   color:var(--cs-duo-green);line-height:1.1
 }
 .cs-rvs-badge svg{width:.9em;height:.9em;flex:0 0 auto}
+
+/* editor-only placeholder, so an empty block is still visible and clickable */
+.cs-rvs-card--todo{
+  display:flex;flex-direction:column;gap:6px;justify-content:center;
+  min-height:180px;padding:14px;text-align:center;
+  background:var(--cs-card);border:1px dashed var(--cs-ink3);
+  font-family:var(--cs-sans);font-size:.76rem;line-height:1.4;color:var(--cs-ink2)
+}
+.cs-rvs-card--todo strong{color:var(--cs-ink);font-size:.84rem}
 
 /* screenshot card — keeps the picture's own shape, like the reference */
 .cs-rvs-card--shot{display:grid;overflow:hidden;box-shadow:var(--cs-sh-sm);background:var(--cs-card)}
@@ -395,6 +505,7 @@
 .cs-rvs-dot.is-active{background:var(--cs-coral);opacity:1;width:24px}
 .cs-rvs-dot:focus-visible{outline:2px solid var(--cs-coral);outline-offset:3px}
 .cs-rvs-arrows{display:flex;align-items:center;gap:8px}
+.cs-rvs-slider--arrows-hidden .cs-rvs-arrows{display:none}
 .cs-rvs-arrow{
   width:36px;height:36px;display:flex;align-items:center;justify-content:center;
   border:1.4px solid var(--cs-line);background:var(--cs-card);color:var(--cs-ink);
@@ -416,7 +527,11 @@
 @media screen and (min-width:750px){
   .cs-rvs-sec{padding:36px 0}
   .cs-rvs-head{margin-bottom:24px}
-  .cs-rvs-slider{--cs-rvs-cols:var(--cs-rvs-cols-d,5);--cs-rvs-gap:var(--cs-rvs-gap-d,28px)}
+  .cs-rvs-slider{
+    --cs-rvs-cols:var(--cs-rvs-cols-d,5);
+    --cs-rvs-gap:var(--cs-rvs-gap-d,28px);
+    --cs-rvs-pad:var(--cs-rvs-pad-d,0px)
+  }
   .cs-rvs-nav{margin-top:20px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -427,24 +542,35 @@
 {% javascript %}
 (function () {
   var SMOOTH = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var DESKTOP = '(min-width: 750px)';
 
   function setup(slider) {
     if (!slider || slider.dataset.csRvsOn === '1') return;
     slider.dataset.csRvsOn = '1';
 
-    var track = slider.querySelector('[data-cs-rvs-track]');
+    // Every lookup is scoped to this slider, so two instances on one page never collide.
+    var scroller = slider.querySelector('[data-cs-rvs-track]');
+    var list = slider.querySelector('[data-cs-rvs-list]');
     var nav = slider.querySelector('[data-cs-rvs-nav]');
     var dotList = slider.querySelector('[data-cs-rvs-dots]');
     var prev = slider.querySelector('[data-cs-rvs-prev]');
     var next = slider.querySelector('[data-cs-rvs-next]');
-    if (!track) return;
+    if (!scroller || !list) return;
 
-    var slides = [].slice.call(track.children);
+    var slides = [].slice.call(list.children);
     if (!slides.length) return;
+
+    var pmDesktop = Math.max(1, parseInt(slider.dataset.perMoveDesktop, 10) || 1);
+    var pmMobile = Math.max(1, parseInt(slider.dataset.perMoveMobile, 10) || 1);
 
     var at = 0;
     var pages = 1;
     var perView = 1;
+    var perMove = 1;
+
+    function desktop() {
+      return !!(window.matchMedia && window.matchMedia(DESKTOP).matches);
+    }
 
     function step() {
       if (slides.length < 2) return slides[0].getBoundingClientRect().width;
@@ -453,12 +579,34 @@
 
     // Cards are sized so N fit exactly per view: step = (trackWidth + gap) / N,
     // so N falls straight out of the geometry — no CSS-variable read needed.
+    // One page is one "per move" jump, which is how the reference counts its dots.
     function measure() {
-      var gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      var gap = parseFloat(getComputedStyle(list).columnGap) || 0;
       var s = step();
-      perView = s > 0 ? Math.max(1, Math.round((track.clientWidth + gap) / s)) : 1;
-      pages = Math.max(1, slides.length - perView + 1);
+      perView = s > 0 ? Math.max(1, Math.round((scroller.clientWidth + gap) / s)) : 1;
+      perMove = desktop() ? pmDesktop : pmMobile;
+      if (perMove > perView) perMove = perView;
+      var rest = slides.length - perView;
+      pages = rest > 0 ? Math.ceil(rest / perMove) + 1 : 1;
+      stampSnap();
       return pages;
+    }
+
+    // Snap only on the slides a swipe is allowed to land on, so one swipe
+    // advances exactly "per move" cards.
+    function stampSnap() {
+      var last = slides.length - 1;
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].style.scrollSnapAlign = (i % perMove === 0) ? 'start' : 'none';
+      }
+      // When the card count is not a whole number of steps, the last step would
+      // start past the end of the scroll range and mandatory snapping could never
+      // reach the tail. Letting the final card snap to the end keeps it reachable.
+      if (last > 0 && last % perMove !== 0) slides[last].style.scrollSnapAlign = 'end';
+    }
+
+    function slideFor(page) {
+      return slides[Math.min(slides.length - 1, page * perMove)];
     }
 
     function buildDots() {
@@ -467,7 +615,11 @@
         if (pages <= 1) nav.setAttribute('hidden', '');
         else nav.removeAttribute('hidden');
       }
-      if (dotList.children.length === pages) return;
+      // Rebuild whenever the page count OR the step size changes. The server-rendered
+      // dots already carry data-cs-rvs-go, so they work even before this runs.
+      var sig = pages + ':' + perMove;
+      if (dotList.dataset.csRvsSig === sig) { paint(); return; }
+      dotList.dataset.csRvsSig = sig;
       dotList.textContent = '';
       for (var i = 0; i < pages; i++) {
         var li = document.createElement('li');
@@ -477,12 +629,31 @@
         b.className = 'cs-rvs-dot';
         b.setAttribute('role', 'tab');
         b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
-        if (slides[i] && slides[i].id) b.setAttribute('aria-controls', slides[i].id);
+        var target = slideFor(i);
+        if (target && target.id) b.setAttribute('aria-controls', target.id);
         b.dataset.csRvsGo = String(i);
         li.appendChild(b);
         dotList.appendChild(li);
       }
       paint();
+    }
+
+    // Off-view cards are hidden from assistive tech and dropped from the tab order,
+    // the way the reference marks its slides 6 to 8.
+    function markVisible() {
+      var first = at * perMove;
+      var last = Math.min(slides.length - 1, first + perView - 1);
+      for (var i = 0; i < slides.length; i++) {
+        var inView = i >= first && i <= last;
+        if (inView) slides[i].removeAttribute('aria-hidden');
+        else slides[i].setAttribute('aria-hidden', 'true');
+        var btn = slides[i].querySelector('[data-cs-rvs-play]');
+        if (!btn) continue;
+        var card = btn.closest ? btn.closest('[data-cs-rvs-video]') : null;
+        var playing = !!(card && card.classList.contains('is-playing'));
+        if (inView && !playing) btn.removeAttribute('tabindex');
+        else btn.setAttribute('tabindex', '-1');
+      }
     }
 
     function paint() {
@@ -498,30 +669,32 @@
       }
       if (prev) prev.disabled = at <= 0;
       if (next) next.disabled = at >= pages - 1;
+      markVisible();
     }
 
     function goTo(i) {
       i = Math.max(0, Math.min(pages - 1, i));
-      var slide = slides[i];
+      var slide = slideFor(i);
       if (!slide) return;
-      var delta = slide.getBoundingClientRect().left - track.getBoundingClientRect().left
-        - parseFloat(getComputedStyle(track).paddingLeft || '0');
-      var left = track.scrollLeft + delta;
-      if (track.scrollTo) track.scrollTo({ left: left, behavior: SMOOTH ? 'smooth' : 'auto' });
-      else track.scrollLeft = left;
+      var delta = slide.getBoundingClientRect().left - scroller.getBoundingClientRect().left
+        - parseFloat(getComputedStyle(scroller).paddingLeft || '0');
+      var left = scroller.scrollLeft + delta;
+      if (scroller.scrollTo) scroller.scrollTo({ left: left, behavior: SMOOTH ? 'smooth' : 'auto' });
+      else scroller.scrollLeft = left;
       at = i;
       paint();
     }
 
     var ticking = false;
-    track.addEventListener('scroll', function () {
+    scroller.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(function () {
         ticking = false;
-        var s = step();
+        var s = step() * perMove;
         if (!s) return;
-        var i = Math.round(track.scrollLeft / s);
+        var max = scroller.scrollWidth - scroller.clientWidth;
+        var i = (max - scroller.scrollLeft) <= 2 ? pages - 1 : Math.round(scroller.scrollLeft / s);
         i = Math.max(0, Math.min(pages - 1, i));
         if (i !== at) { at = i; paint(); }
       });
@@ -536,14 +709,15 @@
     if (prev) prev.addEventListener('click', function () { goTo(at - 1); });
     if (next) next.addEventListener('click', function () { goTo(at + 1); });
 
-    track.addEventListener('keydown', function (e) {
+    scroller.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') { e.preventDefault(); goTo(at + 1); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(at - 1); }
       else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
       else if (e.key === 'End') { e.preventDefault(); goTo(pages - 1); }
     });
 
-    // click-to-play, one clip at a time
+    // Click to play, one clip at a time. The clips carry no native control bar
+    // (the reference has none either), so the frame itself pauses them again.
     var cards = slider.querySelectorAll('[data-cs-rvs-video]');
     function pauseAll(except) {
       for (var i = 0; i < cards.length; i++) {
@@ -560,12 +734,14 @@
           pauseAll(video);
           card.classList.add('is-playing');
           var p = video.play();
-          if (p && p.catch) p.catch(function () { card.classList.remove('is-playing'); });
+          if (p && p.catch) p.catch(function () { card.classList.remove('is-playing'); paint(); });
+          paint();
         });
-        video.addEventListener('pause', function () {
-          if (video.currentTime === 0) card.classList.remove('is-playing');
+        video.addEventListener('click', function () {
+          if (!video.paused) video.pause();
         });
-        video.addEventListener('ended', function () { card.classList.remove('is-playing'); });
+        video.addEventListener('pause', function () { card.classList.remove('is-playing'); paint(); });
+        video.addEventListener('ended', function () { card.classList.remove('is-playing'); paint(); });
       })(cards[c]);
     }
 
@@ -576,7 +752,7 @@
           var v = entries[i].target.querySelector('video');
           if (v && !v.paused) v.pause();
         }
-      }, { root: track, threshold: 0.35 });
+      }, { root: scroller, threshold: 0.35 });
       for (var k = 0; k < cards.length; k++) io.observe(cards[k]);
     }
 
@@ -588,10 +764,10 @@
     window.addEventListener('resize', function () {
       window.clearTimeout(rt);
       rt = window.setTimeout(function () {
-        if (!track.isConnected) return;
-        var was = pages;
+        if (!scroller.isConnected) return;
         measure();
-        if (pages !== was) { at = Math.min(at, pages - 1); buildDots(); }
+        if (at > pages - 1) at = pages - 1;
+        buildDots();
         paint();
       }, 150);
     });

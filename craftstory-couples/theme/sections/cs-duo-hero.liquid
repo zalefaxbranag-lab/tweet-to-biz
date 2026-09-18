@@ -1,46 +1,73 @@
-<div class="cs cs-duo-hero">
+<section class="cs cs-duo-hero" aria-label="Custom song and animated video for couples" data-cs-dh-root>
   <div class="cs-dh-inner">
 
     {%- if section.settings.badge != blank -%}
-      <p class="cs-dh-badge"><span class="cs-dh-badge-stars" aria-hidden="true">★★★★★</span>{{ section.settings.badge }}</p>
+      <p class="cs-dh-badge">
+        {%- if section.settings.badge_stars -%}<span class="cs-dh-badge-stars" aria-hidden="true">★★★★★</span>{%- endif -%}
+        {{ section.settings.badge }}
+      </p>
     {%- elsif section.settings.eyebrow != blank -%}
       <span class="cs-eyebrow cs-dh-eyebrow">✦ {{ section.settings.eyebrow }}</span>
     {%- endif -%}
 
     {%- assign dh_cover = section.settings.cover -%}
-    <div class="cs-dh-videowrap">
-      {%- if section.settings.video != blank or section.settings.video_url != blank -%}
-        <div class="cs-dh-stage{% if section.settings.autoplay %} cs-dh-auto{% endif %}" data-cs-duo-play{% if section.settings.autoplay %} data-cs-duo-auto{% endif %}>
-          {%- if section.settings.video != blank -%}
-            {%- if section.settings.autoplay -%}
-              {{ section.settings.video | video_tag: controls: false, autoplay: true, muted: true, loop: true, playsinline: true, image_size: '1600x', class: 'cs-dh-video' }}
+    {%- assign dh_has_clip = false -%}
+    {%- if section.settings.video != blank or section.settings.video_url != blank -%}
+      {%- assign dh_has_clip = true -%}
+    {%- endif -%}
+    {%- comment -%} no clip and no poster: nothing is rendered for a visitor, the placeholder is editor-only {%- endcomment -%}
+    {%- if dh_has_clip or dh_cover != blank or request.design_mode -%}
+      <div class="cs-dh-videowrap">
+        {%- if dh_has_clip -%}
+          <div class="cs-dh-stage{% if section.settings.autoplay %} cs-dh-auto{% endif %}" id="csDhStage-{{ section.id }}" data-cs-dh-stage{% if section.settings.autoplay %} data-cs-dh-auto{% endif %}>
+            {%- if section.settings.video != blank -%}
+              {%- if section.settings.autoplay -%}
+                {{ section.settings.video | video_tag: controls: false, autoplay: true, muted: true, loop: true, playsinline: true, preload: 'auto', image_size: '1600x', class: 'cs-dh-video' }}
+              {%- else -%}
+                {{ section.settings.video | video_tag: controls: true, playsinline: true, preload: 'metadata', image_size: '1600x', class: 'cs-dh-video' }}
+              {%- endif -%}
             {%- else -%}
-              {{ section.settings.video | video_tag: controls: true, playsinline: true, preload: 'none', image_size: '1600x', class: 'cs-dh-video' }}
+              <video class="cs-dh-video" id="csDhVideo-{{ section.id }}"{% if section.settings.autoplay %} autoplay muted loop playsinline preload="auto" disableremoteplayback controlslist="noremoteplayback" x-webkit-airplay="deny"{% else %} controls playsinline preload="metadata"{% endif %}{% if dh_cover != blank %} poster="{{ dh_cover | image_url: width: 1600 }}"{% endif %}><source src="{{ section.settings.video_url | escape }}" type="video/mp4"></video>
             {%- endif -%}
-          {%- else -%}
-            <video class="cs-dh-video"{% if section.settings.autoplay %} autoplay muted loop playsinline{% else %} controls playsinline preload="none"{% endif %}{% if dh_cover != blank %} poster="{{ dh_cover | image_url: width: 1600 }}"{% endif %}><source src="{{ section.settings.video_url | escape }}" type="video/mp4"></video>
-          {%- endif -%}
-          {%- if section.settings.autoplay -%}
-            <button type="button" class="cs-dh-unmute" data-cs-duo-unmute>
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-              <span>{{ section.settings.unmute_label | default: 'Tap to unmute' }}</span>
-            </button>
-          {%- endif -%}
-          <button type="button" class="cs-dh-cover" data-cs-duo-trigger aria-label="{{ section.settings.play_label | default: 'Play' | escape }}">
-            {%- if dh_cover != blank -%}<img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager">{%- endif -%}
-            <span class="cs-dh-scrim"></span>
-            <span class="cs-dh-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-          </button>
-        </div>
-      {%- elsif dh_cover != blank -%}
-        <div class="cs-dh-stage cs-dh-still"><img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager"></div>
-      {%- else -%}
-        <div class="cs-dh-stage cs-dh-still cs-dh-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z" stroke-linejoin="round"/></svg>
-          {%- if request.design_mode -%}<span>Add the hero clip — Theme editor ▸ CraftStory Duo Hero ▸ Hero video</span>{%- endif -%}
-        </div>
-      {%- endif -%}
-    </div>
+
+            {%- if section.settings.autoplay -%}
+              <button type="button" class="cs-dh-unmute" id="csDhUnmute-{{ section.id }}" data-cs-dh-unmute aria-label="Unmute video">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span>{{ section.settings.unmute_label | default: 'Tap to unmute' }}</span>
+              </button>
+
+              {%- comment -%} custom controls bar: play/pause, seek, re-mute — the reference's three children {%- endcomment -%}
+              <div class="cs-dh-controls" id="csDhControls-{{ section.id }}" data-cs-dh-controls>
+                <button type="button" class="cs-dh-vidbtn" id="csDhPlayBtn-{{ section.id }}" data-cs-dh-playbtn aria-label="Pause video">
+                  <svg id="csDhPauseIcon-{{ section.id }}" data-cs-dh-pauseicon viewBox="0 0 24 24" aria-hidden="true" style="display:block"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  <svg id="csDhPlayIcon-{{ section.id }}" data-cs-dh-playicon viewBox="0 0 24 24" aria-hidden="true" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <div class="cs-dh-progress" id="csDhProgress-{{ section.id }}" data-cs-dh-progress>
+                  <div class="cs-dh-progress-fill" id="csDhProgressFill-{{ section.id }}" data-cs-dh-progressfill></div>
+                </div>
+                <button type="button" class="cs-dh-vidbtn" id="csDhMuteBtn-{{ section.id }}" data-cs-dh-mutebtn aria-label="Unmute video">
+                  <svg id="csDhMutedIcon-{{ section.id }}" data-cs-dh-mutedicon viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:block"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                  <svg id="csDhUnmutedIcon-{{ section.id }}" data-cs-dh-unmutedicon viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.6a4.5 4.5 0 0 1 0 6.8m2.7-9.6a8 8 0 0 1 0 12.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                </button>
+              </div>
+            {%- else -%}
+              <button type="button" class="cs-dh-cover" data-cs-dh-trigger aria-label="{{ section.settings.play_label | default: 'Play' | escape }}">
+                {%- if dh_cover != blank -%}<img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" loading="eager">{%- endif -%}
+                <span class="cs-dh-scrim"></span>
+                <span class="cs-dh-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+              </button>
+            {%- endif -%}
+          </div>
+        {%- elsif dh_cover != blank -%}
+          <div class="cs-dh-stage cs-dh-still"><img src="{{ dh_cover | image_url: width: 1600 }}" alt="{{ dh_cover.alt | default: 'Preview' | escape }}" width="{{ dh_cover.width }}" height="{{ dh_cover.height }}" loading="eager"></div>
+        {%- else -%}
+          <div class="cs-dh-stage cs-dh-still cs-dh-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z" stroke-linejoin="round"/></svg>
+            <span>Add the hero clip — Theme editor ▸ CraftStory Duo Hero ▸ Hero video</span>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
 
     {%- if section.settings.heading != blank -%}
       <h1 class="cs-dh-title">
@@ -77,7 +104,7 @@
       endfor
 
       # star row: blank setting means no rating is claimed, so the row is not rendered
-      assign star_count = section.settings.proof_stars | times: 1
+      assign star_count = section.settings.proof_stars | times: 1 | floor
       if star_count > 5
         assign star_count = 5
       endif
@@ -110,7 +137,7 @@
         {%- if star_count > 0 or proof_line -%}
           <div class="cs-dh-prooftxt">
             {%- if star_count > 0 -%}
-              <span class="cs-dh-proofstars" aria-label="{{ star_count }} out of 5 stars">{% for i in (1..star_count) %}★{% endfor %}</span>
+              <span class="cs-dh-proofstars" role="img" aria-label="{{ star_count }} out of 5 stars">{% for i in (1..star_count) %}★{% endfor %}</span>
             {%- endif -%}
             {%- if proof_line -%}
               <span class="cs-dh-prooflabel">
@@ -137,55 +164,20 @@
     {%- endif -%}
 
   </div>
-</div>
-<script>
-function csDuoInitAll(){
-  var stages = document.querySelectorAll('[data-cs-duo-play]');
-  Array.prototype.forEach.call(stages, function(stage){
-    if(stage.dataset.csDuoInit) return;
-    stage.dataset.csDuoInit = '1';
-    var cover = stage.querySelector('[data-cs-duo-trigger]');
-    var video = stage.querySelector('video');
-    if(!cover || !video) return;
-    cover.addEventListener('click', function(){
-      stage.classList.add('cs-duo-playing');
-      try { video.setAttribute('controls',''); } catch(e){}
-      var p = video.play();
-      if(p && p.catch){ p.catch(function(){}); }
-      try { video.focus(); } catch(e){}
-    });
-  });
-}
-csDuoInitAll();
-if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', csDuoInitAll); }
-
-(function(){
-  var btn = document.querySelector('[data-cs-duo-unmute]');
-  if(!btn) return;
-  var stage = btn.closest('[data-cs-duo-auto]');
-  var video = stage && stage.querySelector('video');
-  if(!video) return;
-  btn.addEventListener('click', function(){
-    video.muted = false;
-    try { video.setAttribute('controls',''); } catch(e){}
-    var p = video.play();
-    if(p && p.catch){ p.catch(function(){}); }
-    stage.classList.add('cs-duo-unmuted');
-  });
-})();
-</script>
+</section>
 {% schema %}
 {
   "name": "CraftStory Duo Hero",
   "settings": [
     { "type": "paragraph", "content": "One centred column, the way a landing-page hero is built: star line, clip, headline, sub-headline, one full-width button, guarantee, social proof, trust line. Keep CraftStory Setup as the first section of the template." },
     { "type": "header", "content": "Star line" },
-    { "type": "text", "id": "badge", "label": "Star line", "info": "Shown with five stars and it replaces the eyebrow. Leave it empty until the claim is true — no invented customer counts." },
+    { "type": "text", "id": "badge", "label": "Star line", "info": "Replaces the eyebrow. Leave it empty until the claim is true — no invented customer counts, song counts or ratings." },
+    { "type": "checkbox", "id": "badge_stars", "label": "Show five stars in the star line", "default": false, "info": "Off until there are real reviews behind it. Filling the star line does not by itself earn a five-star row." },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow (fallback)", "default": "For couples" },
     { "type": "header", "content": "Headline" },
-    { "type": "text", "id": "heading", "label": "Headline", "default": "I pressed play and we both stopped" },
-    { "type": "text", "id": "highlight", "label": "Last word, emphasised", "default": "talking", "info": "Rendered in italic coral at the end of the headline, the way the competitor emphasises one word." },
-    { "type": "checkbox", "id": "quote_style", "label": "Wrap the headline in quote marks", "default": true, "info": "Their strongest device: the headline is a real customer's sentence. Use only words a customer actually said." },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "The song your story has been", "info": "A promise, in our own voice. The day a real customer sentence exists, paste it here, put the last words in the field below and switch the quote marks on." },
+    { "type": "text", "id": "highlight", "label": "Last word, emphasised", "default": "waiting for", "info": "Rendered in italic coral at the end of the headline." },
+    { "type": "checkbox", "id": "quote_style", "label": "Wrap the headline in quote marks", "default": false, "info": "Turn this on only when the headline is a sentence a real customer actually said. Off by default, because the quote marks claim someone said it." },
     { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Surprise them with a custom song and a music video about the two of you." },
     { "type": "header", "content": "Button" },
     { "type": "text", "id": "cta_icon", "label": "Icon before the label", "default": "♫" },
@@ -204,7 +196,7 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
     { "type": "header", "content": "Hero video" },
     { "type": "checkbox", "id": "autoplay", "label": "Play silently on load, with a Tap-to-unmute button", "default": true, "info": "How the competitor's hero works. The clip loops muted, and one tap turns the sound on." },
     { "type": "text", "id": "unmute_label", "label": "Unmute button label", "default": "Tap to unmute" },
-    { "type": "video", "id": "video", "label": "Hero clip (upload MP4)", "info": "Landscape 16:9. Use one of the reaction clips." },
+    { "type": "video", "id": "video", "label": "Hero clip (upload MP4)", "info": "Landscape. The clip keeps its own proportions and is never cropped, so upload it at the shape you want shown." },
     { "type": "text", "id": "video_url", "label": "…or .mp4 URL" },
     { "type": "image_picker", "id": "cover", "label": "Thumbnail (poster)" },
     { "type": "text", "id": "play_label", "label": "Play-button label (for screen readers)", "default": "Play" }
@@ -218,27 +210,34 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
 }
 {% endschema %}
 {% stylesheet %}
-.cs-duo-hero{background:
+/* full-viewport, vertically centred panel; content-height under 600px */
+.cs-duo-hero{position:relative;width:100%;min-height:100vh;min-height:100svh;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  padding:10px 10px 10px;
+  background:
   radial-gradient(120% 80% at 50% 0%,rgba(236,91,60,.09),transparent 62%),
   var(--cs-paper);
   --cs-duo-green:#3E9C6A}
 .cs-dh-inner{position:relative;z-index:1;max-width:720px;width:100%;margin:0 auto;
-  display:flex;flex-direction:column;align-items:center;text-align:center;
-  gap:22px;padding:clamp(18px,3vw,40px) 22px clamp(42px,6vw,72px)}
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px}
 .cs-dh-badge{display:inline-flex;align-items:center;gap:.55em;white-space:nowrap;max-width:100%;
   font-size:clamp(.7rem,2.2vw,.82rem);font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--cs-coral);background:var(--cs-card);border:1px solid var(--cs-line);
-  border-radius:var(--cs-pill);padding:7px 15px;box-shadow:var(--cs-sh-sm)}
+  border-radius:var(--cs-pill);padding:8px 20px;box-shadow:var(--cs-sh-sm)}
 .cs-dh-badge-stars{color:var(--cs-star);letter-spacing:.09em;font-size:.86em;line-height:1;flex-shrink:0}
 .cs-dh-eyebrow{align-self:center}
-.cs-dh-videowrap{width:100%;max-width:640px}
-.cs-dh-stage{position:relative;aspect-ratio:16/9;border-radius:var(--cs-r-xl);overflow:hidden;
-  background:#000;box-shadow:var(--cs-sh-lg);border:1px solid var(--cs-line)}
-.cs-dh-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#000}
+/* the clip is sized by its own intrinsic ratio: no aspect-ratio box, no crop */
+.cs-dh-videowrap{width:100%;max-width:480px}
+.cs-dh-stage{position:relative;border-radius:var(--cs-r-xl);overflow:hidden;
+  box-shadow:var(--cs-sh-lg);border:1px solid var(--cs-line)}
+.cs-dh-auto{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.cs-dh-stage video{display:block;width:100%;height:auto;outline:none;-webkit-tap-highlight-color:transparent}
 .cs-dh-cover{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;margin:0;
-  cursor:pointer;display:block;background:#000;font:inherit}
-.cs-duo-playing .cs-dh-cover,.cs-dh-auto .cs-dh-cover{display:none}
-.cs-dh-cover img,.cs-dh-still img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  cursor:pointer;display:block;background:#000;font:inherit;z-index:2}
+.cs-dh-playing .cs-dh-cover{display:none}
+.cs-dh-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-dh-still img{display:block;width:100%;height:auto}
 .cs-dh-scrim{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,rgba(0,0,0,.1),rgba(0,0,0,.46))}
 .cs-dh-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   width:clamp(58px,8vw,78px);height:clamp(58px,8vw,78px);border-radius:50%;
@@ -246,36 +245,58 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
   box-shadow:0 12px 34px rgba(0,0,0,.34);transition:transform .18s ease}
 .cs-dh-play svg{width:38%;height:38%;margin-left:8%}
 .cs-dh-cover:hover .cs-dh-play{transform:translate(-50%,-50%) scale(1.09)}
-/* centred pill, like their Tap to Unmute, with the pulsing ring */
-.cs-dh-unmute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;
+/* centred pill, with the pulsing ring; it comes back if the viewer re-mutes */
+.cs-dh-unmute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;
   display:inline-flex;align-items:center;gap:9px;border:0;cursor:pointer;font:inherit;
-  font-weight:700;font-size:clamp(.88rem,2.4vw,1rem);color:#fff;
+  font-weight:700;font-size:clamp(.88rem,2.4vw,1rem);color:var(--cs-card);
   background:rgba(28,21,51,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   padding:13px 26px;border-radius:var(--cs-pill);min-height:46px;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+  -webkit-tap-highlight-color:transparent;
   transition:transform .18s ease,background .18s ease}
 .cs-dh-unmute svg{width:20px;height:20px;flex:0 0 20px}
 .cs-dh-unmute:hover{background:rgba(28,21,51,.9);transform:translate(-50%,-50%) scale(1.05)}
 .cs-dh-unmute:before{content:"";position:absolute;inset:-4px;border-radius:inherit;
   border:2px solid rgba(255,255,255,.3);animation:cs-dh-ring 2s ease-out infinite}
-@keyframes cs-dh-ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.14);opacity:0}}
-.cs-duo-unmuted .cs-dh-unmute{display:none}
-.cs-dh-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  background:#171310;color:#cdbfa9;font-weight:600;font-size:.86rem;text-align:center;padding:18px}
+@keyframes cs-dh-ring{0%{transform:scale(1);opacity:1}100%{transform:scale(1.15);opacity:0}}
+.cs-dh-unmute.cs-dh-hidden{display:none}
+/* custom controls bar: hidden until hover, or for the first 3s after load on touch */
+.cs-dh-controls{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;gap:2px;
+  padding:8px 12px;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 100%);
+  z-index:2;opacity:0;transition:opacity .3s ease}
+.cs-dh-stage:hover .cs-dh-controls,.cs-dh-controls.cs-dh-visible{opacity:1}
+.cs-dh-vidbtn{display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:36px;height:36px;padding:0;border:0;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.15);color:var(--cs-card);font:inherit;
+  -webkit-tap-highlight-color:transparent;transition:background .2s ease}
+.cs-dh-vidbtn:hover{background:rgba(255,255,255,.3)}
+.cs-dh-vidbtn svg{width:18px;height:18px;fill:currentColor}
+.cs-dh-progress{flex:1;height:4px;background:rgba(255,255,255,.25);border-radius:2px;
+  overflow:hidden;cursor:pointer;margin:0 6px}
+.cs-dh-progress-fill{height:100%;width:0%;background:var(--cs-card);border-radius:2px;
+  transition:width .15s linear}
+/* design-mode only: a visitor never sees an empty stage */
+.cs-dh-empty{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;background:var(--cs-night);color:var(--cs-night-ink2);
+  font-weight:600;font-size:.86rem;text-align:center;padding:18px}
 .cs-dh-empty svg{width:42px;height:42px}
-.cs-dh-title{font-family:var(--cs-serif);font-weight:600;letter-spacing:-.015em;
-  font-size:clamp(1.85rem,6.4vw,3.1rem);line-height:1.08;max-width:19em;text-wrap:balance}
+.cs-dh-title{font-family:var(--cs-serif);font-weight:600;letter-spacing:-.01em;
+  font-size:clamp(1.85rem,6.4vw,3.1rem);line-height:1.18;max-width:640px;text-wrap:balance}
 .cs-dh-title em{font-style:italic;color:var(--cs-coral)}
 .cs-dh-q{font-family:var(--cs-serif);color:var(--cs-coral);opacity:.3}
-.cs-dh-sub{font-size:clamp(1rem,2.4vw,1.18rem);line-height:1.55;color:var(--cs-ink2);max-width:31em}
-.cs-dh-ctas{display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;max-width:420px}
+.cs-dh-sub{font-size:clamp(1rem,2.4vw,1.18rem);line-height:1.6;color:var(--cs-ink2);max-width:500px}
+.cs-dh-ctas{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:420px}
 .cs-dh-cta{display:inline-flex;align-items:center;justify-content:center;gap:.55em;width:100%;
   position:relative;overflow:hidden;font-family:var(--cs-sans);font-weight:700;
-  font-size:clamp(1rem,2.4vw,1.07rem);text-decoration:none;color:#fff;background:var(--cs-coral);
+  font-size:clamp(1rem,2.4vw,1.07rem);text-decoration:none;color:var(--cs-card);background:var(--cs-coral);
   border-radius:var(--cs-pill);padding:18px 28px;line-height:1;min-height:56px;
-  box-shadow:0 12px 30px -10px rgba(236,91,60,.7);transition:transform .18s ease,background .18s ease}
+  box-shadow:0 12px 30px -10px rgba(236,91,60,.7);transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
 .cs-dh-cta:before{content:"";position:absolute;inset:0;
   background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,transparent 50%);pointer-events:none}
-.cs-dh-cta:hover{background:var(--cs-coral-deep);transform:translateY(-2px)}
+.cs-dh-cta:hover{background:var(--cs-coral-deep);transform:translateY(-2px);
+  box-shadow:0 18px 38px -12px rgba(236,91,60,.8)}
+.cs-dh-cta:focus-visible{outline:3px solid rgba(236,91,60,.45);outline-offset:2px}
+.cs-dh-cta:active{transform:translateY(0)}
 .cs-dh-cta-ico{font-size:1.2em;line-height:1}
 .cs-dh-ctasub{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;
   color:var(--cs-ink2);line-height:1.35;text-align:left}
@@ -286,22 +307,39 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
   object-fit:cover;margin-left:-10px;box-shadow:0 2px 8px rgba(36,27,58,.14)}
 .cs-dh-face:first-child{margin-left:0}
 .cs-dh-facecount{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--cs-card);
-  margin-left:-10px;background:var(--cs-ink2);color:#fff;display:grid;place-items:center;
-  font-size:.62rem;font-weight:800;letter-spacing:.01em}
+  margin-left:-10px;background:var(--cs-ink2);color:var(--cs-card);display:grid;place-items:center;
+  font-size:.62rem;font-weight:800;letter-spacing:.01em;box-shadow:0 2px 8px rgba(36,27,58,.14)}
 .cs-dh-prooftxt{display:flex;flex-direction:column;align-items:center;gap:4px}
 .cs-dh-proofstars{color:var(--cs-star);font-size:1rem;letter-spacing:.14em;line-height:1}
 .cs-dh-prooflabel{font-size:.9rem;font-weight:500;color:var(--cs-ink2);line-height:1.4}
-.cs-dh-prooflabel strong{color:var(--cs-ink);font-weight:800}
+.cs-dh-prooflabel strong{color:var(--cs-ink);font-weight:700}
 /* design-mode only: never rendered for a visitor */
 .cs-dh-proofhint{max-width:34em;font-size:.78rem;font-weight:600;line-height:1.45;color:var(--cs-ink2);
   background:var(--cs-paper2);border:1px dashed var(--cs-line);border-radius:var(--cs-r);padding:10px 14px}
 /* trust line: two short parts and a trailing dot on line 1, the occasions wrap to line 2 on their own */
 .cs-dh-trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:6px;font-size:.75rem;font-weight:600;color:var(--cs-ink2);line-height:1.45;max-width:34em;opacity:.8}
+  gap:6px;font-size:.75rem;color:var(--cs-ink2);line-height:1.45;opacity:.8}
 .cs-dh-trust>span{min-width:0}
-.cs-dh-sep{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex:0 0 3px}
-@media(max-width:560px){
-  .cs-dh-inner{gap:18px;padding:12px 16px 40px}
+.cs-dh-sep{width:3px;height:3px;border-radius:50%;background:var(--cs-ink2);opacity:.4;flex:0 0 3px}
+/* staggered entrance across the seven children of .cs-dh-inner */
+@keyframes cs-dh-fade-down{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.cs-dh-badge,.cs-dh-eyebrow{animation:cs-dh-fade-down .8s ease-out both}
+.cs-dh-videowrap{animation:cs-dh-fade-down .8s ease-out .12s both}
+.cs-dh-title{animation:cs-dh-fade-down .8s ease-out .15s both}
+.cs-dh-sub{animation:cs-dh-fade-down .8s ease-out .25s both}
+.cs-dh-ctas{animation:cs-dh-fade-down .8s ease-out .35s both}
+.cs-dh-proof{animation:cs-dh-fade-down .8s ease-out .45s both}
+.cs-dh-trust{animation:cs-dh-fade-down .8s ease-out .55s both}
+@media(prefers-reduced-motion:reduce){
+  .cs-dh-badge,.cs-dh-eyebrow,.cs-dh-videowrap,.cs-dh-title,.cs-dh-sub,
+  .cs-dh-ctas,.cs-dh-proof,.cs-dh-trust{animation:none}
+  .cs-dh-unmute:before{animation:none}
+  .cs-dh-progress-fill{transition:none}
+}
+@media(max-width:600px){
+  .cs-duo-hero{min-height:auto;padding:10px 16px 48px}
+  .cs-dh-inner{gap:20px}
+  .cs-dh-videowrap{max-width:100%}
   /* never clip text: the badge wraps instead of overflowing */
   .cs-dh-badge{white-space:normal;text-align:center;line-height:1.35;padding:7px 14px}
   .cs-dh-title{max-width:none}
@@ -309,4 +347,192 @@ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoad
   .cs-dh-face:first-child{margin-left:0}
   .cs-dh-facecount{font-size:.56rem}
 }
+@media(max-width:370px){
+  .cs-dh-badge{font-size:11px;padding:6px 14px}
+}
 {% endstylesheet %}
+{% javascript %}
+/* Hero clip controller. Every node is resolved inside its own section root, so
+   two hero instances on one page never touch each other's video. */
+(function () {
+  function init(root) {
+    if (!root || root.dataset.csDhInit) { return; }
+    root.dataset.csDhInit = '1';
+
+    var stage = root.querySelector('[data-cs-dh-stage]');
+    if (!stage) { return; }
+    var vid = stage.querySelector('video');
+    if (!vid) { return; }
+
+    var cover = stage.querySelector('[data-cs-dh-trigger]');
+    var banner = stage.querySelector('[data-cs-dh-unmute]');
+    var controls = stage.querySelector('[data-cs-dh-controls]');
+    var playBtn = stage.querySelector('[data-cs-dh-playbtn]');
+    var playIcon = stage.querySelector('[data-cs-dh-playicon]');
+    var pauseIcon = stage.querySelector('[data-cs-dh-pauseicon]');
+    var muteBtn = stage.querySelector('[data-cs-dh-mutebtn]');
+    var mutedIcon = stage.querySelector('[data-cs-dh-mutedicon]');
+    var unmutedIcon = stage.querySelector('[data-cs-dh-unmutedicon]');
+    var progress = stage.querySelector('[data-cs-dh-progress]');
+    var progressFill = stage.querySelector('[data-cs-dh-progressfill]');
+    var auto = stage.hasAttribute('data-cs-dh-auto');
+
+    function inside(node, target) {
+      return !!node && (node === target || node.contains(target));
+    }
+
+    /* one retry: a play() rejected by the autoplay policy usually succeeds on the
+       second attempt once the tap has been registered as a user gesture */
+    function play() {
+      var p = vid.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          setTimeout(function () {
+            var again = vid.play();
+            if (again && again.catch) { again.catch(function () {}); }
+          }, 60);
+        });
+      }
+    }
+
+    function syncPlay() {
+      if (playIcon) { playIcon.style.display = vid.paused ? 'block' : 'none'; }
+      if (pauseIcon) { pauseIcon.style.display = vid.paused ? 'none' : 'block'; }
+      if (playBtn) { playBtn.setAttribute('aria-label', vid.paused ? 'Play video' : 'Pause video'); }
+    }
+
+    function syncMute() {
+      if (mutedIcon) { mutedIcon.style.display = vid.muted ? 'block' : 'none'; }
+      if (unmutedIcon) { unmutedIcon.style.display = vid.muted ? 'none' : 'block'; }
+      if (muteBtn) { muteBtn.setAttribute('aria-label', vid.muted ? 'Unmute video' : 'Mute video'); }
+      /* the pill comes back the moment the viewer mutes again */
+      if (banner) { banner.classList.toggle('cs-dh-hidden', !vid.muted); }
+    }
+
+    function unmuteTap(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      vid.muted = false;
+      syncMute();
+      play();
+    }
+
+    if (banner) {
+      banner.addEventListener('pointerdown', unmuteTap);
+      banner.addEventListener('click', unmuteTap);
+    }
+
+    /* poster overlay, only rendered when silent autoplay is switched off */
+    if (cover) {
+      cover.addEventListener('click', function () {
+        stage.classList.add('cs-dh-playing');
+        try { vid.setAttribute('controls', ''); } catch (err) {}
+        play();
+        try { vid.focus(); } catch (err) {}
+      });
+    }
+
+    if (!auto) {
+      syncPlay();
+      return;
+    }
+
+    try {
+      vid.setAttribute('disableremoteplayback', '');
+      vid.setAttribute('controlslist', 'noremoteplayback');
+      vid.setAttribute('x-webkit-airplay', 'deny');
+    } catch (err) {}
+
+    function togglePlay() {
+      if (vid.paused) {
+        play();
+      } else {
+        vid.volume = 0; /* drop the audio buffer instantly */
+        vid.pause();
+        vid.volume = 1; /* restore it for the next play */
+      }
+    }
+
+    /* pointerdown, not click: the clip responds on press rather than on release */
+    var lastPointer = 0;
+    stage.addEventListener('pointerdown', function (e) {
+      var t = e.target;
+      lastPointer = Date.now();
+
+      if (inside(banner, t)) { e.preventDefault(); return; }
+
+      if (inside(muteBtn, t)) {
+        vid.muted = !vid.muted;
+        syncMute();
+        e.preventDefault();
+        return;
+      }
+
+      if (inside(progress, t)) {
+        var rect = progress.getBoundingClientRect();
+        if (vid.duration && rect.width) {
+          var ratio = (e.clientX - rect.left) / rect.width;
+          if (ratio < 0) { ratio = 0; }
+          if (ratio > 1) { ratio = 1; }
+          vid.currentTime = ratio * vid.duration;
+        }
+        e.preventDefault();
+        return;
+      }
+
+      /* play button, video surface or anywhere else on the stage: toggle */
+      togglePlay();
+      e.preventDefault();
+    });
+
+    /* the bar above is driven by pointerdown, which leaves the two buttons inert
+       for a keyboard user; a click that no pointerdown preceded is that user */
+    function keyboardOnly(fn) {
+      return function (e) {
+        if (Date.now() - lastPointer < 500) { return; }
+        fn();
+        e.preventDefault();
+      };
+    }
+    if (playBtn) { playBtn.addEventListener('click', keyboardOnly(togglePlay)); }
+    if (muteBtn) {
+      muteBtn.addEventListener('click', keyboardOnly(function () {
+        vid.muted = !vid.muted;
+        syncMute();
+      }));
+    }
+
+    vid.addEventListener('play', syncPlay);
+    vid.addEventListener('pause', syncPlay);
+    vid.addEventListener('timeupdate', function () {
+      if (progressFill && vid.duration) {
+        progressFill.style.width = (vid.currentTime / vid.duration) * 100 + '%';
+      }
+    });
+
+    /* show the bar for three seconds on load, so a touch viewer who never
+       hovers still learns the controls are there */
+    if (controls) {
+      controls.classList.add('cs-dh-visible');
+      setTimeout(function () { controls.classList.remove('cs-dh-visible'); }, 3000);
+    }
+
+    syncPlay();
+    syncMute();
+  }
+
+  function initAll(scope) {
+    var roots = (scope || document).querySelectorAll('[data-cs-dh-root]');
+    Array.prototype.forEach.call(roots, init);
+    if (scope && scope.hasAttribute && scope.hasAttribute('data-cs-dh-root')) { init(scope); }
+  }
+
+  initAll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { initAll(); });
+  }
+  document.addEventListener('shopify:section:load', function (e) {
+    initAll(e.target || document);
+  });
+})();
+{% endjavascript %}
