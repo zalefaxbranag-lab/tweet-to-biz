@@ -42,7 +42,19 @@
     },
     "hero": {
       "type": "cs-duo-hero",
-      "settings": {}
+      "settings": {
+        "eyebrow": "",
+        "badge": "",
+        "heading": "Turn your love story into a song and an animated music video",
+        "highlight": "",
+        "quote_style": false,
+        "body": "Tell us about the two of you and add a photo — we'll turn your story into a song and an animated music video.",
+        "cta_icon": "♪",
+        "cta_label": "Create Our Music Video",
+        "cta_note": "100% money-back guarantee · Delivered by email",
+        "clip_caption": "Watch the 40-second trailer",
+        "trust_line": "Different stories. Different songs. One video: the two of you."
+      }
     },
     "how": {
       "type": "cs-duo-how",
@@ -178,9 +190,10 @@
     "cta1": {
       "type": "cs-duo-cta",
       "settings": {
-        "heading": "Start Creating Your Song",
+        "heading": "Start Creating Your Music Video",
         "body": "One short form about the two of you. We write the song and animate the video.",
-        "cta_label": "Start My Custom Song",
+        "cta_label": "Create Our Music Video",
+        "cta_note": "100% money-back guarantee · Delivered by email",
         "color_scheme": "paper"
       }
     },
@@ -381,9 +394,10 @@
     "cta2": {
       "type": "cs-duo-cta",
       "settings": {
-        "heading": "Create My Custom Song",
+        "heading": "Create Our Music Video",
         "body": "Ready in days, delivered by email, nothing to ship.",
-        "cta_label": "Start My Custom Song",
+        "cta_label": "Create Our Music Video",
+        "cta_note": "100% money-back guarantee · Delivered by email",
         "color_scheme": "night"
       }
     },
@@ -517,7 +531,9 @@
     },
     "bar": {
       "type": "cs-duo-bar",
-      "settings": {}
+      "settings": {
+        "cta_label": "Create Our Music Video"
+      }
     }
   },
   "order": [

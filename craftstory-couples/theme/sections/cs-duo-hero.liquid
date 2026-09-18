@@ -66,6 +66,9 @@
             <span>Add the hero clip — Theme editor ▸ CraftStory Duo Hero ▸ Hero video</span>
           </div>
         {%- endif -%}
+        {%- if section.settings.clip_caption != blank -%}
+          <span class="cs-dh-clipcap">{{ section.settings.clip_caption }}</span>
+        {%- endif -%}
       </div>
     {%- endif -%}
 
@@ -173,15 +176,15 @@
     { "type": "header", "content": "Star line" },
     { "type": "text", "id": "badge", "label": "Star line", "info": "Replaces the eyebrow. Leave it empty until the claim is true — no invented customer counts, song counts or ratings." },
     { "type": "checkbox", "id": "badge_stars", "label": "Show five stars in the star line", "default": false, "info": "Off until there are real reviews behind it. Filling the star line does not by itself earn a five-star row." },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow (fallback)", "default": "For couples" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (fallback)", "default": "" },
     { "type": "header", "content": "Headline" },
-    { "type": "text", "id": "heading", "label": "Headline", "default": "The song your story has been", "info": "A promise, in our own voice. The day a real customer sentence exists, paste it here, put the last words in the field below and switch the quote marks on." },
-    { "type": "text", "id": "highlight", "label": "Last word, emphasised", "default": "waiting for", "info": "Rendered in italic coral at the end of the headline." },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "Turn your love story into a song and an animated music video", "info": "A promise, in our own voice. The day a real customer sentence exists, paste it here, put the last words in the field below and switch the quote marks on." },
+    { "type": "text", "id": "highlight", "label": "Last word, emphasised", "default": "", "info": "Rendered in italic coral at the end of the headline." },
     { "type": "checkbox", "id": "quote_style", "label": "Wrap the headline in quote marks", "default": false, "info": "Turn this on only when the headline is a sentence a real customer actually said. Off by default, because the quote marks claim someone said it." },
-    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Surprise them with a custom song and a music video about the two of you." },
+    { "type": "textarea", "id": "body", "label": "Sub-headline", "default": "Tell us about the two of you and add a photo — we'll turn your story into a song and an animated music video." },
     { "type": "header", "content": "Button" },
     { "type": "text", "id": "cta_icon", "label": "Icon before the label", "default": "♫" },
-    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Start My Custom Song" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Our Music Video" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#", "info": "Paste the path to the couples order form, for example /pages/couples-start" },
     { "type": "text", "id": "cta_note", "label": "Line under the button", "default": "100% money-back guarantee · Delivered by email" },
     { "type": "header", "content": "Social proof" },
@@ -192,14 +195,15 @@
     { "type": "text", "id": "proof_strong", "label": "Join line — bold part", "info": "The number and the phrase after it, all in bold, so the count is what the eye lands on. Fill it the day the count is real, in this shape: <count> couples who turned their story into a song. No number here until it is one we can stand behind." },
     { "type": "text", "id": "proof_text", "label": "Join line — plain tail (optional)", "info": "Anything that should stay unbolded after the bold part." },
     { "type": "header", "content": "Trust line" },
-    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free preview in minutes | Nothing to ship | Anniversaries · Weddings · Proposals · Just because", "info": "Three parts separated by a vertical bar, split the way the reference splits it: speed, then shipping, then the occasions. Each part gets a dot between, and at phone width the occasions drop onto a second line on their own. Do not put a turnaround promise here until it is one we keep." },
+    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Different stories. Different songs. One video: the two of you.", "info": "Three parts separated by a vertical bar, split the way the reference splits it: speed, then shipping, then the occasions. Each part gets a dot between, and at phone width the occasions drop onto a second line on their own. Do not put a turnaround promise here until it is one we keep." },
     { "type": "header", "content": "Hero video" },
     { "type": "checkbox", "id": "autoplay", "label": "Play silently on load, with a Tap-to-unmute button", "default": true, "info": "How the competitor's hero works. The clip loops muted, and one tap turns the sound on." },
     { "type": "text", "id": "unmute_label", "label": "Unmute button label", "default": "Tap to unmute" },
     { "type": "video", "id": "video", "label": "Hero clip (upload MP4)", "info": "Landscape. The clip keeps its own proportions and is never cropped, so upload it at the shape you want shown." },
     { "type": "text", "id": "video_url", "label": "…or .mp4 URL" },
     { "type": "image_picker", "id": "cover", "label": "Thumbnail (poster)" },
-    { "type": "text", "id": "play_label", "label": "Play-button label (for screen readers)", "default": "Play" }
+    { "type": "text", "id": "play_label", "label": "Play-button label (for screen readers)", "default": "Play" },
+    { "type": "text", "id": "clip_caption", "label": "Caption over the clip", "default": "Watch the 40-second trailer", "info": "White bold line at the bottom left of the clip, the way the kids page labels its trailer. Leave empty to hide it." }
   ],
   "blocks": [
     { "type": "face", "name": "Customer face", "limit": 8, "settings": [
@@ -211,7 +215,7 @@
 {% endschema %}
 {% stylesheet %}
 /* full-viewport, vertically centred panel; content-height under 600px */
-.cs-duo-hero{position:relative;width:100%;min-height:100vh;min-height:100svh;
+.cs-duo-hero{position:relative;box-sizing:border-box;width:100%;min-height:100vh;min-height:100svh;
   display:flex;align-items:center;justify-content:center;overflow:hidden;
   padding:10px 10px 10px;
   background:
@@ -220,6 +224,19 @@
   --cs-duo-green:#3E9C6A}
 .cs-dh-inner{position:relative;z-index:1;max-width:720px;width:100%;margin:0 auto;
   display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px}
+/* Visual order, matching the CraftStory kids page: headline, sub-headline,
+   clip, button, social proof, tagline. The markup keeps its logical order
+   (clip before headline); only the display order changes. Every child carries
+   an explicit value: without it a child with no `order` stays at 0 and jumps. */
+.cs-dh-title{order:1}
+.cs-dh-sub{order:2}
+.cs-dh-videowrap{order:3}
+.cs-dh-ctas{order:4}
+.cs-dh-proof{order:5}
+.cs-dh-trust{order:6}
+.cs-dh-badge,.cs-dh-eyebrow{order:0}
+.cs-dh-proofhint{order:7}
+
 .cs-dh-badge{display:inline-flex;align-items:center;gap:.55em;white-space:nowrap;max-width:100%;
   font-size:clamp(.7rem,2.2vw,.82rem);font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--cs-coral);background:var(--cs-card);border:1px solid var(--cs-line);
@@ -227,7 +244,14 @@
 .cs-dh-badge-stars{color:var(--cs-star);letter-spacing:.09em;font-size:.86em;line-height:1;flex-shrink:0}
 .cs-dh-eyebrow{align-self:center}
 /* the clip is sized by its own intrinsic ratio: no aspect-ratio box, no crop */
-.cs-dh-videowrap{width:100%;max-width:480px}
+.cs-dh-videowrap{position:relative;width:100%;max-width:480px}
+/* Clip caption, matching the kids page: white bold, bottom left, over a
+   gradient so it stays legible whatever the image underneath. */
+.cs-dh-clipcap{position:absolute;left:0;right:0;bottom:0;z-index:3;pointer-events:none;
+  padding:34px 18px 14px;text-align:left;color:#fff;font-weight:800;
+  font-size:clamp(.88rem,2.9vw,1rem);line-height:1.25;letter-spacing:-.01em;
+  text-shadow:0 1px 8px rgba(0,0,0,.45);border-radius:0 0 var(--cs-r-xl) var(--cs-r-xl);
+  background:linear-gradient(to top,rgba(0,0,0,.55),transparent)}
 .cs-dh-stage{position:relative;border-radius:var(--cs-r-xl);overflow:hidden;
   box-shadow:var(--cs-sh-lg);border:1px solid var(--cs-line)}
 .cs-dh-auto{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
