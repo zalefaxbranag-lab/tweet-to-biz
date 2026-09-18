@@ -1,0 +1,83 @@
+{%- comment -%}
+  CraftStory Duo Order — pont temporaire.
+
+  Porte deux choses qui appartiennent normalement a cs-duo-hero.liquid :
+    1. l'ordre visuel du hero (titre et sous-titre AVANT le clip), calque sur la
+       page enfants de CraftStory ;
+    2. la legende blanche en bas du clip.
+
+  Pourquoi un fichier separe : themeFilesUpsert refuse la version a jour de
+  cs-duo-hero.liquid — 201 a l'upload, aucune erreur a l'upsert, et le fichier
+  n'est pas applique. Une cause a ete isolee et corrigee ailleurs (Shopify
+  rejette en silence un `name` de section ou de bloc au-dela de 25 caracteres) ;
+  celle-ci n'est ni le nom du fichier ni la taille. Les petits fichiers neufs
+  passent, donc ce pont livre le correctif en attendant.
+
+  A SUPPRIMER le jour ou cs-duo-hero.liquid monte : tout ce qui est ici existe
+  deja dans son stylesheet, et le doublon ne sert a rien.
+
+  Place juste apres CraftStory Setup, avant la barre d'annonce.
+{%- endcomment -%}
+
+{%- if request.design_mode -%}
+  <div class="cs cs-duo-order-note">
+    <p>CraftStory Duo Order — aucun rendu visible. Cette section ne porte que l&rsquo;ordre du hero et la legende du clip, en attendant que le fichier du hero monte. Invisible pour un visiteur.</p>
+  </div>
+{%- endif -%}
+
+<style>
+  /* Ordre visuel du hero, calque sur la page enfants : titre, sous-titre, clip,
+     bouton, preuve sociale, accroche. Le markup du hero garde son ordre logique
+     (le clip avant le titre) ; seul l'affichage change. Chaque enfant porte une
+     valeur explicite : sans cela, l'enfant qui n'en a pas reste a 0 et remonte
+     en tete — le bug qui avait deja fait passer la ligne d'attribution
+     au-dessus du titre. */
+  .cs-duo-hero .cs-dh-title{order:1}
+  .cs-duo-hero .cs-dh-sub{order:2}
+  .cs-duo-hero .cs-dh-videowrap{order:3}
+  .cs-duo-hero .cs-dh-ctas{order:4}
+  .cs-duo-hero .cs-dh-proof{order:5}
+  .cs-duo-hero .cs-dh-trust{order:6}
+  .cs-duo-hero .cs-dh-badge,
+  .cs-duo-hero .cs-dh-eyebrow{order:0}
+  .cs-duo-hero .cs-dh-proofhint{order:7}
+
+  /* La section racine porte la classe `cs`, or cs-head ne pose box-sizing que
+     sur `.cs *`, un selecteur de descendants qui ne l'atteint pas. Avec
+     width:100% plus son padding, le hero debordait a 422px dans un ecran de
+     390. */
+  .cs-duo-hero{box-sizing:border-box}
+
+  {%- if section.settings.clip_caption != blank -%}
+  /* Legende du clip. Le texte passe par une propriete personnalisee pour rester
+     modifiable depuis l'editeur de theme, faute de pouvoir ajouter du markup
+     dans le hero depuis ici. */
+  .cs-duo-hero .cs-dh-videowrap{position:relative;--cs-duo-cap:"{{ section.settings.clip_caption | escape }}"}
+  .cs-duo-hero .cs-dh-videowrap::after{
+    content:var(--cs-duo-cap);
+    position:absolute;left:0;right:0;bottom:0;z-index:3;pointer-events:none;
+    padding:34px 18px 14px;text-align:left;color:#fff;font-weight:800;
+    font-family:var(--cs-sans);font-size:clamp(.88rem,2.9vw,1rem);
+    line-height:1.25;letter-spacing:-.01em;text-shadow:0 1px 8px rgba(0,0,0,.45);
+    border-radius:0 0 var(--cs-r-xl) var(--cs-r-xl);
+    background:linear-gradient(to top,rgba(0,0,0,.55),transparent)}
+  {%- endif -%}
+</style>
+
+{% schema %}
+{
+  "name": "CraftStory Duo Order",
+  "settings": [
+    { "type": "paragraph", "content": "Pont temporaire. Rien de visible pour un visiteur : cette section porte l'ordre d'affichage du hero et la legende du clip, en attendant que le fichier du hero monte sur le theme. Placer juste apres CraftStory Setup." },
+    { "type": "text", "id": "clip_caption", "label": "Legende sur le clip du hero", "default": "Watch the 40-second trailer", "info": "Ligne blanche en gras en bas a gauche du clip, comme sur la page enfants. Vider pour la masquer." }
+  ],
+  "presets": [
+    { "name": "CraftStory Duo Order" }
+  ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-order-note{max-width:40em;margin:12px auto;padding:10px 14px;text-align:center;
+  font-size:.78rem;font-weight:600;line-height:1.45;color:var(--cs-ink2);
+  background:var(--cs-paper2);border:1px dashed var(--cs-line);border-radius:var(--cs-r)}
+{% endstylesheet %}

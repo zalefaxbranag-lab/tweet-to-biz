@@ -6,7 +6,9 @@
     },
     "ann": {
       "type": "cs-duo-ann",
-      "settings": {}
+      "settings": {
+        "text": "A custom song and an animated music video, made for the two of you"
+      }
     },
     "header": {
       "type": "cs-duo-head",
@@ -15,7 +17,7 @@
         "b1": {
           "type": "link",
           "settings": {
-            "label": "Create Your Song",
+            "label": "Create Your Music Video",
             "link": "#"
           }
         },
@@ -53,7 +55,11 @@
         "cta_label": "Create Our Music Video",
         "cta_note": "100% money-back guarantee · Delivered by email",
         "clip_caption": "Watch the 40-second trailer",
-        "trust_line": "Different stories. Different songs. One video: the two of you."
+        "trust_line": "Different stories. Different songs. One video: the two of you.",
+        "proof_stars": "5",
+        "proof_prefix": "Loved by",
+        "proof_strong": "12,000+ families",
+        "proof_text": "at CraftStory"
       }
     },
     "how": {
@@ -63,19 +69,19 @@
         "b1": {
           "type": "step",
           "settings": {
-            "text": "Fill out the form"
+            "text": "Tell us about the two of you"
           }
         },
         "b2": {
           "type": "step",
           "settings": {
-            "text": "We create your song and your animated music video"
+            "text": "We write your song and animate your music video"
           }
         },
         "b3": {
           "type": "step",
           "settings": {
-            "text": "Receive it by email — ready to share"
+            "text": "It lands in your inbox, ready to play to them"
           }
         }
       },
@@ -87,7 +93,11 @@
     },
     "reviews": {
       "type": "cs-duo-reviews",
-      "settings": {}
+      "settings": {
+        "heading": "Why Couples Love",
+        "count": "12,000+",
+        "brand": "CraftStory"
+      }
     },
     "occasions": {
       "type": "cs-duo-occasions",
@@ -199,7 +209,10 @@
     },
     "included": {
       "type": "cs-duo-included",
-      "settings": {}
+      "settings": {
+        "heading": "What’s Included for the Two of You",
+        "subheading": "When your song and your music video are ready, we email you\none private link to listen, watch and share."
+      }
     },
     "player": {
       "type": "cs-duo-player",
@@ -519,7 +532,10 @@
     },
     "help": {
       "type": "cs-duo-help",
-      "settings": {}
+      "settings": {
+        "heading": "Still Have Questions?",
+        "intro": "Ask us anything about your song or your music video — a real person answers. Email us anytime at"
+      }
     },
     "popup": {
       "type": "cs-duo-popup",
@@ -534,10 +550,17 @@
       "settings": {
         "cta_label": "Create Our Music Video"
       }
+    },
+    "order": {
+      "type": "cs-duo-order",
+      "settings": {
+        "clip_caption": "Watch the 40-second trailer"
+      }
     }
   },
   "order": [
     "head",
+    "order",
     "ann",
     "header",
     "hero",
