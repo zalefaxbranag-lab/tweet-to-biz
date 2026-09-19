@@ -279,10 +279,12 @@
   .cs-dfaq-a{padding:0 0 18px}
 }
 
-/* Question au corail du hero, reponse a l'encre pleine : les deux niveaux se
-   distinguent au premier coup d'oeil au lieu de se fondre dans le papier. */
-.cs.cs-duo-faq .cs-dfaq-q{color:var(--cs-coral)}
+/* Question ET reponse a l'encre pleine. Le corail avait ete essaye sur les
+   questions : trop, sept lignes orange d'affilee. Le contraste vient du gras
+   et de la taille, pas de la couleur. */
+.cs.cs-duo-faq .cs-dfaq-q{color:var(--cs-ink)}
 .cs.cs-duo-faq .cs-dfaq-a,.cs.cs-duo-faq .cs-dfaq-a *{color:var(--cs-ink)}
+.cs.cs-duo-faq .cs-dfaq-hint{color:var(--cs-ink2)}
 {% endstylesheet %}
 {% javascript %}
 (function () {

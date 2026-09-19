@@ -302,6 +302,11 @@
   --cs-night-ink:var(--cs-ink);--cs-night-ink2:var(--cs-ink2);--cs-night-line:var(--cs-line)}
 .cs.cs-duo-player .cs-pl-incl strong{color:var(--cs-coral)}
 .cs.cs-duo-player .cs-pl-inclb{color:var(--cs-ink)}
-.cs.cs-duo-player .cs-pl-empty{color:var(--cs-ink2);border-color:var(--cs-line)}
+.cs.cs-duo-player .cs-pl-empty{color:var(--cs-ink);border-color:var(--cs-ink3)}
 .cs.cs-duo-player .cs-pl-empty strong{color:var(--cs-coral)}
+
+/* Le libelle et la fleche restent sur une seule ligne : sur un ecran etroit
+   le bouton passait sur deux lignes avec la fleche seule a droite. */
+.cs-pl-cta .cs-btn{white-space:nowrap}
+@media(max-width:560px){.cs-pl-cta .cs-btn{font-size:clamp(.82rem,3.7vw,1.07rem);padding-left:16px;padding-right:16px}}
 {% endstylesheet %}
