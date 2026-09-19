@@ -1,3 +1,10 @@
+{%- liquid
+  assign has_vsl = false
+  if section.settings.vsl_video != blank or section.settings.vsl_video_url != blank
+    assign has_vsl = true
+  endif
+-%}
+{%- if has_vsl or request.design_mode -%}
 <div class="cs cs-duo-vsl">
   <div class="cs-wrap cs-dv-in">
     <div class="cs-sec-head cs-dv-head">
@@ -70,6 +77,7 @@
   });
 })();
 </script>
+{%- endif -%}
 {% schema %}
 {
   "name": "CraftStory Duo VSL",

@@ -18,7 +18,7 @@
           "type": "link",
           "settings": {
             "label": "Create Your Music Video",
-            "link": "#"
+            "link": "#cs-duo-choose"
           }
         },
         "b2": {
@@ -32,7 +32,7 @@
           "type": "link",
           "settings": {
             "label": "Contact",
-            "link": "#"
+            "link": "/pages/contact"
           }
         }
       },
@@ -53,13 +53,14 @@
         "body": "Tell us about the two of you and add a photo — we'll turn your story into a song and an animated music video.",
         "cta_icon": "♪",
         "cta_label": "Create Our Music Video",
-        "cta_note": "100% money-back guarantee · Delivered by email",
+        "cta_note": "Free preview ready in minutes · 100% money-back guarantee",
         "clip_caption": "Watch the 40-second trailer",
         "trust_line": "Different stories. Different songs. One video: the two of you.",
         "proof_stars": "5",
         "proof_prefix": "Loved by",
-        "proof_strong": "12,000+ lovers",
-        "proof_text": ""
+        "proof_strong": "12,000+ customers",
+        "proof_text": "at CraftStory",
+        "cta_link": "#cs-duo-choose"
       }
     },
     "how": {
@@ -103,9 +104,9 @@
       "settings": {
         "eyebrow": "In their words",
         "heading": "What happens when couples press play.",
-        "proof_line": "Loved by 12,000+ families at CraftStory",
+        "proof_line": "Loved by 12,000+ customers at CraftStory",
         "cta_label": "Create Our Music Video",
-        "cta_link": "#"
+        "cta_link": "#cs-duo-choose"
       },
       "blocks": {
         "r1": {
@@ -174,7 +175,7 @@
           "type": "card",
           "settings": {
             "title": "For the wedding morning",
-            "note": "Played while she gets ready",
+            "note": "Played while you get ready",
             "ratio": "tall",
             "link": ""
           }
@@ -241,7 +242,7 @@
         "heading": "A song for the moment you are actually in.",
         "body": "Not only weddings. The morning of. The ten years after. The year you nearly didn't make it.",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
+        "cta_link": "#cs-duo-choose"
       }
     },
     "cta1": {
@@ -250,8 +251,9 @@
         "heading": "Start Creating Your Music Video",
         "body": "One short form about the two of you. We write the song and animate the video.",
         "cta_label": "Create Our Music Video",
-        "cta_note": "100% money-back guarantee · Delivered by email",
-        "color_scheme": "paper"
+        "cta_note": "Free preview ready in minutes · 100% money-back guarantee",
+        "color_scheme": "paper",
+        "cta_link": "#cs-duo-choose"
       }
     },
     "included": {
@@ -267,21 +269,21 @@
         "tr1": {
           "type": "track",
           "settings": {
-            "title": "1. A song for them — Country",
+            "title": "1. A love song — Country",
             "url": ""
           }
         },
         "tr2": {
           "type": "track",
           "settings": {
-            "title": "2. A song for them — Soul",
+            "title": "2. A love song — Soul",
             "url": ""
           }
         },
         "tr3": {
           "type": "track",
           "settings": {
-            "title": "3. A song for them — Acoustic",
+            "title": "3. A love song — Acoustic",
             "url": ""
           }
         },
@@ -317,10 +319,10 @@
       ],
       "settings": {
         "eyebrow": "Hear it first",
-        "heading": "What's included in your song",
+        "heading": "Hear what a finished song sounds like.",
         "body": "Press play. Every one of these came from one couple answering five questions.",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
+        "cta_link": "#cs-duo-choose",
         "play_label": "Play or pause",
         "prev_label": "Previous song",
         "next_label": "Next song",
@@ -348,7 +350,7 @@
           "type": "mark",
           "settings": {
             "time": "1:30",
-            "text": "Her face the moment she hears her own name"
+            "text": "Their face the moment they hear their own name"
           }
         }
       },
@@ -364,7 +366,7 @@
         "vsl_video_url": "",
         "play_label": "Play with sound on",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
+        "cta_link": "#cs-duo-choose",
         "cta_note": "Free preview first — pay only if you love it"
       }
     },
@@ -400,7 +402,7 @@
           "settings": {
             "kind": "reaction",
             "label": "Play",
-            "caption": "She hears her name in the second line"
+            "caption": "They hear their name in the second line"
           }
         },
         "rx2": {
@@ -408,7 +410,7 @@
           "settings": {
             "kind": "reaction",
             "label": "Play",
-            "caption": "He did not know it existed"
+            "caption": "They did not know it existed"
           }
         },
         "rx3": {
@@ -435,7 +437,7 @@
         "music_title": "The music videos",
         "reaction_title": "The first listen",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#"
+        "cta_link": "#cs-duo-choose"
       }
     },
     "trust": {
@@ -481,11 +483,12 @@
     "cta2": {
       "type": "cs-duo-cta",
       "settings": {
-        "heading": "Create Our Music Video",
-        "body": "Ready in days, delivered by email, nothing to ship.",
+        "heading": "Hear yours before you pay for it.",
+        "body": "Ready in 48 hours, delivered by email, nothing to ship.",
         "cta_label": "Create Our Music Video",
-        "cta_note": "100% money-back guarantee · Delivered by email",
-        "color_scheme": "night"
+        "cta_note": "Free preview ready in minutes · 100% money-back guarantee",
+        "color_scheme": "night",
+        "cta_link": "#cs-duo-choose"
       }
     },
     "offer": {
@@ -494,7 +497,7 @@
         "i1": {
           "type": "item",
           "settings": {
-            "text": "A full-length song with their name and your story in the lyrics"
+            "text": "A full-length song with your names and your story in the lyrics"
           }
         },
         "i2": {
@@ -531,14 +534,14 @@
       ],
       "settings": {
         "eyebrow": "What you get",
-        "heading": "One song. One music video. Both about them.",
-        "body": "This is the one gift they cannot get for themselves, and the one they cannot guess.",
+        "heading": "One song. One music video. Both about the two of you.",
+        "body": "Nobody else has this song. It is written from your story, and it did not exist until you asked for it.",
         "free_line": "Your preview is free",
         "show_price": false,
         "price_was": "",
         "price": "",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
+        "cta_link": "#cs-duo-choose",
         "cta_note": "You decide after you have heard it",
         "guarantee": "Full refund if you are not happy with it"
       }
@@ -626,7 +629,7 @@
         "delivery": "",
         "guarantee": "",
         "cta_label": "Create Your Free Preview",
-        "cta_link": "#",
+        "cta_link": "#cs-duo-choose",
         "cta_popup": true,
         "bg": "paper2",
         "padding_top": 36,
@@ -655,7 +658,7 @@
         "cta_label": "Create Our Music Video",
         "title": "Your preview is free",
         "note": "No payment up front",
-        "cta_link": "#",
+        "cta_link": "#cs-duo-choose",
         "show_desktop": false
       }
     },

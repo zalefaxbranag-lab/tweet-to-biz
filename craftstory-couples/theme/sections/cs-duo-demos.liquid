@@ -1,3 +1,14 @@
+{%- liquid
+  assign clips = 0
+  for block in section.blocks
+    if block.type == 'clip'
+      if block.settings.video != blank or block.settings.video_url != blank
+        assign clips = clips | plus: 1
+      endif
+    endif
+  endfor
+-%}
+{%- if clips > 0 or request.design_mode -%}
 <div class="cs cs-duo-demos">
   <div class="cs-wrap">
     <div class="cs-sec cs-dd-sec">
@@ -82,6 +93,7 @@
   });
 })();
 </script>
+{%- endif -%}
 {% schema %}
 {
   "name": "CraftStory Duo Demos",
