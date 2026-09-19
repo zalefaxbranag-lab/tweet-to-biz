@@ -26,31 +26,54 @@ Vérifié sur le thème live : la page d'accueil tourne sur `cs-head`, `cs-hero`
 et `cs-adventures`. Aucun template autre que `page.couples.json` n'appelle une
 section `cs-duo-*`. Les préfixes ne se croisent pas.
 
-## Les commandes
+## Les commandes — Windows PowerShell
 
-```bash
-# 1. Le CLI, une seule fois
+Une commande par ligne. **Pas de `\` en fin de ligne** : c'est de la syntaxe
+bash, PowerShell ne la comprend pas. Et **pas de `~`** : PowerShell ne le
+développe pas quand il le passe à un programme externe comme `shopify` ou
+`git`, il envoie le caractère tel quel et le chemin devient
+`C:/Users/toi/~/...`. On utilise `$HOME`.
+
+```powershell
 npm install -g @shopify/cli
 
-# 2. Récupérer le thème live dans un dossier de travail
-#    (lecture seule côté boutique, ne modifie rien)
+New-Item -ItemType Directory -Force -Path "$HOME\craftstory-live"
+
+shopify theme pull --store fzddaf-k8 --theme 208162816331 --path "$HOME\craftstory-live"
+
+git clone -b claude/ecommerce-mariage-musique-ia-92sgat https://github.com/zalefaxbranag-lab/tweet-to-biz.git "$HOME\tweet-to-biz"
+
+copy "$HOME\tweet-to-biz\craftstory-couples\theme\sections\cs-duo-*.liquid" "$HOME\craftstory-live\sections\"
+
+copy "$HOME\tweet-to-biz\craftstory-couples\theme\templates\page.couples.json" "$HOME\craftstory-live\templates\"
+
+cd "$HOME\craftstory-live"
+
+shopify theme push --store fzddaf-k8 --theme 208162816331 --only "sections/cs-duo-*.liquid" --only "templates/page.couples.json" --nodelete --allow-live
+```
+
+Au premier appel de `shopify`, un navigateur s'ouvre pour te connecter à la
+boutique. C'est normal, une seule fois.
+
+Si `git clone` dit que le dossier existe déjà :
+
+```powershell
+cd "$HOME\tweet-to-biz"
+git checkout claude/ecommerce-mariage-musique-ia-92sgat
+git pull
+```
+
+## Les commandes — macOS / Linux
+
+```bash
+npm install -g @shopify/cli
+mkdir -p ~/craftstory-live
 shopify theme pull --store fzddaf-k8 --theme 208162816331 --path ~/craftstory-live
-
-# 3. Récupérer les fichiers de la page couples
-git clone -b claude/ecommerce-mariage-musique-ia-92sgat \
-  https://github.com/zalefaxbranag-lab/tweet-to-biz.git ~/tweet-to-biz
-# déjà cloné ? : cd ~/tweet-to-biz && git pull
-
-# 4. Poser UNIQUEMENT les fichiers de la page couples par-dessus
+git clone -b claude/ecommerce-mariage-musique-ia-92sgat https://github.com/zalefaxbranag-lab/tweet-to-biz.git ~/tweet-to-biz
 cp ~/tweet-to-biz/craftstory-couples/theme/sections/cs-duo-*.liquid ~/craftstory-live/sections/
 cp ~/tweet-to-biz/craftstory-couples/theme/templates/page.couples.json ~/craftstory-live/templates/
-
-# 5. Pousser UNIQUEMENT ces fichiers dans le thème live
 cd ~/craftstory-live
-shopify theme push --store fzddaf-k8 --theme 208162816331 \
-  --only "sections/cs-duo-*.liquid" \
-  --only "templates/page.couples.json" \
-  --nodelete --allow-live
+shopify theme push --store fzddaf-k8 --theme 208162816331 --only "sections/cs-duo-*.liquid" --only "templates/page.couples.json" --nodelete --allow-live
 ```
 
 ## Ce que chaque garde-fou fait
