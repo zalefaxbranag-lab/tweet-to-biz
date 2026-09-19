@@ -145,9 +145,16 @@ pas. La cause reelle, visible en une seconde des qu'on est passe en `TEXT` :
 
 `cs-duo-ann` declare `icon` en `image_picker`. Le template lui donnait `"★"`.
 
-**Le signe qui ne trompe pas.** Toujours demander `upsertedThemeFiles` dans la
-mutation. Un upsert reussi renvoie le fichier et sa taille. Une liste vide veut
-dire que rien n'a ete ecrit, quoi que dise `userErrors`.
+**Correction, mesuree apres coup.** `upsertedThemeFiles` n'est renseigne que
+pour un corps `TEXT`. Avec un corps `URL` il revient **toujours vide, meme quand
+les fichiers sont bien ecrits** — six sections poussees en `URL` sont arrivees
+a l'octet pres avec une liste vide en reponse. Donc :
+
+- corps `TEXT` : liste pleine = ecrit, liste vide + `userErrors` = la raison.
+- corps `URL` : la liste ne dit rien. **Seule la reverification compte** —
+  rerequeter `files(filenames:){ size checksumMd5 }` et comparer au local.
+
+La demander reste utile, mais uniquement en `TEXT` :
 
 ```graphql
 themeFilesUpsert(themeId: $id, files: $files) {

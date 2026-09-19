@@ -42,9 +42,15 @@ def check_settings(defs, values, where, errors):
             continue
         t = d["type"]
         if t in RESOURCE:
-            if not isinstance(val, str) or not re.match(r"^(shopify://|https?://|/)", val):
-                errors.append("%s.%s : type %s, %r n'est pas une ressource valide — "
-                              "omettre le reglage plutot que le laisser vide"
+            # La chaine vide passe : c'est ce que l'editeur de theme ecrit lui-meme
+            # pour un reglage non renseigne. C'est une valeur NON VIDE qui n'est pas
+            # une reference qui fait refuser le fichier, en silence si le corps est
+            # une URL. Le cas reel : "icon": "★" sur un image_picker.
+            if val not in ("", None) and (
+                    not isinstance(val, str)
+                    or not re.match(r"^(shopify://|https?://|mailto:|tel:|#|/)", val)):
+                errors.append("%s.%s : type %s, %r n'est pas une reference valide "
+                              "(shopify://, https://, / ou #) — laisser vide si inutilise"
                               % (where, key, t, val))
         elif t == "checkbox" and not isinstance(val, bool):
             errors.append("%s.%s : attend un booleen, recu %r" % (where, key, val))

@@ -209,4 +209,8 @@
   .cs-duo-how .cs-dhw--m-over .cs-dhw-content{padding:clamp(30px,9vw,46px) 0}
   .cs-duo-how .cs-dhw--m-over .cs-dhw-box{max-width:none}
 }
+
+/* Une fleche blanche apres le libelle : le bouton dit ou cliquer. */
+.cs-dhw-cta::after{content:"\2192";font-weight:800;line-height:1;transition:transform .18s ease}
+.cs-dhw-cta:hover::after{transform:translateX(3px)}
 {% endstylesheet %}

@@ -13,15 +13,8 @@
       "type": "cs-head",
       "settings": {}
     },
-    "order": {
-      "type": "cs-duo-order",
-      "settings": {
-        "clip_caption": ""
-      }
-    },
     "header": {
       "type": "cs-duo-head",
-      "settings": {},
       "blocks": {
         "b1": {
           "type": "link",
@@ -33,15 +26,40 @@
       },
       "block_order": [
         "b1"
-      ]
+      ],
+      "disabled": true,
+      "settings": {
+        "sticky": true,
+        "logo_width": 200,
+        "logo_width_mobile": 120,
+        "logo_text": "CraftStory",
+        "logo_text_accent": "Couples",
+        "show_wave": true,
+        "logo_link": "",
+        "logo_new_tab": false,
+        "cta_label": "Create Your Song",
+        "cta_link": "#",
+        "track_label": "Track Order",
+        "track_link": "#",
+        "show_account": true,
+        "show_search": false,
+        "show_cart": false,
+        "menu_title": "Menu",
+        "menu_label": "Menu",
+        "close_label": "Close",
+        "login_label": "Log in",
+        "search_label": "Search",
+        "cart_label": "Cart"
+      }
     },
     "ann": {
       "type": "cs-duo-ann",
       "settings": {
         "text": "★ CUSTOM SONGS & ANIMATED MUSIC VIDEOS FOR COUPLES",
+        "link": "",
         "align": "center",
-        "bg": "#EC5B3C",
-        "ink": "#FFFFFF",
+        "bg": "#ec5b3c",
+        "ink": "#ffffff",
         "autoplay": false,
         "speed": 3
       }
@@ -60,44 +78,41 @@
         "cta_label": "Start My Custom Music Video",
         "cta_link": "#cs-duo-choose",
         "cta_note": "100% Money-Back Guarantee · Delivered by Email",
-        "autoplay": true,
-        "unmute_label": "Tap to Unmute",
-        "clip_caption": "",
-        "play_label": "Play",
         "faces_count": "",
         "proof_stars": "5",
         "proof_prefix": "Join",
-        "proof_strong": "12,000+ customers",
-        "proof_text": "at CraftStory who turned their story into a song",
-        "trust_line": "Ready in as little as 48 hours · No shipping needed · Weddings · Anniversaries · Proposals · Just Because"
+        "proof_strong": "12,000+ lovers at CraftStory who turned their story into a song",
+        "proof_text": "",
+        "trust_line": "Ready in as little as 48 hours · No shipping needed · Weddings · Anniversaries · Proposals · Just Because",
+        "autoplay": true,
+        "unmute_label": "Tap to Unmute",
+        "video_url": "",
+        "play_label": "Play",
+        "clip_caption": ""
       }
     },
     "how": {
       "type": "cs-duo-how",
-      "settings": {
-        "heading": "How It Works (Simple as 1-2-3)",
-        "show_numbers": true,
-        "number_word": "Step",
-        "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose"
-      },
       "blocks": {
         "b1": {
           "type": "step",
           "settings": {
-            "text": "Fill out the survey"
+            "text": "Fill out the survey",
+            "label": ""
           }
         },
         "b2": {
           "type": "step",
           "settings": {
-            "text": "We create your song and your music video"
+            "text": "We create your song and your music video",
+            "label": ""
           }
         },
         "b3": {
           "type": "step",
           "settings": {
-            "text": "Receive them by email — ready to share"
+            "text": "Receive them by email — ready to share",
+            "label": ""
           }
         }
       },
@@ -105,52 +120,58 @@
         "b1",
         "b2",
         "b3"
-      ]
+      ],
+      "settings": {
+        "overlay_opacity": 60,
+        "height": "med",
+        "mobile_layout": "over",
+        "mobile_panel": "night",
+        "eyebrow": "",
+        "heading": "How It Works (Simple as 1-2-3)",
+        "highlight": "",
+        "show_numbers": true,
+        "number_word": "Step",
+        "cta_label": "Start My Custom Music Video",
+        "cta_link": "#cs-duo-choose"
+      }
     },
     "reviews": {
       "type": "cs-duo-reviews",
-      "settings": {
-        "eyebrow": "",
-        "heading": "Why +12,000 Customers Love CraftStory",
-        "proof_line": "",
-        "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose"
-      },
       "blocks": {
         "r1": {
           "type": "review",
           "settings": {
             "quote": "We played it in the car on the way to dinner and she made me pull over. Ten years together and I had never seen her cry like that.",
+            "stars": "★★★★★",
             "name": "Daniel R.",
-            "meta": "10th anniversary",
-            "stars": "★★★★★"
+            "meta": "10th anniversary"
           }
         },
         "r2": {
           "type": "review",
           "settings": {
             "quote": "We used it for our first dance. Half the room asked who the artist was. Nobody believed it had been written for us.",
+            "stars": "★★★★★",
             "name": "Amelia & Josh",
-            "meta": "Wedding",
-            "stars": "★★★★★"
+            "meta": "Wedding"
           }
         },
         "r3": {
           "type": "review",
           "settings": {
             "quote": "The video is the part that got him. Seeing the two of us on screen, in our own kitchen, to words I had written about him.",
+            "stars": "★★★★★",
             "name": "Priya K.",
-            "meta": "Just because",
-            "stars": "★★★★★"
+            "meta": "Just because"
           }
         },
         "r4": {
           "type": "review",
           "settings": {
             "quote": "Ordered on the Tuesday, had it on the Thursday. He has played it every morning since, and he is not a sentimental man.",
+            "stars": "★★★★★",
             "name": "Marco T.",
-            "meta": "Proposal",
-            "stars": "★★★★★"
+            "meta": "Proposal"
           }
         }
       },
@@ -159,23 +180,24 @@
         "r2",
         "r3",
         "r4"
-      ]
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Why +12,000 Couples Love CraftStory",
+        "proof_line": "",
+        "cta_label": "Start My Custom Music Video",
+        "cta_link": "#cs-duo-choose"
+      }
     },
     "occasions": {
       "type": "cs-duo-occasions",
-      "settings": {
-        "eyebrow": "",
-        "body": "",
-        "heading": "Gift a Song to the One You Love, or to Yourselves!",
-        "cta_label": "Start Creating Your Song",
-        "cta_link": "#cs-duo-choose"
-      },
       "blocks": {
         "o1": {
           "type": "card",
           "settings": {
             "title": "For Your Partner",
             "note": "",
+            "feature": false,
             "link": ""
           }
         },
@@ -184,20 +206,68 @@
           "settings": {
             "title": "For the Two of You",
             "note": "",
+            "feature": false,
+            "link": ""
+          }
+        },
+        "o3": {
+          "type": "card",
+          "settings": {
+            "title": "For the Proposal",
+            "note": "",
+            "feature": false,
+            "link": ""
+          }
+        },
+        "o4": {
+          "type": "card",
+          "settings": {
+            "title": "For Your Anniversary",
+            "note": "",
+            "feature": false,
+            "link": ""
+          }
+        },
+        "o5": {
+          "type": "card",
+          "settings": {
+            "title": "For the First Dance",
+            "note": "",
+            "feature": false,
+            "link": ""
+          }
+        },
+        "o6": {
+          "type": "card",
+          "settings": {
+            "title": "Just Because",
+            "note": "",
+            "feature": false,
             "link": ""
           }
         }
       },
       "block_order": [
         "o1",
-        "o2"
-      ]
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o6"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Gift a Song to the One You Love, or to Yourselves!",
+        "body": "",
+        "cta_label": "Start My Custom Music Video",
+        "cta_link": "#cs-duo-choose"
+      }
     },
     "included": {
       "type": "cs-duo-included",
       "settings": {
         "eyebrow": "",
-        "heading": "What’s Included in Your Song & Video",
+        "heading": "What's Included in Your Song & Video",
         "subheading": "When your song and your music video are ready, we'll email you a private link to listen, download and share.",
         "cta_label": "",
         "cta_link": "#cs-duo-choose",
@@ -206,17 +276,6 @@
     },
     "player": {
       "type": "cs-duo-player",
-      "settings": {
-        "eyebrow": "",
-        "heading": "",
-        "body": "",
-        "cta_label": "Create My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
-        "play_label": "Play or pause",
-        "prev_label": "Previous song",
-        "next_label": "Next song",
-        "seek_label": "Seek"
-      },
       "blocks": {
         "tr1": {
           "type": "track",
@@ -260,10 +319,109 @@
         "tr3",
         "in1",
         "in2"
-      ]
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "",
+        "body": "",
+        "cta_label": "Create My Custom Music Video",
+        "cta_link": "#cs-duo-choose",
+        "play_label": "Play or pause",
+        "prev_label": "Previous song",
+        "next_label": "Next song",
+        "seek_label": "Seek"
+      }
     },
     "faq": {
       "type": "cs-duo-faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "q": "What makes this song special?",
+            "a": "<p>It is written from scratch for the two of you. Your names, your places and the moments only you two know go into the lyrics, and the music video is animated around the same story.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "q": "How long until I receive the song?",
+            "a": "<p>Your free preview arrives within minutes. The finished song and music video follow within 48 hours.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "q": "What if I need it faster?",
+            "a": "<p>Tell us the date when you order and we will say straight away whether we can make it. If we cannot, you pay nothing.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "q": "What occasions work best?",
+            "a": "<p>Weddings, proposals, anniversaries, the wedding morning, a long stretch apart, or no occasion at all. Anything with a story behind it works.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "q": "How do you create the song?",
+            "a": "<p>You answer five plain questions about the two of you. We turn those answers into lyrics, record the song in the genre you pick, and animate a music video to match.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q6": {
+          "type": "qa",
+          "settings": {
+            "q": "How do I get my song?",
+            "a": "<p>By email, as a private link you can open on any phone or computer. Nothing is shipped and nothing can get lost in the post.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        },
+        "q7": {
+          "type": "qa",
+          "settings": {
+            "q": "Can I play it at a party or event?",
+            "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car. Play it wherever you want, as often as you want.</p>",
+            "open": false,
+            "delivery_line": false,
+            "guarantee_line": false,
+            "icon": ""
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7"
+      ],
       "settings": {
         "heading": "Frequently Asked Questions",
         "heading_bold": true,
@@ -282,74 +440,7 @@
         "padding_top": 36,
         "padding_bottom": 36,
         "rich_snippet": false
-      },
-      "blocks": {
-        "q1": {
-          "type": "qa",
-          "settings": {
-            "q": "What makes this song special?",
-            "a": "<p>It is written from scratch for the two of you. Your names, your places and the moments only you two know go into the lyrics, and the music video is animated around the same story.</p>",
-            "open": false
-          }
-        },
-        "q2": {
-          "type": "qa",
-          "settings": {
-            "q": "How long until I receive the song?",
-            "a": "<p>Your free preview arrives within minutes. The finished song and music video follow within 48 hours.</p>",
-            "open": false
-          }
-        },
-        "q3": {
-          "type": "qa",
-          "settings": {
-            "q": "What if I need it faster?",
-            "a": "<p>Tell us the date when you order and we will say straight away whether we can make it. If we cannot, you pay nothing.</p>",
-            "open": false
-          }
-        },
-        "q4": {
-          "type": "qa",
-          "settings": {
-            "q": "What occasions work best?",
-            "a": "<p>Weddings, proposals, anniversaries, the wedding morning, a long stretch apart, or no occasion at all. Anything with a story behind it works.</p>",
-            "open": false
-          }
-        },
-        "q5": {
-          "type": "qa",
-          "settings": {
-            "q": "How do you create the song?",
-            "a": "<p>You answer five plain questions about the two of you. We turn those answers into lyrics, record the song in the genre you pick, and animate a music video to match.</p>",
-            "open": false
-          }
-        },
-        "q6": {
-          "type": "qa",
-          "settings": {
-            "q": "How do I get my song?",
-            "a": "<p>By email, as a private link you can open on any phone or computer. Nothing is shipped and nothing can get lost in the post.</p>",
-            "open": false
-          }
-        },
-        "q7": {
-          "type": "qa",
-          "settings": {
-            "q": "Can I play it at a party or event?",
-            "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car. Play it wherever you want, as often as you want.</p>",
-            "open": false
-          }
-        }
-      },
-      "block_order": [
-        "q1",
-        "q2",
-        "q3",
-        "q4",
-        "q5",
-        "q6",
-        "q7"
-      ]
+      }
     },
     "help": {
       "type": "cs-duo-help",
@@ -357,6 +448,7 @@
         "heading": "Still Have Questions?",
         "highlight": "",
         "intro": "Our friendly team is here to help. Email us anytime at",
+        "email": "Sarah@craftstory.co",
         "tail": "— we typically respond within a few hours.",
         "bg": "night"
       }
@@ -364,7 +456,6 @@
   },
   "order": [
     "head",
-    "order",
     "header",
     "ann",
     "hero",

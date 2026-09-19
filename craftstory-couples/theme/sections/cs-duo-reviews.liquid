@@ -39,6 +39,7 @@
             {%- endif -%}
           {%- endfor -%}
         </div>
+        <div class="cs-rev-dots" data-cs-rev-dots hidden></div>
       {%- elsif request.design_mode -%}
         <div class="cs-rev-empty">
           <strong>No reviews yet — this section stays hidden on the storefront.</strong>
@@ -98,8 +99,7 @@
 .cs-rev-empty{max-width:640px;margin:0 auto;text-align:center;background:var(--cs-card);border:1px dashed var(--cs-ink3);border-radius:var(--cs-r-lg);padding:22px;color:var(--cs-ink2);font-size:.94rem;line-height:1.55}
 .cs-rev-empty strong{display:block;color:var(--cs-ink);margin-bottom:5px}
 .cs-rev-cta{display:flex;justify-content:center;margin-top:clamp(24px,3.4vw,38px)}
-@media(max-width:1040px){.cs-rev-track{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){
+@media(max-width:1040px){
   .cs-duo-rev .cs-sec{padding:clamp(34px,7vw,52px) 0}
   .cs-rev-track{display:flex;grid-template-columns:none;gap:12px;overflow-x:auto;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
@@ -109,4 +109,83 @@
   .cs-rev-cta{width:100%}
   .cs-rev-cta .cs-btn{width:100%}
 }
+
+/* Une fleche blanche apres le libelle : le bouton dit ou cliquer. */
+.cs-rev-cta .cs-btn::after{content:"\2192";font-weight:800;line-height:1;transition:transform .18s ease}
+.cs-rev-cta .cs-btn:hover::after{transform:translateX(3px)}
+
+/* Les bulles rendent le glissement visible : sans elles, rien ne dit qu'il
+   reste des avis a droite. Elles servent aussi de raccourci au clic. */
+.cs-rev-dots{display:none;justify-content:center;align-items:center;gap:7px;margin-top:15px}
+.cs-rev-dots button{width:7px;height:7px;padding:0;border:0;border-radius:var(--cs-pill);
+  background:var(--cs-line);cursor:pointer;transition:background .2s ease,width .2s ease}
+.cs-rev-dots button[aria-current="true"]{background:var(--cs-coral);width:19px}
+@media(max-width:1040px){.cs-rev-dots{display:flex}}
 {% endstylesheet %}
+{% javascript %}
+(function () {
+  function setup(track) {
+    if (track.dataset.csRevDots) return;
+    track.dataset.csRevDots = '1';
+
+    var dots = track.parentNode.querySelector('[data-cs-rev-dots]');
+    var cards = track.querySelectorAll('.cs-rev-card');
+    if (!dots || cards.length < 2) return;
+
+    dots.hidden = false;
+    dots.innerHTML = '';
+
+    // scrollIntoView ferait aussi defiler la page verticalement. On calcule la
+    // position dans le rail pour ne bouger que lui.
+    function go(n) {
+      var card = cards[n];
+      track.scrollTo({
+        left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
+        behavior: 'smooth'
+      });
+    }
+
+    for (var i = 0; i < cards.length; i++) {
+      (function (n) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Review ' + (n + 1));
+        b.addEventListener('click', function () { go(n); });
+        dots.appendChild(b);
+      })(i);
+    }
+
+    function mark() {
+      var middle = track.scrollLeft + track.clientWidth / 2;
+      var best = 0, closest = Infinity;
+      for (var i = 0; i < cards.length; i++) {
+        var gap = Math.abs(cards[i].offsetLeft + cards[i].offsetWidth / 2 - middle);
+        if (gap < closest) { closest = gap; best = i; }
+      }
+      for (var j = 0; j < dots.children.length; j++) {
+        dots.children[j].setAttribute('aria-current', j === best ? 'true' : 'false');
+      }
+    }
+
+    var timer;
+    track.addEventListener('scroll', function () {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(mark, 60);
+    }, { passive: true });
+    mark();
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var rails = host.querySelectorAll('[data-cs-rev]');
+    for (var i = 0; i < rails.length; i++) setup(rails[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
