@@ -29,26 +29,10 @@
             "label": "Create Your Song",
             "link": "#cs-duo-choose"
           }
-        },
-        "b2": {
-          "type": "link",
-          "settings": {
-            "label": "Track Order",
-            "link": "/pages/contact"
-          }
-        },
-        "b3": {
-          "type": "link",
-          "settings": {
-            "label": "Contact",
-            "link": "/pages/contact"
-          }
         }
       },
       "block_order": [
-        "b1",
-        "b2",
-        "b3"
+        "b1"
       ]
     },
     "ann": {
@@ -138,24 +122,36 @@
         "r1": {
           "type": "review",
           "settings": {
+            "quote": "We played it in the car on the way to dinner and she made me pull over. Ten years together and I had never seen her cry like that.",
+            "name": "Daniel R.",
+            "meta": "10th anniversary",
             "stars": "★★★★★"
           }
         },
         "r2": {
           "type": "review",
           "settings": {
+            "quote": "We used it for our first dance. Half the room asked who the artist was. Nobody believed it had been written for us.",
+            "name": "Amelia & Josh",
+            "meta": "Wedding",
             "stars": "★★★★★"
           }
         },
         "r3": {
           "type": "review",
           "settings": {
+            "quote": "The video is the part that got him. Seeing the two of us on screen, in our own kitchen, to words I had written about him.",
+            "name": "Priya K.",
+            "meta": "Just because",
             "stars": "★★★★★"
           }
         },
         "r4": {
           "type": "review",
           "settings": {
+            "quote": "Ordered on the Tuesday, had it on the Thursday. He has played it every morning since, and he is not a sentimental man.",
+            "name": "Marco T.",
+            "meta": "Proposal",
             "stars": "★★★★★"
           }
         }
@@ -180,86 +176,23 @@
         "o1": {
           "type": "card",
           "settings": {
-            "title": "For your partner",
-            "note": "The one who knows every verse already",
+            "title": "For Your Partner",
+            "note": "",
             "link": ""
           }
         },
         "o2": {
           "type": "card",
           "settings": {
-            "title": "For the proposal",
-            "note": "Before you even ask",
-            "link": ""
-          }
-        },
-        "o3": {
-          "type": "card",
-          "settings": {
-            "title": "For the first dance",
-            "note": "Something nobody else has danced to",
-            "link": ""
-          }
-        },
-        "o4": {
-          "type": "card",
-          "settings": {
-            "title": "For the anniversary",
-            "note": "One, ten, or forty",
-            "link": ""
-          }
-        },
-        "o5": {
-          "type": "card",
-          "settings": {
-            "title": "For the wedding morning",
-            "note": "Played while you get ready",
-            "link": ""
-          }
-        },
-        "o6": {
-          "type": "card",
-          "settings": {
-            "title": "For fifty years",
-            "note": "The whole story, in order",
-            "link": ""
-          }
-        },
-        "o7": {
-          "type": "card",
-          "settings": {
-            "title": "For the distance",
-            "note": "When you can't be there",
-            "link": ""
-          }
-        },
-        "o8": {
-          "type": "card",
-          "settings": {
-            "title": "For the guests to give",
-            "note": "Together, as one gift",
-            "link": ""
-          }
-        },
-        "o9": {
-          "type": "card",
-          "settings": {
-            "title": "Just because",
-            "note": "No occasion at all",
+            "title": "For the Two of You",
+            "note": "",
             "link": ""
           }
         }
       },
       "block_order": [
         "o1",
-        "o2",
-        "o3",
-        "o4",
-        "o5",
-        "o6",
-        "o7",
-        "o8",
-        "o9"
+        "o2"
       ]
     },
     "included": {
@@ -321,13 +254,6 @@
             "title": "Lyrics Written From YOUR Story",
             "body": "Every word is crafted from the details you share — names, memories, and moments that matter."
           }
-        },
-        "in3": {
-          "type": "included",
-          "settings": {
-            "title": "A Music Video Starring the Two of You",
-            "body": "The couple on screen is built to look like you, so the video tells your story and not a stock one."
-          }
         }
       },
       "block_order": [
@@ -335,8 +261,7 @@
         "tr2",
         "tr3",
         "in1",
-        "in2",
-        "in3"
+        "in2"
       ]
     },
     "faq": {
@@ -352,7 +277,7 @@
         "rows_style": "border",
         "delivery": "",
         "guarantee": "",
-        "cta_label": "Start My Custom Music Video",
+        "cta_label": "",
         "cta_link": "#cs-duo-choose",
         "cta_popup": false,
         "bg": "paper2",
@@ -389,7 +314,7 @@
           "type": "qa",
           "settings": {
             "q": "What occasions work best?",
-            "a": "<p>Weddings, proposals, anniversaries, the wedding morning, a long distance stretch, or no occasion at all. Anything with a story behind it works.</p>",
+            "a": "<p>Weddings, proposals, anniversaries, the wedding morning, a long stretch apart, or no occasion at all. Anything with a story behind it works.</p>",
             "open": false
           }
         },
@@ -437,24 +362,6 @@
         "tail": "— we typically respond within a few hours.",
         "bg": "night"
       }
-    },
-    "popup": {
-      "type": "cs-duo-popup",
-      "settings": {}
-    },
-    "totop": {
-      "type": "cs-duo-totop",
-      "settings": {}
-    },
-    "bar": {
-      "type": "cs-duo-bar",
-      "settings": {
-        "title": "Your preview is free",
-        "note": "No payment up front",
-        "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
-        "show_desktop": false
-      }
     }
   },
   "order": [
@@ -469,9 +376,6 @@
     "included",
     "player",
     "faq",
-    "help",
-    "popup",
-    "totop",
-    "bar"
+    "help"
   ]
 }
