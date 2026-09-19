@@ -78,7 +78,7 @@
         "cta_label": "Start My Custom Music Video",
         "cta_link": "#cs-duo-choose",
         "cta_note": "100% Money-Back Guarantee · Delivered by Email",
-        "faces_count": "",
+        "faces_count": "12k+",
         "proof_stars": "5",
         "proof_prefix": "Join",
         "proof_strong": "12,000+ lovers at CraftStory who turned their story into a song",
@@ -89,7 +89,36 @@
         "video_url": "",
         "play_label": "Play",
         "clip_caption": ""
-      }
+      },
+      "blocks": {
+        "f1": {
+          "type": "face",
+          "settings": {}
+        },
+        "f2": {
+          "type": "face",
+          "settings": {}
+        },
+        "f3": {
+          "type": "face",
+          "settings": {}
+        },
+        "f4": {
+          "type": "face",
+          "settings": {}
+        },
+        "f5": {
+          "type": "face",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+        "f5"
+      ]
     },
     "how": {
       "type": "cs-duo-how",

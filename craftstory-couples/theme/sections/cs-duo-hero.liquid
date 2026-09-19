@@ -125,6 +125,12 @@
     -%}
     {%- if proof_any -%}
       <div class="cs-dh-proof">
+        {%- if faces == 0 and request.design_mode -%}
+          <div class="cs-dh-faces cs-dh-faces--empty" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <em>Add 5 Customer face blocks</em>
+          </div>
+        {%- endif -%}
         {%- if faces > 0 -%}
           <div class="cs-dh-faces">
             {%- for block in section.blocks -%}
@@ -333,6 +339,10 @@
 .cs-dh-facecount{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--cs-card);
   margin-left:-10px;background:var(--cs-ink2);color:var(--cs-card);display:grid;place-items:center;
   font-size:.62rem;font-weight:800;letter-spacing:.01em;box-shadow:0 2px 8px rgba(36,27,58,.14)}
+.cs-dh-faces--empty span{width:38px;height:38px;border-radius:50%;margin-left:-10px;
+  border:2px dashed var(--cs-ink3);background:var(--cs-paper2)}
+.cs-dh-faces--empty span:first-child{margin-left:0}
+.cs-dh-faces--empty em{margin-left:10px;font-style:normal;font-size:.8rem;font-weight:600;color:var(--cs-ink3)}
 .cs-dh-prooftxt{display:flex;flex-direction:column;align-items:center;gap:4px}
 .cs-dh-proofstars{color:var(--cs-star);font-size:1rem;letter-spacing:.14em;line-height:1}
 .cs-dh-prooflabel{font-size:.9rem;font-weight:500;color:var(--cs-ink2);line-height:1.4}

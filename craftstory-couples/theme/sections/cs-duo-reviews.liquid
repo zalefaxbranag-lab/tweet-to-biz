@@ -125,6 +125,9 @@
 
 /* Les bulles rendent le glissement visible : sans elles, rien ne dit qu'il
    reste des avis a droite. Elles servent aussi de raccourci au clic. */
+.cs-rev-track{cursor:grab}
+/* Pendant le glissement l'accrochage se battrait avec le doigt : on le coupe. */
+.cs-rev-track.cs-rev-drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
 .cs-rev-dots{display:none;justify-content:center;align-items:center;gap:7px;margin-top:15px}
 .cs-rev-dots button{width:7px;height:7px;padding:0;border:0;border-radius:var(--cs-pill);
   background:var(--cs-line);cursor:pointer;transition:background .2s ease,width .2s ease}
@@ -184,6 +187,35 @@
         dots.children[j].setAttribute('aria-current', j === best ? 'true' : 'false');
       }
     }
+
+    // Au doigt, overflow-x fait deja le travail. A la souris — donc dans
+    // l'apercu de l'editeur — rien ne bouge sans ce glisser-deposer.
+    var down = false, startX = 0, startLeft = 0, moved = 0;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      down = true; moved = 0;
+      startX = e.clientX; startLeft = track.scrollLeft;
+      try { track.setPointerCapture(e.pointerId); } catch (err) {}
+      track.classList.add('cs-rev-drag');
+    });
+    track.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - startX;
+      if (Math.abs(dx) > moved) moved = Math.abs(dx);
+      track.scrollLeft = startLeft - dx;
+    });
+    function release() {
+      if (!down) return;
+      down = false;
+      track.classList.remove('cs-rev-drag');
+    }
+    track.addEventListener('pointerup', release);
+    track.addEventListener('pointercancel', release);
+    track.addEventListener('pointerleave', release);
+    // Un glissement ne doit pas se terminer en clic sur ce qu'il y a dessous.
+    track.addEventListener('click', function (e) {
+      if (moved > 6) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
 
     var timer;
     track.addEventListener('scroll', function () {
