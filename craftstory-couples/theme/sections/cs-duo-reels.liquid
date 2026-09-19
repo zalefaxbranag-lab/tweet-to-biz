@@ -1,0 +1,351 @@
+{%- liquid
+  comment
+    Deux sources alimentent le meme rail :
+      - les blocs, un par clip, avec sa legende et son affiche. C'est la voie
+        normale pour une poignee de videos.
+      - la zone de texte, une URL MP4 par ligne, si on prefere coller une
+        liste. Sans limite de nombre, la ou les blocs plafonnent a 50.
+    Les blocs passent en premier, la liste ensuite.
+  endcomment
+  assign pasted = section.settings.urls | newline_to_br | split: '<br />'
+  assign n_pasted = 0
+  for raw in pasted
+    assign u = raw | strip
+    if u != blank
+      assign n_pasted = n_pasted | plus: 1
+    endif
+  endfor
+
+  assign n_blocks = 0
+  for block in section.blocks
+    if block.settings.video != blank or block.settings.video_url != blank
+      assign n_blocks = n_blocks | plus: 1
+    endif
+  endfor
+  assign total = n_blocks | plus: n_pasted
+-%}
+{%- if total > 0 or request.design_mode -%}
+<div class="cs cs-duo-reels" style="--cs-reel-w:{{ section.settings.card_width }}px">
+  <div class="cs-wrap">
+    <div class="cs-sec cs-reel-sec">
+
+      {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.body != blank -%}
+        <div class="cs-sec-head">
+          {%- if section.settings.eyebrow != blank -%}<span class="cs-eyebrow">✦ {{ section.settings.eyebrow }}</span>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="cs-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+          {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if total > 0 -%}
+        <div class="cs-reel-track" data-cs-reel role="region" aria-label="{{ section.settings.rail_label | default: 'Music videos' | escape }}">
+
+          {%- for block in section.blocks -%}
+            {%- if block.settings.video != blank or block.settings.video_url != blank -%}
+              <div class="cs-reel-card" data-cs-reel-card {{ block.shopify_attributes }}>
+                {%- if block.settings.video != blank -%}
+                  {%- assign src = block.settings.video.sources | where: 'format', 'mp4' | first -%}
+                  <video class="cs-reel-v" muted loop playsinline preload="none"
+                         data-cs-reel-src="{{ src.url }}"
+                         {% if block.settings.cover != blank %}poster="{{ block.settings.cover | image_url: width: 640 }}"{% endif %}></video>
+                {%- else -%}
+                  <video class="cs-reel-v" muted loop playsinline preload="none"
+                         data-cs-reel-src="{{ block.settings.video_url | escape }}"
+                         {% if block.settings.cover != blank %}poster="{{ block.settings.cover | image_url: width: 640 }}"{% endif %}></video>
+                {%- endif -%}
+                <button type="button" class="cs-reel-hit" data-cs-reel-hit
+                        aria-label="{{ section.settings.sound_label | default: 'Tap for sound' | escape }}"></button>
+                <span class="cs-reel-badge" data-cs-reel-badge aria-hidden="true">
+                  <svg class="cs-reel-off" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                  <svg class="cs-reel-on" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.6a4.5 4.5 0 0 1 0 6.8m2.7-9.6a8 8 0 0 1 0 12.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                </span>
+                {%- if block.settings.caption != blank -%}
+                  <span class="cs-reel-cap">{{ block.settings.caption }}</span>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- for raw in pasted -%}
+            {%- assign u = raw | strip -%}
+            {%- if u != blank -%}
+              <div class="cs-reel-card" data-cs-reel-card>
+                <video class="cs-reel-v" muted loop playsinline preload="none" data-cs-reel-src="{{ u | escape }}"></video>
+                <button type="button" class="cs-reel-hit" data-cs-reel-hit
+                        aria-label="{{ section.settings.sound_label | default: 'Tap for sound' | escape }}"></button>
+                <span class="cs-reel-badge" data-cs-reel-badge aria-hidden="true">
+                  <svg class="cs-reel-off" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                  <svg class="cs-reel-on" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.6a4.5 4.5 0 0 1 0 6.8m2.7-9.6a8 8 0 0 1 0 12.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                </span>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+        </div>
+        <div class="cs-reel-dots" data-cs-reel-dots hidden></div>
+        <p class="cs-reel-help">{{ section.settings.sound_hint | default: 'Tap a video for sound' }}</p>
+      {%- elsif request.design_mode -%}
+        <div class="cs-reel-empty">
+          <strong>No videos yet — this section stays hidden on the storefront.</strong>
+          Add a <em>Video</em> block per clip and pick its MP4, or paste a list of
+          URLs into <em>Video URLs</em> below, one per line. Only the clips on screen
+          ever load, so the row stays fast.
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.cta_label != blank and total > 0 -%}
+        <div class="cs-reel-cta"><a class="cs-btn cs-btn-primary cs-btn-lg" href="{{ section.settings.cta_link | default: '#' }}">{{ section.settings.cta_label }}</a></div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "CraftStory Duo Reels",
+  "settings": [
+    { "type": "paragraph", "content": "A swipeable row of 16:9 music videos. They play muted as they scroll into view; a tap turns the sound on, and only one clip has sound at a time. Clips that are off screen never load, so the row stays fast however many you add." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Watch what we made for them" },
+    { "type": "text", "id": "body", "label": "Body" },
+    { "type": "header", "content": "The videos" },
+    { "type": "textarea", "id": "urls", "label": "Video URLs", "info": "One MP4 URL per line. Use this if you would rather paste a list than fill a block each. Upload under Content ▸ Files, then copy each file's URL." },
+    { "type": "paragraph", "content": "One Video block per clip is the easy way: pick the file, add a caption, done. Blocks cap at 50 — past that, use the list above." },
+    { "type": "header", "content": "Size" },
+    { "type": "range", "id": "card_width", "label": "Card width", "min": 160, "max": 420, "step": 20, "unit": "px", "default": 260 },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "cta_label", "label": "Button label" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" },
+    { "type": "header", "content": "Labels" },
+    { "type": "text", "id": "sound_hint", "label": "Hint under the row", "default": "Tap a video for sound" },
+    { "type": "text", "id": "sound_label", "label": "Sound button label", "default": "Tap for sound" },
+    { "type": "text", "id": "rail_label", "label": "Row label", "default": "Music videos" }
+  ],
+  "blocks": [
+    { "type": "clip", "name": "Video", "limit": 50, "settings": [
+      { "type": "video", "id": "video", "label": "Video" },
+      { "type": "text", "id": "video_url", "label": "or paste an MP4 URL" },
+      { "type": "image_picker", "id": "cover", "label": "Poster", "info": "Optional. Without one the first frame shows." },
+      { "type": "text", "id": "caption", "label": "Caption" }
+    ] }
+  ],
+  "presets": [ { "name": "CraftStory Duo Reels" } ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-reels{background:var(--cs-paper)}
+.cs-reel-sec{padding:clamp(34px,6vw,64px) 0}
+.cs-reel-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;
+  padding:2px 22px 4px;margin:0 -22px}
+.cs-reel-track::-webkit-scrollbar{display:none}
+/* Pendant le glissement l'accrochage se battrait avec le doigt : on le coupe. */
+.cs-reel-track.cs-reel-drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.cs-reel-card{position:relative;flex:0 0 var(--cs-reel-w,260px);aspect-ratio:16/9;
+  scroll-snap-align:center;border-radius:var(--cs-r);overflow:hidden;
+  background:var(--cs-night);box-shadow:var(--cs-sh-sm)}
+.cs-reel-v{width:100%;height:100%;object-fit:cover;display:block}
+.cs-reel-hit{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;margin:0;
+  background:transparent;cursor:pointer}
+.cs-reel-badge{position:absolute;right:7px;bottom:7px;width:26px;height:26px;border-radius:50%;
+  background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;pointer-events:none}
+.cs-reel-badge svg{width:15px;height:15px}
+.cs-reel-on{display:none}
+.cs-reel-card.cs-reel-loud .cs-reel-off{display:none}
+.cs-reel-card.cs-reel-loud .cs-reel-on{display:block}
+.cs-reel-card.cs-reel-loud{outline:2px solid var(--cs-coral);outline-offset:-2px}
+.cs-reel-cap{position:absolute;left:0;right:0;bottom:0;padding:18px 9px 7px;color:#fff;
+  font-size:.78rem;font-weight:600;line-height:1.25;pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,.72),transparent)}
+.cs-reel-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;flex-wrap:wrap;max-width:320px;margin-left:auto;margin-right:auto}
+.cs-reel-dots button{width:6px;height:6px;padding:0;border:0;border-radius:var(--cs-pill);
+  background:var(--cs-line);cursor:pointer;transition:background .2s ease,width .2s ease}
+.cs-reel-dots button[aria-current="true"]{background:var(--cs-coral);width:17px}
+.cs-reel-dots--count{gap:0}
+.cs-reel-dots--count span{font-size:.84rem;font-weight:700;color:var(--cs-ink2);
+  font-variant-numeric:tabular-nums;background:var(--cs-paper2);border:1px solid var(--cs-line);
+  border-radius:var(--cs-pill);padding:4px 13px}
+.cs-reel-help{text-align:center;margin-top:9px;font-size:.84rem;font-weight:600;color:var(--cs-ink3)}
+.cs-reel-empty{max-width:640px;margin:0 auto;text-align:center;background:var(--cs-card);
+  border:1px dashed var(--cs-ink3);border-radius:var(--cs-r-lg);padding:22px;
+  color:var(--cs-ink);font-size:.94rem;line-height:1.55}
+.cs-reel-empty strong{display:block;color:var(--cs-coral);margin-bottom:5px}
+.cs-reel-cta{display:flex;justify-content:center;margin-top:clamp(22px,3vw,34px)}
+.cs-reel-cta .cs-btn{white-space:nowrap}
+@media(max-width:560px){.cs-reel-cta{width:100%}.cs-reel-cta .cs-btn{width:100%;font-size:clamp(.82rem,3.7vw,1.07rem);padding-left:16px;padding-right:16px}}
+{% endstylesheet %}
+{% javascript %}
+(function () {
+  // Un seul clip a le son sur toute la page.
+  var loud = null;
+
+  function quiet() {
+    if (!loud) return;
+    loud.video.muted = true;
+    loud.card.classList.remove('cs-reel-loud');
+    loud = null;
+  }
+
+  function setup(rail) {
+    if (rail.dataset.csReelReady) return;
+    rail.dataset.csReelReady = '1';
+
+    var cards = rail.querySelectorAll('[data-cs-reel-card]');
+    if (!cards.length) return;
+
+    // Cinquante-six MP4 charges d'un coup mettraient la page a genoux. La
+    // source n'est posee que quand le clip approche de l'ecran, et retiree
+    // quand il s'en eloigne pour rendre la memoire.
+    var near = null;
+    if ('IntersectionObserver' in window) {
+      near = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var card = entries[i].target;
+          var v = card.querySelector('.cs-reel-v');
+          if (!v) continue;
+          if (entries[i].isIntersecting) {
+            if (!v.src) {
+              var src = v.getAttribute('data-cs-reel-src');
+              if (src) v.src = src;
+            }
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+          } else {
+            v.pause();
+            if (loud && loud.video === v) quiet();
+          }
+        }
+      }, { root: rail, rootMargin: '200px 0px' });
+      for (var i = 0; i < cards.length; i++) near.observe(cards[i]);
+    } else {
+      for (var j = 0; j < cards.length; j++) {
+        var v = cards[j].querySelector('.cs-reel-v');
+        if (v) v.src = v.getAttribute('data-cs-reel-src') || '';
+      }
+    }
+
+    // Un clic coupe ou remet le son. Le glissement ne compte pas comme un clic.
+    var moved = 0;
+    for (var k = 0; k < cards.length; k++) {
+      (function (card) {
+        var hit = card.querySelector('[data-cs-reel-hit]');
+        var video = card.querySelector('.cs-reel-v');
+        if (!hit || !video) return;
+        hit.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (moved > 6) return;
+          if (loud && loud.video === video) { quiet(); return; }
+          quiet();
+          if (!video.src) {
+            var src = video.getAttribute('data-cs-reel-src');
+            if (src) video.src = src;
+          }
+          video.muted = false;
+          var p = video.play();
+          if (p && p.catch) p.catch(function () {});
+          card.classList.add('cs-reel-loud');
+          loud = { video: video, card: card };
+        });
+      })(cards[k]);
+    }
+
+    // Les bulles disent ou on en est. Passe une douzaine de clips elles
+    // s'enroulent sur trois rangees de points minuscules : au-dela, un
+    // compteur « 3 / 56 » dit la meme chose et se lit.
+    var dots = rail.parentNode.querySelector('[data-cs-reel-dots]');
+    var counter = null;
+    if (dots && cards.length > 12) {
+      dots.hidden = false;
+      dots.innerHTML = '';
+      dots.classList.add('cs-reel-dots--count');
+      counter = document.createElement('span');
+      dots.appendChild(counter);
+    } else if (dots && cards.length > 1) {
+      dots.hidden = false;
+      dots.innerHTML = '';
+      for (var d = 0; d < cards.length; d++) {
+        (function (n) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('aria-label', 'Video ' + (n + 1));
+          b.addEventListener('click', function () {
+            var c = cards[n];
+            rail.scrollTo({ left: c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2, behavior: 'smooth' });
+          });
+          dots.appendChild(b);
+        })(d);
+      }
+    }
+
+    function mark() {
+      if (!dots || !dots.children.length) return;
+      var middle = rail.scrollLeft + rail.clientWidth / 2;
+      var best = 0, closest = Infinity;
+      for (var i = 0; i < cards.length; i++) {
+        var gap = Math.abs(cards[i].offsetLeft + cards[i].offsetWidth / 2 - middle);
+        if (gap < closest) { closest = gap; best = i; }
+      }
+      if (counter) {
+        counter.textContent = (best + 1) + ' / ' + cards.length;
+        return;
+      }
+      for (var j = 0; j < dots.children.length; j++) {
+        dots.children[j].setAttribute('aria-current', j === best ? 'true' : 'false');
+      }
+    }
+
+    // Au doigt overflow-x suffit. A la souris, rien ne bouge sans ceci.
+    var down = false, startX = 0, startLeft = 0;
+    rail.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      down = true; captured = false; moved = 0;
+      startX = e.clientX; startLeft = rail.scrollLeft;
+    });
+    rail.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - startX;
+      if (Math.abs(dx) > moved) moved = Math.abs(dx);
+      // On ne capture le pointeur qu'une fois le glissement engage. Capturer
+      // des le pointerdown detourne le pointerup vers le rail : le clic n'est
+      // jamais emis, et tout bouton pose sur une carte devient mort.
+      if (!captured && moved > 6) {
+        captured = true;
+        try { rail.setPointerCapture(e.pointerId); } catch (err) {}
+        rail.classList.add('cs-reel-drag');
+      }
+      if (captured) rail.scrollLeft = startLeft - dx;
+    });
+    function release() {
+      if (!down) return;
+      down = false; captured = false;
+      rail.classList.remove('cs-reel-drag');
+      window.setTimeout(function () { moved = 0; }, 0);
+    }
+    rail.addEventListener('pointerup', release);
+    rail.addEventListener('pointercancel', release);
+    rail.addEventListener('pointerleave', release);
+
+    var timer;
+    rail.addEventListener('scroll', function () {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(mark, 60);
+    }, { passive: true });
+    mark();
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var rails = host.querySelectorAll('[data-cs-reel]');
+    for (var i = 0; i < rails.length; i++) setup(rails[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+  document.addEventListener('shopify:section:unload', quiet);
+})();
+{% endjavascript %}

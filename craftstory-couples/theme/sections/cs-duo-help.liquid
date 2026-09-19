@@ -107,6 +107,10 @@
   --cs-duo-help-accent:var(--cs-star);
   --cs-duo-help-deep:#140F26;
   background:var(--cs-duo-help-bg);color:var(--cs-duo-help-ink)}
+/* Un seul point de specificite : sans le .cs devant, la regle de fond du
+   theme (.cs{background:var(--cs-paper)}) gagne et la section se retrouve en
+   creme sur creme, illisible quel que soit le fond choisi. */
+.cs.cs-duo-help{background:var(--cs-duo-help-bg);color:var(--cs-duo-help-ink)}
 .cs-dhelp--deep{--cs-duo-help-bg:var(--cs-duo-help-deep)}
 .cs-dhelp--paper2{--cs-duo-help-bg:var(--cs-paper2);--cs-duo-help-ink:var(--cs-ink);--cs-duo-help-ink2:var(--cs-ink2);--cs-duo-help-accent:var(--cs-coral)}
 .cs-dhelp--paper{--cs-duo-help-bg:var(--cs-paper);--cs-duo-help-ink:var(--cs-ink);--cs-duo-help-ink2:var(--cs-ink2);--cs-duo-help-accent:var(--cs-coral)}

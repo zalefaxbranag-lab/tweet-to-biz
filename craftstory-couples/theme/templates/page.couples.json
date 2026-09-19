@@ -62,13 +62,14 @@
         "ink": "#ffffff",
         "autoplay": false,
         "speed": 3
-      }
+      },
+      "disabled": true
     },
     "hero": {
       "type": "cs-duo-hero",
       "settings": {
-        "badge": "",
-        "badge_stars": false,
+        "badge": "The #1 Music Video Platform — 12,000+ Music Video Created",
+        "badge_stars": true,
         "eyebrow": "",
         "heading": "I Pressed Play and We Both Started",
         "highlight": "Crying",
@@ -81,7 +82,7 @@
         "faces_count": "12k+",
         "proof_stars": "5",
         "proof_prefix": "Join",
-        "proof_strong": "12,000+ lovers at CraftStory who turned their story into a song",
+        "proof_strong": "12,000+ lovers at CraftStory who turned their story into a music video",
         "proof_text": "",
         "trust_line": "Ready in as little as 48 hours · No shipping needed · Weddings · Anniversaries · Proposals · Just Because",
         "autoplay": true,
@@ -93,7 +94,9 @@
       "blocks": {
         "f1": {
           "type": "face",
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/craftstory-sb-photo-jungle-adventure-Cleo-pvmu90guuk2mrk.jpg"
+          }
         },
         "f2": {
           "type": "face",
@@ -161,7 +164,8 @@
         "show_numbers": true,
         "number_word": "Step",
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose"
+        "cta_link": "#cs-duo-choose",
+        "image": "shopify://shop_images/craftstory-sb-photo-jungle-adventure-Cleo-pvmu90guuk2mrk.jpg"
       }
     },
     "reviews": {
@@ -296,7 +300,7 @@
       "type": "cs-duo-included",
       "settings": {
         "eyebrow": "",
-        "heading": "What's Included in Your Song & Video",
+        "heading": "What's Included in Your Song Video",
         "subheading": "When your song and your music video are ready, we'll email you a private link to listen, download and share.",
         "cta_label": "",
         "cta_link": "#cs-duo-choose",
@@ -474,13 +478,80 @@
     "help": {
       "type": "cs-duo-help",
       "settings": {
-        "heading": "Still Have Questions?",
-        "highlight": "",
+        "heading": "Still Have",
+        "highlight": "Questions?",
         "intro": "Our friendly team is here to help. Email us anytime at",
         "email": "Sarah@craftstory.co",
         "tail": "— we typically respond within a few hours.",
-        "bg": "night"
+        "bg": "paper2"
       }
+    },
+    "reels": {
+      "type": "cs-duo-reels",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Watch what we made for them",
+        "body": "",
+        "urls": "",
+        "card_width": 260,
+        "cta_label": "Start My Custom Music Video",
+        "cta_link": "#cs-duo-choose",
+        "sound_hint": "Tap a video for sound",
+        "sound_label": "Tap for sound",
+        "rail_label": "Music videos"
+      },
+      "blocks": {
+        "c1": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        },
+        "c2": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        },
+        "c3": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        },
+        "c4": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        },
+        "c5": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        },
+        "c6": {
+          "type": "clip",
+          "settings": {
+            "video_url": "",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6"
+      ]
     }
   },
   "order": [
@@ -492,6 +563,7 @@
     "reviews",
     "occasions",
     "included",
+    "reels",
     "player",
     "faq",
     "help"

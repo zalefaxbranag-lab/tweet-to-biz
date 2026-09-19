@@ -190,23 +190,29 @@
 
     // Au doigt, overflow-x fait deja le travail. A la souris — donc dans
     // l'apercu de l'editeur — rien ne bouge sans ce glisser-deposer.
-    var down = false, startX = 0, startLeft = 0, moved = 0;
+    var down = false, captured = false, startX = 0, startLeft = 0, moved = 0;
     track.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'touch') return;
-      down = true; moved = 0;
+      down = true; captured = false; moved = 0;
       startX = e.clientX; startLeft = track.scrollLeft;
-      try { track.setPointerCapture(e.pointerId); } catch (err) {}
-      track.classList.add('cs-rev-drag');
     });
     track.addEventListener('pointermove', function (e) {
       if (!down) return;
       var dx = e.clientX - startX;
       if (Math.abs(dx) > moved) moved = Math.abs(dx);
-      track.scrollLeft = startLeft - dx;
+      // On ne capture le pointeur qu'une fois le glissement engage. Capturer
+      // des le pointerdown detourne le pointerup vers le rail : le clic n'est
+      // jamais emis, et tout bouton pose sur une carte devient mort.
+      if (!captured && moved > 6) {
+        captured = true;
+        try { track.setPointerCapture(e.pointerId); } catch (err) {}
+        track.classList.add('cs-rev-drag');
+      }
+      if (captured) track.scrollLeft = startLeft - dx;
     });
     function release() {
       if (!down) return;
-      down = false;
+      down = false; captured = false;
       track.classList.remove('cs-rev-drag');
     }
     track.addEventListener('pointerup', release);
