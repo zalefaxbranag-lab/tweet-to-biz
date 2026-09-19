@@ -127,3 +127,52 @@ Ici : 18 418 octets en local, 11 294 sur le theme, contenu identique. Pour un
 template, la verification se fait sur le **corps** (`body { ... on
 OnlineStoreThemeFileBodyText { content } }`), pas sur le MD5 : compter les
 sections et comparer la liste `order`.
+
+## La regle la plus importante : `TEXT` pour les templates, `URL` pour les sections
+
+`OnlineStoreThemeFileBodyInput.type` accepte `URL` et `TEXT`. Ils ne se
+comportent **pas** pareil face a une erreur :
+
+| Corps | Contenu invalide | Ce que renvoie l'API |
+|---|---|---|
+| `URL` | refuse | `upsertedThemeFiles: []`, `userErrors: []` — **silence total** |
+| `TEXT` | refuse | `userErrors: [{code: FILE_VALIDATION_ERROR, message: "..."}]` |
+
+Une soiree entiere a ete perdue a chercher pourquoi un template ne changeait
+pas. La cause reelle, visible en une seconde des qu'on est passe en `TEXT` :
+
+> `Setting 'icon' must be a valid shopify url`
+
+`cs-duo-ann` declare `icon` en `image_picker`. Le template lui donnait `"★"`.
+
+**Le signe qui ne trompe pas.** Toujours demander `upsertedThemeFiles` dans la
+mutation. Un upsert reussi renvoie le fichier et sa taille. Une liste vide veut
+dire que rien n'a ete ecrit, quoi que dise `userErrors`.
+
+```graphql
+themeFilesUpsert(themeId: $id, files: $files) {
+  upsertedThemeFiles { filename size }   # <- vide = echec, toujours
+  userErrors { filename code message }
+}
+```
+
+**Donc :**
+- **Templates JSON** — toujours en `TEXT`. Ils font moins de 8 Ko en compact
+  (`json.dumps(d, separators=(',', ':'))`), ca passe largement dans un appel.
+  Retirer les sauts de ligne des valeurs avant, sinon l'echappement casse.
+- **Sections liquid** — en `URL` via le transit, elles sont trop grosses. Mais
+  passer la section fautive en `TEXT` des qu'un push reste sans effet, pour
+  obtenir le message.
+
+## Les reglages de type ressource n'acceptent pas la chaine vide
+
+`image_picker`, `video`, `url`, `video_url`, `collection`, `product`, `page`…
+attendent une vraie reference (`shopify://…`, `https://…` ou `/chemin`). Ni
+`""` ni un caractere decoratif ne passent. Dans un template, **omettre le
+reglage** : le defaut du schema s'applique.
+
+`qa/template_check.py` refuse tout ca avant le push :
+
+```
+python3 qa/template_check.py theme/templates/page.couples.json
+```

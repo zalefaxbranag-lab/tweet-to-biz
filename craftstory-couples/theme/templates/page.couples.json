@@ -38,14 +38,12 @@
     "ann": {
       "type": "cs-duo-ann",
       "settings": {
-        "text": "CUSTOM SONGS & ANIMATED MUSIC VIDEOS FOR COUPLES",
-        "icon": "★",
+        "text": "★ CUSTOM SONGS & ANIMATED MUSIC VIDEOS FOR COUPLES",
         "align": "center",
         "bg": "#EC5B3C",
         "ink": "#FFFFFF",
         "autoplay": false,
-        "speed": 3,
-        "link": ""
+        "speed": 3
       }
     },
     "hero": {
@@ -200,7 +198,7 @@
       "settings": {
         "eyebrow": "",
         "heading": "What’s Included in Your Song & Video",
-        "subheading": "When your song and your music video are ready, we'll email you\na private link to listen, download and share.",
+        "subheading": "When your song and your music video are ready, we'll email you a private link to listen, download and share.",
         "cta_label": "",
         "cta_link": "#cs-duo-choose",
         "cta_note": ""
