@@ -94,3 +94,36 @@ Constate, pas documente : `cs-duo-reviews.liquid` (42 236 octets) est refuse
 alors que `cs-duo-hero.liquid` (33 579) passe, avec un schema propre dans les
 deux cas. Le plafond se situe donc entre les deux. A verifier en decoupant la
 section si le besoin revient.
+
+### La troisieme cause : la taille du fichier
+
+Mesures faites sur ce thème, même pipeline, même session :
+
+| Fichier | Octets | Resultat |
+|---|---|---|
+| `cs-duo-head.liquid` | 25 247 | applique |
+| `cs-duo-faq.liquid` | 25 364 | applique |
+| `cs-duo-hero.liquid` | 33 622 | applique |
+| `cs-duo-reviews.liquid` (carrousel) | 42 250 | **refuse** |
+
+Le plafond est entre **33 622 et 42 250 octets**. Au-dessus, meme symptome que
+les deux autres causes : 201 a l'upload, `userErrors: []` a l'upsert, fichier
+jamais applique. Pour passer, sortir le JavaScript dans `assets/` et l'appeler
+avec `asset_url | script_tag`.
+
+## Les cibles de staging expirent — et l'upsert doit suivre l'upload
+
+Les cibles renvoyees par `stagedUploadsCreate` portent une `expiration` dans
+leur `policy` (24 h) mais ne survivent pas a une interruption longue entre
+l'upload et l'upsert : quatre fichiers uploades en 201 puis upsertes plus tard
+ont ete ignores en silence, et il a fallu tout re-stager. **Faire les trois
+appels a la suite, sans rien entre eux**, puis verifier par MD5.
+
+## Les templates JSON sont reecrits par Shopify
+
+`templates/*.json` ne conserve jamais le MD5 local : Shopify remplace l'en-tete
+de commentaire par son propre avertissement auto-genere et reindente le JSON.
+Ici : 18 418 octets en local, 11 294 sur le theme, contenu identique. Pour un
+template, la verification se fait sur le **corps** (`body { ... on
+OnlineStoreThemeFileBodyText { content } }`), pas sur le MD5 : compter les
+sections et comparer la liste `order`.
