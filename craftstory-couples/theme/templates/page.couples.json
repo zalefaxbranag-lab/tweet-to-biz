@@ -89,30 +89,39 @@
         "unmute_label": "Tap to Unmute",
         "video_url": "",
         "play_label": "Play",
-        "clip_caption": ""
+        "clip_caption": "",
+        "video": "shopify://files/videos/0917 (1)(3).mp4"
       },
       "blocks": {
         "f1": {
           "type": "face",
           "settings": {
-            "image": "shopify://shop_images/craftstory-sb-photo-jungle-adventure-Cleo-pvmu90guuk2mrk.jpg"
+            "image": "shopify://shop_images/hf_20260920_005634_88fac183-1fd0-4c79-b33a-1990d9e53205.png"
           }
         },
         "f2": {
           "type": "face",
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/hf_20260920_005656_afcedbbc-00d0-4f91-a664-98a8b0e15a50.png"
+          }
         },
         "f3": {
           "type": "face",
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/hf_20260920_005702_4e6b22f5-e408-4ad2-8462-7ee8c9a5bef6.png"
+          }
         },
         "f4": {
           "type": "face",
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/hf_20260920_005706_8a16228c-c116-43c5-a196-c7f1a679d06a.png"
+          }
         },
         "f5": {
           "type": "face",
-          "settings": {}
+          "settings": {
+            "image": "shopify://shop_images/hf_20260920_005712_fbc2851e-9e98-4f20-ad83-5aa8c5e00be5.png"
+          }
         }
       },
       "block_order": [
@@ -165,7 +174,7 @@
         "number_word": "Step",
         "cta_label": "Start My Custom Music Video",
         "cta_link": "#cs-duo-choose",
-        "image": "shopify://shop_images/craftstory-sb-photo-jungle-adventure-Cleo-pvmu90guuk2mrk.jpg"
+        "image": "shopify://shop_images/hf_20260920_005500_02ffc134-fbc6-4c84-bed4-57d62fe5422d.png"
       }
     },
     "reviews": {
@@ -231,7 +240,8 @@
             "title": "For Your Partner",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010626_1c8d0112-a33d-4b6d-bfdb-7d368233b119.png"
           }
         },
         "o2": {
@@ -240,7 +250,8 @@
             "title": "For the Two of You",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010633_3a96fd90-89bc-4674-86f7-d2d4f112cc37.png"
           }
         },
         "o3": {
@@ -249,7 +260,8 @@
             "title": "For the Proposal",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010636_650601ac-5c6e-4151-aad9-abe57201379b.png"
           }
         },
         "o4": {
@@ -258,7 +270,8 @@
             "title": "For Your Anniversary",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010640_e1313b82-3b2e-4a50-aeb4-6c9231794bc2.png"
           }
         },
         "o5": {
@@ -267,7 +280,8 @@
             "title": "For the First Dance",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010806_cb046696-72da-4820-adaf-16be6691a8d4.png"
           }
         },
         "o6": {
@@ -276,7 +290,8 @@
             "title": "Just Because",
             "note": "",
             "feature": false,
-            "link": ""
+            "link": "",
+            "image": "shopify://shop_images/hf_20260920_010813_f6645d73-0289-4757-a9ca-fe15f35ffc3b.png"
           }
         }
       },
@@ -344,12 +359,20 @@
             "title": "Lyrics Written From YOUR Story",
             "body": "Every word is crafted from the details you share — names, memories, and moments that matter."
           }
+        },
+        "in0": {
+          "type": "included",
+          "settings": {
+            "title": "An Animated Music Video",
+            "body": "The couple on screen is built to look like the two of you, so the video tells your story and not a stock one."
+          }
         }
       },
       "block_order": [
         "tr1",
         "tr2",
         "tr3",
+        "in0",
         "in1",
         "in2"
       ],
@@ -504,6 +527,7 @@
         "c1": {
           "type": "clip",
           "settings": {
+            "video": "shopify://files/videos/0917 (1)(4).mp4",
             "video_url": "",
             "caption": ""
           }
@@ -511,6 +535,7 @@
         "c2": {
           "type": "clip",
           "settings": {
+            "video": "shopify://files/videos/0917 (1)(7).mp4",
             "video_url": "",
             "caption": ""
           }
@@ -518,6 +543,7 @@
         "c3": {
           "type": "clip",
           "settings": {
+            "video": "shopify://files/videos/0917 (1)(6).mp4",
             "video_url": "",
             "caption": ""
           }
@@ -525,13 +551,7 @@
         "c4": {
           "type": "clip",
           "settings": {
-            "video_url": "",
-            "caption": ""
-          }
-        },
-        "c5": {
-          "type": "clip",
-          "settings": {
+            "video": "shopify://files/videos/0917 (1)(8).mp4",
             "video_url": "",
             "caption": ""
           }
@@ -539,6 +559,7 @@
         "c6": {
           "type": "clip",
           "settings": {
+            "video": "shopify://files/videos/0917 (1)(5).mp4",
             "video_url": "",
             "caption": ""
           }
@@ -549,7 +570,6 @@
         "c2",
         "c3",
         "c4",
-        "c5",
         "c6"
       ]
     }
