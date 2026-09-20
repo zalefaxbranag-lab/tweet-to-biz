@@ -1,0 +1,408 @@
+{%- liquid
+  comment
+    La page d'apres-tunnel, moitie haute : le clip d'attente, l'apercu du
+    morceau, la preuve, le tarif et le compte a rebours.
+
+    Structure et formulaires seulement. Rien n'est branche sur une generation
+    ni sur un paiement : les visuels, les prix et les chiffres sont des
+    reglages, a remplir quand le contenu existe. C'est pour ca que la plupart
+    n'ont pas de valeur par defaut.
+
+    {name} devient le prenom de la personne, repris de ?name= dans l'URL. Le
+    tunnel l'ajoute tout seul a son bouton final.
+  endcomment
+-%}
+<div class="cs cs-duo-pvs" data-cs-pvs
+     data-timer="{% if section.settings.show_timer %}{{ section.settings.timer_minutes }}{% else %}0{% endif %}"
+     data-timer-end="{{ section.settings.timer_over | escape }}">
+  <div class="cs-wrap">
+
+    {%- comment -%} 1. « Vos mots deviennent une chanson » + le clip d'attente {%- endcomment -%}
+    {%- if section.settings.wait_heading != blank or section.settings.video != blank or section.settings.video_url != blank -%}
+      <div class="cs-pvs-top">
+        {%- if section.settings.wait_heading != blank -%}
+          <h1 class="cs-pvs-h1" data-cs-tpl>{{ section.settings.wait_heading }}</h1>
+        {%- endif -%}
+        {%- if section.settings.wait_sub != blank -%}
+          <p class="cs-pvs-sub" data-cs-tpl>{{ section.settings.wait_sub }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.video != blank or section.settings.video_url != blank -%}
+          <div class="cs-pvs-stage">
+            {%- if section.settings.video != blank -%}
+              {%- assign src = section.settings.video.sources | where: 'format', 'mp4' | first -%}
+              <video class="cs-pvs-v" playsinline controls preload="metadata"
+                     src="{{ src.url }}"
+                     {% if section.settings.poster != blank %}poster="{{ section.settings.poster | image_url: width: 900 }}"{% endif %}></video>
+            {%- else -%}
+              <video class="cs-pvs-v" playsinline controls preload="metadata"
+                     src="{{ section.settings.video_url }}"
+                     {% if section.settings.poster != blank %}poster="{{ section.settings.poster | image_url: width: 900 }}"{% endif %}></video>
+            {%- endif -%}
+            {%- if section.settings.show_timer -%}
+              <span class="cs-pvs-clock" data-cs-clock aria-hidden="true">--:--</span>
+            {%- endif -%}
+            {%- if section.settings.video_caption != blank -%}
+              <span class="cs-pvs-cap">{{ section.settings.video_caption }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.wait_note != blank -%}
+          <p class="cs-pvs-note" data-cs-tpl>{{ section.settings.wait_note }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} 2. l'apercu du morceau {%- endcomment -%}
+    <div class="cs-pvs-song">
+      {%- if section.settings.song_title != blank -%}
+        <h2 class="cs-pvs-title" data-cs-tpl>{{ section.settings.song_title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.song_sub != blank -%}
+        <p class="cs-pvs-songsub" data-cs-tpl>{{ section.settings.song_sub }}</p>
+      {%- endif -%}
+
+      <div class="cs-pvs-player" data-cs-play-wrap>
+        {%- if section.settings.audio != blank -%}
+          <audio data-cs-audio preload="none" src="{{ section.settings.audio }}"></audio>
+        {%- endif -%}
+        <button type="button" class="cs-pvs-btn" data-cs-play
+                aria-label="{{ section.settings.play_label | default: 'Play the preview' | escape }}">
+          <svg class="cs-pvs-ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="cs-pvs-ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+        <div class="cs-pvs-wave" data-cs-wave aria-hidden="true">
+          {%- for i in (1..48) -%}<i></i>{%- endfor -%}
+        </div>
+        <p class="cs-pvs-hint" data-cs-hint>{{ section.settings.play_hint | default: 'Tap to play the preview' }}</p>
+        <p class="cs-pvs-time"><span data-cs-cur>0:00</span> / <span data-cs-dur>{{ section.settings.preview_length | default: '0:00' }}</span></p>
+        {%- if section.settings.preview_note != blank -%}
+          <p class="cs-pvs-note">{{ section.settings.preview_note }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- comment -%} 3. la preuve : les visages, puis la ligne {%- endcomment -%}
+    {%- assign faces = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'face' and block.settings.image != blank -%}{%- assign faces = faces | plus: 1 -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if faces > 0 or section.settings.proof_line != blank -%}
+      <div class="cs-pvs-proof">
+        {%- if faces > 0 -%}
+          <div class="cs-pvs-faces">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'face' and block.settings.image != blank -%}
+                <img src="{{ block.settings.image | image_url: width: 120 }}" alt="" width="34" height="34"
+                     loading="lazy" {{ block.shopify_attributes }}>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+        {%- if section.settings.proof_line != blank -%}
+          <p>{{ section.settings.proof_line }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} 4. le tarif reserve aux ecoutes {%- endcomment -%}
+    {%- if section.settings.deal_title != blank -%}
+      <div class="cs-pvs-deal">
+        <p class="cs-pvs-deal-t">{{ section.settings.deal_title }}</p>
+        {%- if section.settings.deal_note != blank -%}<p class="cs-pvs-deal-n">{{ section.settings.deal_note }}</p>{%- endif -%}
+        {%- if section.settings.deal_chip != blank -%}<span class="cs-pvs-chip">{{ section.settings.deal_chip }}</span>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      5. le compte a rebours. Il n'existe que si on l'allume, et la fin est
+      posee une seule fois par visiteur : un rebours qui repart a chaque
+      rechargement ne serait qu'un decor.
+    {%- endcomment -%}
+    {%- if section.settings.show_timer -%}
+      <div class="cs-pvs-timer" data-cs-timer>
+        {%- if section.settings.timer_title != blank -%}<p class="cs-pvs-timer-t">{{ section.settings.timer_title }}</p>{%- endif -%}
+        <p class="cs-pvs-timer-n" data-cs-big>--:--</p>
+        {%- if section.settings.timer_note != blank -%}<p class="cs-pvs-note">{{ section.settings.timer_note }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} 6. ce que contient le morceau complet {%- endcomment -%}
+    {%- assign rows = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'row' and block.settings.label != blank -%}{%- assign rows = rows | plus: 1 -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if rows > 0 -%}
+      <ul class="cs-pvs-rows">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'row' and block.settings.label != blank -%}
+            <li {{ block.shopify_attributes }}>
+              {%- if block.settings.icon != blank -%}<span class="cs-pvs-row-i" aria-hidden="true">{{ block.settings.icon }}</span>{%- endif -%}
+              <span class="cs-pvs-row-l">{{ block.settings.label }}
+                {%- if block.settings.note != blank -%}<small>{{ block.settings.note }}</small>{%- endif -%}
+              </span>
+              {%- if block.settings.was != blank -%}<s class="cs-pvs-row-was">{{ block.settings.was }}</s>{%- endif -%}
+              {%- if block.settings.value != blank -%}<b class="cs-pvs-row-v">{{ block.settings.value }}</b>{%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+  </div>
+</div>
+{% schema %}
+{
+  "name": "CraftStory Duo Preview",
+  "settings": [
+    { "type": "paragraph", "content": "The top half of the page they land on after the flow: the waiting clip, the song preview, the proof and the timer. Structure only — nothing is wired to a generator or to a payment, so most fields start empty on purpose. Fill them when the content exists." },
+    { "type": "paragraph", "content": "Write {name} anywhere in a heading and it becomes their first name, taken from ?name= in the URL. The flow adds it to its last button by itself." },
+
+    { "type": "header", "content": "1 — While we write it" },
+    { "type": "text", "id": "wait_heading", "label": "Heading", "default": "Your words are becoming a song." },
+    { "type": "text", "id": "wait_sub", "label": "Subheading", "default": "Watch this while we write it." },
+    { "type": "video", "id": "video", "label": "Clip (upload MP4)", "info": "Landscape 16:9." },
+    { "type": "video_url", "id": "video_url", "label": "Or a clip URL", "accept": ["youtube", "vimeo"] },
+    { "type": "image_picker", "id": "poster", "label": "Clip cover" },
+    { "type": "text", "id": "video_caption", "label": "Caption over the clip" },
+    { "type": "text", "id": "wait_note", "label": "Line under the clip" },
+
+    { "type": "header", "content": "2 — The song preview" },
+    { "type": "text", "id": "song_title", "label": "Title", "default": "{name}'s song" },
+    { "type": "text", "id": "song_sub", "label": "Subheading", "info": "For example: Country melody, written for the two of you." },
+    { "type": "text", "id": "audio", "label": "Preview audio URL", "info": "Upload the MP3 under Content > Files in Shopify, then paste its link here." },
+    { "type": "text", "id": "play_hint", "label": "Play hint", "default": "Tap to play the preview" },
+    { "type": "text", "id": "play_label", "label": "Play button label", "default": "Play the preview" },
+    { "type": "text", "id": "preview_length", "label": "Preview length", "default": "0:58" },
+    { "type": "text", "id": "preview_note", "label": "Line under the player" },
+
+    { "type": "header", "content": "3 — Proof" },
+    { "type": "paragraph", "content": "Add a Face block per avatar. Leave the line empty until you have a real number to put in it." },
+    { "type": "text", "id": "proof_line", "label": "Proof line" },
+
+    { "type": "header", "content": "4 — The rate" },
+    { "type": "text", "id": "deal_title", "label": "Rate title" },
+    { "type": "text", "id": "deal_note", "label": "Rate note" },
+    { "type": "text", "id": "deal_chip", "label": "Rate chip", "info": "The small badge on the right, for example SAVE $40." },
+
+    { "type": "header", "content": "5 — The countdown" },
+    { "type": "paragraph", "content": "Off by default. When on, the deadline is set once per visitor and kept in their browser, so it does not restart on every reload — a timer that resets is only decoration. When it runs out, the line below replaces it." },
+    { "type": "checkbox", "id": "show_timer", "label": "Show a countdown", "default": false },
+    { "type": "range", "id": "timer_minutes", "label": "Minutes", "min": 5, "max": 120, "step": 5, "default": 30, "unit": "min" },
+    { "type": "text", "id": "timer_title", "label": "Countdown title", "default": "Your rate is limited" },
+    { "type": "text", "id": "timer_note", "label": "Countdown note" },
+    { "type": "text", "id": "timer_over", "label": "When it runs out", "default": "This rate has ended. You can still order at the regular rate." },
+
+    { "type": "header", "content": "6 — What the full song holds" },
+    { "type": "paragraph", "content": "Add a Row block per line." }
+  ],
+  "blocks": [
+    {
+      "type": "face",
+      "name": "Face",
+      "settings": [ { "type": "image_picker", "id": "image", "label": "Photo" } ]
+    },
+    {
+      "type": "row",
+      "name": "Row",
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon", "info": "One character, for example a musical note." },
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "text", "id": "note", "label": "Note under the label" },
+        { "type": "text", "id": "was", "label": "Struck-through value" },
+        { "type": "text", "id": "value", "label": "Value" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "CraftStory Duo Preview" } ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-pvs{background:var(--cs-paper);padding:clamp(20px,4vw,40px) 0 0}
+.cs-duo-pvs [hidden]{display:none !important}
+.cs-duo-pvs .cs-wrap{max-width:560px}
+.cs-pvs-top{text-align:center}
+.cs-pvs-h1{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.35rem,4.6vw,1.9rem);line-height:1.15;
+  letter-spacing:-.015em;color:var(--cs-ink);margin:0}
+.cs-pvs-sub{color:var(--cs-ink2);font-size:.98rem;line-height:1.45;margin:7px 0 16px}
+.cs-pvs-stage{position:relative;border-radius:var(--cs-r-lg);overflow:hidden;background:var(--cs-night);
+  aspect-ratio:16/9;box-shadow:0 14px 34px rgba(28,21,51,.16)}
+.cs-pvs-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-pvs-clock{position:absolute;top:10px;left:10px;padding:4px 9px;border-radius:var(--cs-pill);
+  background:rgba(28,21,51,.72);color:#fff;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+.cs-pvs-cap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-weight:800;
+  font-size:.86rem;letter-spacing:.02em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.cs-pvs-note{color:var(--cs-ink3);font-size:.84rem;line-height:1.45;margin:10px 0 0}
+
+/* L'apercu du morceau */
+.cs-pvs-song{margin-top:clamp(26px,5vw,40px);text-align:center}
+.cs-pvs-title{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.5rem,5.2vw,2.1rem);line-height:1.14;
+  letter-spacing:-.015em;color:var(--cs-ink);margin:0}
+.cs-pvs-songsub{color:var(--cs-ink2);font-size:.95rem;line-height:1.45;margin:6px 0 0}
+.cs-pvs-player{margin-top:18px;padding:clamp(20px,4vw,28px);border-radius:var(--cs-r-lg);
+  background:var(--cs-card);border:1px solid var(--cs-line)}
+.cs-pvs-btn{display:grid;place-items:center;width:64px;height:64px;margin:0 auto;border:0;cursor:pointer;
+  border-radius:50%;background:var(--cs-coral);color:#fff;box-shadow:0 8px 20px rgba(236,91,60,.34);
+  transition:transform .15s ease,background .15s ease}
+.cs-pvs-btn:hover{background:var(--cs-coral-deep);transform:scale(1.04)}
+.cs-pvs-btn svg{width:27px;height:27px;margin-left:2px}
+.cs-pvs-ico-pause{margin-left:0 !important}
+.cs-pvs-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:44px;margin:16px 0 0}
+.cs-pvs-wave i{flex:0 0 3px;border-radius:2px;background:var(--cs-line);height:22%;
+  transition:height .18s ease,background .18s ease}
+.cs-pvs-wave.is-on i{background:var(--cs-coral);animation:cs-pvs-bounce 1.1s ease-in-out infinite}
+@keyframes cs-pvs-bounce{0%,100%{height:18%}50%{height:86%}}
+.cs-pvs-hint{color:var(--cs-ink2);font-size:.9rem;font-weight:600;margin:12px 0 0}
+.cs-pvs-time{color:var(--cs-ink3);font-size:.84rem;font-variant-numeric:tabular-nums;margin:5px 0 0}
+
+/* La preuve */
+.cs-pvs-proof{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:clamp(22px,4vw,32px)}
+.cs-pvs-faces{display:flex}
+.cs-pvs-faces img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--cs-paper)}
+.cs-pvs-faces img + img{margin-left:-11px}
+.cs-pvs-proof p{margin:0;text-align:center;color:var(--cs-ink2);font-size:.9rem;font-weight:600;line-height:1.4}
+
+/* Le tarif */
+.cs-pvs-deal{position:relative;margin-top:clamp(20px,4vw,28px);padding:14px 16px;border-radius:var(--cs-r);
+  background:rgba(60,140,90,.1);border:1px solid rgba(60,140,90,.4);text-align:left}
+.cs-pvs-deal-t{margin:0;font-weight:800;font-size:.97rem;color:#2e6b48}
+.cs-pvs-deal-n{margin:4px 0 0;font-size:.85rem;line-height:1.45;color:var(--cs-ink2)}
+.cs-pvs-chip{position:absolute;top:12px;right:14px;padding:3px 9px;border-radius:var(--cs-pill);
+  background:#2e6b48;color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.02em}
+
+/* Le rebours */
+.cs-pvs-timer{margin-top:clamp(20px,4vw,28px);padding:clamp(16px,3vw,22px);border-radius:var(--cs-r-lg);
+  background:var(--cs-paper2);border:1px solid var(--cs-line);text-align:center}
+.cs-pvs-timer-t{margin:0;font-weight:700;font-size:.95rem;color:var(--cs-ink)}
+.cs-pvs-timer-n{margin:6px 0 0;font-family:var(--cs-serif);font-weight:600;font-size:clamp(2rem,9vw,2.8rem);
+  line-height:1;letter-spacing:-.02em;color:var(--cs-coral);font-variant-numeric:tabular-nums}
+.cs-pvs-timer.is-over .cs-pvs-timer-n{font-size:1rem;font-family:inherit;font-weight:700;color:var(--cs-ink2)}
+
+/* Les lignes du morceau complet */
+.cs-pvs-rows{list-style:none;margin:clamp(20px,4vw,28px) 0 0;padding:0;border-radius:var(--cs-r-lg);
+  background:var(--cs-card);border:1px solid var(--cs-line);overflow:hidden}
+.cs-pvs-rows li{display:flex;align-items:center;gap:11px;padding:13px 16px}
+.cs-pvs-rows li + li{border-top:1px solid var(--cs-line)}
+.cs-pvs-row-i{flex:0 0 auto;font-size:1.05rem;line-height:1}
+.cs-pvs-row-l{flex:1 1 auto;min-width:0;font-weight:600;font-size:.94rem;color:var(--cs-ink)}
+.cs-pvs-row-l small{display:block;font-weight:400;font-size:.82rem;color:var(--cs-ink3);line-height:1.4;margin-top:2px}
+.cs-pvs-row-was{color:var(--cs-ink3);font-size:.88rem}
+.cs-pvs-row-v{flex:0 0 auto;font-weight:800;font-size:.94rem;color:var(--cs-coral);font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){.cs-pvs-wave.is-on i{animation:none;height:50%}}
+{% endstylesheet %}
+{% javascript %}
+(function () {
+  var DEADLINE = 'csDuoDeadline';
+
+  // {name} vient de ?name= : le tunnel l'ajoute a son bouton final. Sans le
+  // parametre, on retire le gabarit plutot que d'afficher un trou.
+  function personalise(root) {
+    var name = '';
+    try { name = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
+    var els = root.querySelectorAll('[data-cs-tpl]');
+    for (var i = 0; i < els.length; i++) {
+      var t = els[i].getAttribute('data-cs-orig') || els[i].textContent;
+      els[i].setAttribute('data-cs-orig', t);
+      els[i].textContent = name ? t.split('{name}').join(name) : t.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
+      if (!els[i].textContent) els[i].hidden = true;
+    }
+  }
+
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+
+  function countdown(root) {
+    var mins = parseInt(root.getAttribute('data-timer') || '0', 10);
+    if (!mins) return;
+    var panel = root.querySelector('[data-cs-timer]');
+    var big = root.querySelector('[data-cs-big]');
+    var clock = root.querySelector('[data-cs-clock]');
+    var end = 0;
+    // La fin est posee une seule fois et gardee dans le navigateur du
+    // visiteur : sans ca le rebours repart a chaque rechargement, et une
+    // echeance qui ne finit jamais n'est pas une echeance.
+    try {
+      end = parseInt(window.localStorage.getItem(DEADLINE) || '0', 10);
+      if (!end || isNaN(end)) {
+        end = Date.now() + mins * 60000;
+        window.localStorage.setItem(DEADLINE, String(end));
+      }
+    } catch (e) {
+      end = Date.now() + mins * 60000;
+    }
+
+    function tick() {
+      var left = Math.max(0, Math.round((end - Date.now()) / 1000));
+      var txt = two(Math.floor(left / 60)) + ':' + two(left % 60);
+      if (big) big.textContent = txt;
+      if (clock) clock.textContent = txt;
+      if (left > 0) return;
+      clearInterval(id);
+      if (panel) {
+        panel.classList.add('is-over');
+        if (big) big.textContent = root.getAttribute('data-timer-end') || '';
+      }
+      if (clock) clock.hidden = true;
+    }
+    tick();
+    var id = setInterval(tick, 1000);
+  }
+
+  function player(root) {
+    var btn = root.querySelector('[data-cs-play]');
+    var audio = root.querySelector('[data-cs-audio]');
+    var wave = root.querySelector('[data-cs-wave]');
+    var cur = root.querySelector('[data-cs-cur]');
+    var dur = root.querySelector('[data-cs-dur]');
+    var hint = root.querySelector('[data-cs-hint]');
+    var play = root.querySelector('.cs-pvs-ico-play');
+    var pause = root.querySelector('.cs-pvs-ico-pause');
+    if (!btn) return;
+
+    // Sans piste, le bouton ne doit pas faire semblant de jouer.
+    if (!audio) { btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'default'; return; }
+
+    function clock(s) {
+      s = Math.max(0, Math.round(s || 0));
+      return Math.floor(s / 60) + ':' + two(s % 60);
+    }
+    function face(on) {
+      if (play) play.hidden = on;
+      if (pause) pause.hidden = !on;
+      if (wave) wave.classList.toggle('is-on', on);
+    }
+
+    btn.addEventListener('click', function () {
+      if (audio.paused) { audio.play(); } else { audio.pause(); }
+    });
+    audio.addEventListener('play', function () { face(true); if (hint) hint.hidden = true; });
+    audio.addEventListener('pause', function () { face(false); });
+    audio.addEventListener('ended', function () { face(false); if (hint) hint.hidden = false; });
+    audio.addEventListener('timeupdate', function () { if (cur) cur.textContent = clock(audio.currentTime); });
+    audio.addEventListener('loadedmetadata', function () {
+      if (dur && isFinite(audio.duration)) dur.textContent = clock(audio.duration);
+    });
+  }
+
+  function setup(root) {
+    if (root.dataset.csPvsReady) return;
+    root.dataset.csPvsReady = '1';
+    personalise(root);
+    countdown(root);
+    player(root);
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var all = host.querySelectorAll('[data-cs-pvs]');
+    for (var i = 0; i < all.length; i++) setup(all[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}

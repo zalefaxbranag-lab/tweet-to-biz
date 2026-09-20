@@ -551,6 +551,16 @@
       done.hidden = false;
       fill(root.querySelector('[data-cs-done-h]'), { name: who.name });
       fill(root.querySelector('[data-cs-done-sub]'), { email: who.email, name: who.name });
+
+      // Le bouton final emporte le prenom : la page d'apres s'en sert pour
+      // personnaliser ses titres, sans rien stocker cote serveur.
+      var home = root.querySelector('.cs-flow-home');
+      if (home && who.name) {
+        var base = home.getAttribute('data-cs-href') || home.getAttribute('href') || '';
+        home.setAttribute('data-cs-href', base);
+        home.setAttribute('href', base + (base.indexOf('?') > -1 ? '&' : '?')
+          + 'name=' + encodeURIComponent(who.name));
+      }
     }
 
     function submit() {

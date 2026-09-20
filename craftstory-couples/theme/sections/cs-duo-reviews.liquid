@@ -7,7 +7,7 @@
   endfor
 -%}
 {%- if filled > 0 or request.design_mode -%}
-<div class="cs cs-duo-rev">
+<div class="cs cs-duo-rev" data-layout="{{ section.settings.layout }}">
   <div class="cs-wrap">
     <div class="cs-sec">
       <div class="cs-sec-head">
@@ -17,6 +17,34 @@
           <p class="cs-rev-proof"><span class="cs-rev-stars" aria-hidden="true">★★★★★</span> {{ section.settings.proof_line }}</p>
         {%- endif -%}
       </div>
+
+      {%- comment -%}
+        Le recapitulatif facultatif. Il n'existe que si un score est saisi :
+        une note inventee est interdite ici comme ailleurs, et un panneau vide
+        vaut mieux qu'un chiffre faux.
+      {%- endcomment -%}
+      {%- if section.settings.rating_score != blank -%}
+        {%- assign bars = section.settings.rating_bars | newline_to_br | split: '<br />' -%}
+        <div class="cs-rev-score">
+          <div class="cs-rev-score-n">
+            {%- if section.settings.rating_label != blank -%}<p class="cs-rev-score-l">{{ section.settings.rating_label }}</p>{%- endif -%}
+            <p class="cs-rev-score-v">{{ section.settings.rating_score }}</p>
+            <span class="cs-rev-stars" aria-hidden="true">★★★★★</span>
+            {%- if section.settings.rating_count != blank -%}<p class="cs-rev-score-c">{{ section.settings.rating_count }}</p>{%- endif -%}
+          </div>
+          {%- if section.settings.rating_bars != blank -%}
+            <ul class="cs-rev-bars">
+              {%- for line in bars -%}
+                {%- assign pair = line | strip | split: '|' -%}
+                {%- if pair[0] != blank -%}
+                  {%- assign pc = pair[1] | default: '0' | strip | plus: 0 -%}
+                  <li><span>{{ pair[0] | strip }}</span><i><b style="width:{{ pc }}%"></b></i><small>{{ pc }}%</small></li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
 
       {%- if filled > 0 -%}
         <div class="cs-rev-track" data-cs-rev>
@@ -70,6 +98,18 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "In their words" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "What happens when they press play." },
     { "type": "text", "id": "proof_line", "label": "Proof line", "info": "Leave empty until the number is real. Example once it is: \"4.9 from 63 couples\"." },
+    { "type": "select", "id": "layout", "label": "Layout", "default": "rail",
+      "options": [
+        { "value": "rail", "label": "Swipeable row" },
+        { "value": "list", "label": "Stacked list" }
+      ],
+      "info": "The stacked list suits a page where reading every review is the point, like the page after the flow." },
+    { "type": "header", "content": "Rating summary" },
+    { "type": "paragraph", "content": "The panel above the reviews. It only appears once a score is filled in, and the same rule applies as to the reviews themselves: a real score or none." },
+    { "type": "text", "id": "rating_score", "label": "Score", "info": "For example 4.9" },
+    { "type": "text", "id": "rating_label", "label": "Label above the score", "info": "For example Excellent" },
+    { "type": "text", "id": "rating_count", "label": "Line under the stars", "info": "For example Based on 63 reviews" },
+    { "type": "textarea", "id": "rating_bars", "label": "Bars", "info": "One per line, label then a vertical bar then the percentage. For example: 5 stars|87" },
     { "type": "header", "content": "Call to action" },
     { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Your Free Preview" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "#" }
@@ -97,6 +137,30 @@
 .cs-rev-proof{display:flex;align-items:center;justify-content:center;gap:.5em;font-weight:600;color:var(--cs-ink2);font-size:1rem}
 .cs-rev-stars{color:var(--cs-star);letter-spacing:.08em;font-size:1.02em;line-height:1}
 .cs-rev-track{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.6vw,18px);align-items:start}
+
+/* La liste empilee. Une seule colonne, pleine largeur, et plus de rail : les
+   regles du glissement plus bas sont donc neutralisees ici. */
+.cs-duo-rev[data-layout="list"] .cs-wrap{max-width:560px}
+.cs-duo-rev[data-layout="list"] .cs-rev-track{display:flex;flex-direction:column;
+  grid-template-columns:none;gap:12px;overflow:visible;cursor:auto;scroll-snap-type:none}
+.cs-duo-rev[data-layout="list"] .cs-rev-card{flex:1 1 auto;width:auto;min-width:0;scroll-snap-align:none}
+.cs-duo-rev[data-layout="list"] .cs-rev-dots{display:none !important}
+
+/* Le recapitulatif de note */
+.cs-rev-score{display:flex;gap:clamp(14px,3vw,26px);align-items:center;margin-bottom:clamp(18px,3.4vw,26px);
+  padding:clamp(16px,3vw,22px);border-radius:var(--cs-r-lg);background:var(--cs-card);border:1px solid var(--cs-line)}
+.cs-rev-score-n{flex:0 0 auto;text-align:center}
+.cs-rev-score-l{margin:0;font-weight:800;font-size:.86rem;color:var(--cs-ink)}
+.cs-rev-score-v{margin:2px 0 3px;font-family:var(--cs-serif);font-weight:600;font-size:2.1rem;line-height:1;
+  letter-spacing:-.02em;color:var(--cs-ink)}
+.cs-rev-score-c{margin:5px 0 0;font-size:.78rem;color:var(--cs-ink3);line-height:1.35}
+.cs-rev-bars{flex:1 1 auto;min-width:0;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.cs-rev-bars li{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--cs-ink3)}
+.cs-rev-bars span{flex:0 0 3.6em;white-space:nowrap}
+.cs-rev-bars i{flex:1 1 auto;height:7px;border-radius:var(--cs-pill);background:var(--cs-line);overflow:hidden}
+.cs-rev-bars b{display:block;height:100%;border-radius:var(--cs-pill);background:var(--cs-star)}
+.cs-rev-bars small{flex:0 0 2.6em;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:480px){.cs-rev-score{flex-direction:column;gap:14px}.cs-rev-bars{width:100%}}
 .cs-rev-card{margin:0;background:var(--cs-card);border:1px solid var(--cs-line);border-radius:var(--cs-r-lg);box-shadow:var(--cs-sh-sm);overflow:hidden}
 .cs-rev-shot{width:100%;height:auto;display:block}
 .cs-rev-q{margin:0;padding:clamp(16px,2vw,22px);display:flex;flex-direction:column;gap:10px}
@@ -142,6 +206,9 @@
 {% javascript %}
 (function () {
   function setup(track) {
+    // En liste, il n'y a ni glissement ni bulles a gerer : le rail n'existe pas.
+    var host = track.closest('.cs-duo-rev');
+    if (host && host.getAttribute('data-layout') === 'list') return;
     // Ce drapeau ne doit JAMAIS reprendre le nom d'attribut des bulles :
     // track.dataset.csRevDots poserait data-cs-rev-dots sur le rail, le
     // querySelector ci-dessous trouverait le rail avant les bulles, et

@@ -118,3 +118,68 @@ Puis le rendu reel, qui a trouve les deux pieges ci-dessus :
 python3 qa/flow_render.py theme/sections/cs-duo-flow.liquid -o flow.html
 python3 qa/flow_drive.py      # 31 assertions, du premier ecran a l'envoi
 ```
+
+---
+
+# La page d'apres : `/pages/couples-preview`
+
+Ce qui vient apres le tunnel. **Structure et formulaires seulement** : rien
+n'est branche sur une generation ni sur un paiement. La plupart des champs sont
+donc vides au depart, volontairement, et se remplissent quand le contenu existe.
+
+Deux sections neuves, et deux deja ecrites qu'on reutilise :
+
+| Section | Ce qu'elle porte |
+|---|---|
+| `cs-duo-pv-song` | le clip d'attente, l'apercu du morceau, la preuve, le tarif, le rebours, les lignes du morceau complet |
+| `cs-duo-pv-offer` | le choix de vitesse, l'option, le bouton, la garantie, la suite, la barre du bas |
+| `cs-duo-reviews` | les avis, en disposition **liste** (nouveau reglage) avec le recapitulatif de note |
+| `cs-duo-faq` | les questions, telle quelle |
+
+## `{name}`
+
+Ecrit `{name}` dans un titre, un bouton ou une etape : il devient le prenom de
+la personne. Il arrive par `?name=` dans l'URL, et le tunnel l'ajoute tout seul
+a son bouton final. Sans le parametre, le gabarit est retire au lieu de laisser
+un trou dans la phrase.
+
+## Le choix voyage dans le lien
+
+Aucun achat n'a lieu sur cette page. Le bouton est un lien reglable, et la
+vitesse choisie plus l'option s'y ajoutent en parametres :
+
+```
+/pages/couples?speed=48h&addon=1&name=Marie
+```
+
+Le jour ou un produit existe, on colle son URL dans **Button link** et le choix
+du client arrive avec, sans une ligne de code.
+
+## Le rebours
+
+Eteint par defaut. Allume, l'echeance est posee **une seule fois par visiteur**
+et gardee dans son navigateur : elle ne repart pas a chaque rechargement. Un
+rebours qui redemarre n'est pas une echeance, c'est un decor — et de la fausse
+urgence, que les regles de redaction de cette boutique interdisent. Quand il
+arrive a zero, la ligne **When it runs out** remplace le chiffre.
+
+## Les chiffres et les avis
+
+Le recapitulatif de note n'apparait que si un score est saisi, et les blocs
+d'avis sont vides. C'est la meme regle que sur la landing page : des mots de
+vrais clients ou rien. Une note inventee, un nombre d'avis invente et des
+temoignages inventes sont illegaux aux Etats-Unis et au Royaume-Uni, font
+refuser les comptes publicitaires, et sont deja interdits par les regles de
+redaction du projet.
+
+## Le banc d'essai
+
+`qa/mock_render.py` rend n'importe quelle section hors Shopify, a partir d'un
+petit gabarit JSON — reglages, blocs, boucles, conditions, filtres courants :
+
+```
+python3 qa/mock_render.py gabarit.json -o page.html
+```
+
+C'est ce qui a montre les etapes numerotees 4, 5, 6 : `forloop.index` comptait
+aussi les vitesses et l'option. Un compteur a part regle ca.

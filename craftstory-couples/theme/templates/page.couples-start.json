@@ -9,7 +9,8 @@
       "settings": {
         "api_url": "",
         "ask_photo": false,
-        "done_cta_link": "/pages/couples"
+        "done_cta_label": "See your song preview",
+        "done_cta_link": "/pages/couples-preview"
       }
     }
   },

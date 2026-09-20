@@ -1,0 +1,338 @@
+{%- liquid
+  comment
+    La page d'apres-tunnel, moitie basse : le choix de vitesse, l'option, le
+    bouton, la garantie et la suite.
+
+    Aucun paiement n'est branche. Le bouton est un lien reglable : le choix de
+    vitesse et l'option s'y ajoutent en parametres (?speed=...&addon=1), donc
+    le jour ou un produit existe, il suffit de coller son URL et le choix
+    arrive avec.
+
+    {name} devient le prenom, repris de ?name= dans l'URL.
+  endcomment
+-%}
+<div class="cs cs-duo-pvo" data-cs-pvo data-base="{{ section.settings.cta_link | escape }}">
+  <div class="cs-wrap">
+
+    {%- comment -%} 1. la vitesse de livraison {%- endcomment -%}
+    {%- assign speeds = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'speed' and block.settings.label != blank -%}{%- assign speeds = speeds | plus: 1 -%}{%- endif -%}
+    {%- endfor -%}
+
+    {%- if speeds > 0 -%}
+      <fieldset class="cs-pvo-fs">
+        {%- if section.settings.speed_heading != blank -%}
+          <legend class="cs-pvo-h">{{ section.settings.speed_heading }}</legend>
+        {%- endif -%}
+        {%- assign first = true -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'speed' and block.settings.label != blank -%}
+            <label class="cs-pvo-opt" {{ block.shopify_attributes }}>
+              <input type="radio" name="cs-speed" value="{{ block.settings.value | default: block.settings.label | escape }}"
+                     data-cs-speed{% if first %} checked{% assign first = false %}{% endif %}>
+              <span class="cs-pvo-dot" aria-hidden="true"></span>
+              <span class="cs-pvo-body">
+                <b>{{ block.settings.label }}</b>
+                {%- if block.settings.note != blank -%}<small>{{ block.settings.note }}</small>{%- endif -%}
+              </span>
+              <span class="cs-pvo-price">
+                {%- if block.settings.was != blank -%}<s>{{ block.settings.was }}</s>{%- endif -%}
+                {%- if block.settings.price != blank -%}<b>{{ block.settings.price }}</b>{%- endif -%}
+              </span>
+              {%- if block.settings.badge != blank -%}<span class="cs-pvo-badge">{{ block.settings.badge }}</span>{%- endif -%}
+            </label>
+          {%- endif -%}
+        {%- endfor -%}
+      </fieldset>
+    {%- endif -%}
+
+    {%- comment -%} 2. l'option a cocher {%- endcomment -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'addon' and block.settings.label != blank -%}
+        <label class="cs-pvo-opt cs-pvo-addon" {{ block.shopify_attributes }}>
+          <input type="checkbox" data-cs-addon value="{{ block.settings.value | default: '1' | escape }}">
+          <span class="cs-pvo-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <span class="cs-pvo-body">
+            <b data-cs-tpl>{{ block.settings.label }}</b>
+            {%- if block.settings.note != blank -%}<small>{{ block.settings.note }}</small>{%- endif -%}
+          </span>
+          {%- if block.settings.price != blank -%}<span class="cs-pvo-price"><b>{{ block.settings.price }}</b></span>{%- endif -%}
+        </label>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- comment -%} 3. le bouton {%- endcomment -%}
+    {%- if section.settings.cta_label != blank -%}
+      <div class="cs-pvo-cta">
+        <a class="cs-btn cs-btn-primary cs-btn-lg cs-pvo-go" href="{{ section.settings.cta_link | default: '#' }}" data-cs-go>
+          <span data-cs-tpl>{{ section.settings.cta_label }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </a>
+        {%- if section.settings.cta_note != blank -%}
+          <p class="cs-pvo-ctanote">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>
+            {{ section.settings.cta_note }}
+          </p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} 4. la garantie {%- endcomment -%}
+    {%- if section.settings.guar_title != blank -%}
+      <div class="cs-pvo-guar">
+        <span class="cs-pvo-guar-i" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z"/><path d="M9 12.5l2 2 4-4.5"/></svg>
+        </span>
+        <div>
+          <p class="cs-pvo-guar-t">{{ section.settings.guar_title }}</p>
+          {%- if section.settings.guar_body != blank -%}<p class="cs-pvo-guar-b">{{ section.settings.guar_body }}</p>{%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} 5. ce qui se passe ensuite {%- endcomment -%}
+    {%- assign steps = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'step' and block.settings.title != blank -%}{%- assign steps = steps | plus: 1 -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if steps > 0 -%}
+      <div class="cs-pvo-next">
+        {%- if section.settings.next_heading != blank -%}<h2 class="cs-pvo-h">{{ section.settings.next_heading }}</h2>{%- endif -%}
+        {%- if section.settings.next_sub != blank -%}<p class="cs-pvo-sub">{{ section.settings.next_sub }}</p>{%- endif -%}
+        <ol class="cs-pvo-steps">
+          {%- comment -%}
+            Un compteur a part, pas forloop.index : la boucle passe aussi sur
+            les vitesses et l'option, donc l'index donnait 4, 5, 6.
+          {%- endcomment -%}
+          {%- assign sn = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'step' and block.settings.title != blank -%}
+              {%- assign sn = sn | plus: 1 -%}
+              <li {{ block.shopify_attributes }}>
+                <span class="cs-pvo-num" aria-hidden="true">{{ sn }}</span>
+                <span class="cs-pvo-body">
+                  <b data-cs-tpl>{{ block.settings.title }}</b>
+                  {%- if block.settings.body != blank -%}<small data-cs-tpl>{{ block.settings.body }}</small>{%- endif -%}
+                </span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+      </div>
+    {%- endif -%}
+
+  </div>
+
+  {%- comment -%} 6. la barre collee en bas {%- endcomment -%}
+  {%- if section.settings.sticky and section.settings.cta_label != blank -%}
+    <div class="cs-pvo-bar" data-cs-bar hidden>
+      <a class="cs-btn cs-btn-primary cs-pvo-go" href="{{ section.settings.cta_link | default: '#' }}" data-cs-go>
+        <span data-cs-tpl>{{ section.settings.cta_label }}</span>
+      </a>
+      {%- if section.settings.cta_note != blank -%}<p>{{ section.settings.cta_note }}</p>{%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+{% schema %}
+{
+  "name": "CraftStory Duo Offer",
+  "settings": [
+    { "type": "paragraph", "content": "The bottom half of the page they land on after the flow. No payment is wired: the button is a plain link, and the chosen speed and add-on are appended to it as ?speed=…&addon=1. The day a product exists, paste its URL and the choice travels with it." },
+    { "type": "paragraph", "content": "Write {name} in the button or a step and it becomes their first name, taken from ?name= in the URL." },
+
+    { "type": "header", "content": "1 — Delivery speed" },
+    { "type": "paragraph", "content": "Add a Speed block per option. The first one is selected on arrival." },
+    { "type": "text", "id": "speed_heading", "label": "Heading", "default": "Choose your delivery speed" },
+
+    { "type": "header", "content": "2 — The button" },
+    { "type": "text", "id": "cta_label", "label": "Button", "default": "Unlock our full song" },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "/pages/couples", "info": "A product page, a checkout link, anything. The speed and add-on are added to it." },
+    { "type": "text", "id": "cta_note", "label": "Line under the button" },
+    { "type": "checkbox", "id": "sticky", "label": "Repeat the button in a bar at the bottom", "default": true },
+
+    { "type": "header", "content": "3 — The guarantee" },
+    { "type": "text", "id": "guar_title", "label": "Guarantee title", "default": "30-day money-back guarantee" },
+    { "type": "text", "id": "guar_body", "label": "Guarantee body" },
+
+    { "type": "header", "content": "4 — What happens next" },
+    { "type": "paragraph", "content": "Add a Step block per line. They are numbered in order." },
+    { "type": "text", "id": "next_heading", "label": "Heading", "default": "What happens next" },
+    { "type": "text", "id": "next_sub", "label": "Subheading" }
+  ],
+  "blocks": [
+    {
+      "type": "speed",
+      "name": "Speed",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "text", "id": "note", "label": "Note" },
+        { "type": "text", "id": "price", "label": "Price" },
+        { "type": "text", "id": "was", "label": "Struck-through price" },
+        { "type": "text", "id": "badge", "label": "Badge", "info": "For example MOST POPULAR." },
+        { "type": "text", "id": "value", "label": "Value sent in the link", "info": "Defaults to the label." }
+      ]
+    },
+    {
+      "type": "addon",
+      "name": "Add-on",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "text", "id": "note", "label": "Note" },
+        { "type": "text", "id": "price", "label": "Price" },
+        { "type": "text", "id": "value", "label": "Value sent in the link", "default": "1" }
+      ]
+    },
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "text", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "CraftStory Duo Offer" } ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-pvo{background:var(--cs-paper);padding:clamp(24px,5vw,40px) 0 clamp(40px,8vw,64px)}
+.cs-duo-pvo [hidden]{display:none !important}
+.cs-duo-pvo .cs-wrap{max-width:560px}
+.cs-pvo-h{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.15;
+  letter-spacing:-.015em;color:var(--cs-ink);margin:0 0 14px;padding:0;text-align:center;float:none;width:100%}
+.cs-pvo-sub{text-align:center;color:var(--cs-ink2);font-size:.95rem;line-height:1.45;margin:-8px 0 18px}
+.cs-pvo-fs{border:0;padding:0;margin:0}
+
+/* Les cartes a cocher */
+.cs-pvo-opt{position:relative;display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;
+  border-radius:var(--cs-r-lg);background:var(--cs-card);border:1.5px solid var(--cs-line);
+  transition:border-color .15s ease,box-shadow .15s ease}
+.cs-pvo-opt + .cs-pvo-opt{margin-top:10px}
+.cs-pvo-opt:hover{border-color:var(--cs-ink3)}
+/* L'entree reste dans l'ordre de tabulation, mais a zero pixel son cadre de
+   focus etait invisible : au clavier on ne voyait pas ou on se trouvait. On la
+   masque proprement et c'est la carte qui montre le focus. */
+.cs-pvo-opt input{position:absolute;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.cs-pvo-opt:has(input:focus-visible){border-color:var(--cs-coral);box-shadow:0 0 0 3px rgba(236,91,60,.32)}
+.cs-pvo-opt:has(input:checked){border-color:var(--cs-coral);box-shadow:0 0 0 3px rgba(236,91,60,.14)}
+.cs-pvo-dot{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:2px solid var(--cs-line);
+  transition:border-color .15s ease,box-shadow .15s ease}
+.cs-pvo-opt:has(input:checked) .cs-pvo-dot{border-color:var(--cs-coral);box-shadow:inset 0 0 0 4px var(--cs-coral)}
+.cs-pvo-box{flex:0 0 20px;display:grid;place-items:center;width:20px;height:20px;border-radius:6px;
+  border:2px solid var(--cs-line);color:transparent;transition:all .15s ease}
+.cs-pvo-box svg{width:13px;height:13px}
+.cs-pvo-opt:has(input:checked) .cs-pvo-box{border-color:var(--cs-coral);background:var(--cs-coral);color:#fff}
+.cs-pvo-body{flex:1 1 auto;min-width:0}
+.cs-pvo-body b{display:block;font-weight:700;font-size:.98rem;color:var(--cs-ink);line-height:1.3}
+.cs-pvo-body small{display:block;font-size:.83rem;color:var(--cs-ink3);line-height:1.4;margin-top:3px}
+.cs-pvo-price{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.cs-pvo-price s{font-size:.8rem;color:var(--cs-ink3)}
+.cs-pvo-price b{font-weight:800;font-size:1.06rem;color:var(--cs-coral);font-variant-numeric:tabular-nums}
+.cs-pvo-badge{position:absolute;top:-9px;left:14px;padding:2px 9px;border-radius:var(--cs-pill);
+  background:var(--cs-star);color:var(--cs-night);font-size:.68rem;font-weight:800;letter-spacing:.04em}
+.cs-pvo-addon{margin-top:10px;background:var(--cs-paper2)}
+
+/* Le bouton */
+.cs-pvo-cta{margin-top:clamp(18px,3.4vw,26px);text-align:center}
+.cs-pvo-go{width:100%;white-space:nowrap}
+.cs-pvo-go svg{width:19px;height:19px;transition:transform .18s ease}
+.cs-pvo-go:hover svg{transform:translateX(3px)}
+.cs-pvo-ctanote{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px 0 0;
+  color:var(--cs-ink3);font-size:.84rem;line-height:1.4}
+.cs-pvo-ctanote svg{flex:0 0 15px;width:15px;height:15px;color:#2e6b48}
+
+/* La garantie */
+.cs-pvo-guar{display:flex;gap:12px;align-items:flex-start;margin-top:clamp(20px,4vw,28px);
+  padding:15px 16px;border-radius:var(--cs-r-lg);background:var(--cs-card);border:1px solid var(--cs-line)}
+.cs-pvo-guar-i{flex:0 0 30px;color:#2e6b48}
+.cs-pvo-guar-i svg{width:30px;height:30px}
+.cs-pvo-guar-t{margin:0;font-weight:700;font-size:.97rem;color:var(--cs-ink)}
+.cs-pvo-guar-b{margin:4px 0 0;font-size:.86rem;line-height:1.5;color:var(--cs-ink2)}
+
+/* La suite */
+.cs-pvo-next{margin-top:clamp(30px,6vw,46px)}
+.cs-pvo-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.cs-pvo-steps li{display:flex;gap:13px;align-items:flex-start;padding:15px 16px;border-radius:var(--cs-r-lg);
+  background:var(--cs-card);border:1px solid var(--cs-line)}
+.cs-pvo-num{flex:0 0 27px;display:grid;place-items:center;width:27px;height:27px;border-radius:50%;
+  background:var(--cs-coral);color:#fff;font-weight:800;font-size:.86rem}
+
+/* La barre du bas */
+.cs-pvo-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(252,244,236,.96);backdrop-filter:blur(10px);border-top:1px solid var(--cs-line);
+  animation:cs-pvo-up .22s ease both}
+@keyframes cs-pvo-up{from{transform:translateY(100%)}to{transform:none}}
+.cs-pvo-bar p{margin:6px 0 0;text-align:center;color:var(--cs-ink3);font-size:.78rem;line-height:1.35}
+.cs-pvo-bar .cs-pvo-go{max-width:560px;margin:0 auto}
+@media(min-width:751px){.cs-pvo-bar{display:none !important}}
+@media(prefers-reduced-motion:reduce){.cs-pvo-bar{animation:none}}
+{% endstylesheet %}
+{% javascript %}
+(function () {
+  function setup(root) {
+    if (root.dataset.csPvoReady) return;
+    root.dataset.csPvoReady = '1';
+
+    // {name} vient de ?name=. Sans le parametre on retire le gabarit plutot
+    // que de laisser un trou dans la phrase.
+    var name = '';
+    try { name = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
+    var tpl = root.querySelectorAll('[data-cs-tpl]');
+    for (var i = 0; i < tpl.length; i++) {
+      var t = tpl[i].getAttribute('data-cs-orig') || tpl[i].textContent;
+      tpl[i].setAttribute('data-cs-orig', t);
+      tpl[i].textContent = name
+        ? t.split('{name}').join(name)
+        : t.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    // Le choix voyage dans le lien. Rien n'est achete ici : le jour ou le
+    // bouton pointe vers un produit, la vitesse et l'option arrivent avec.
+    var base = (root.getAttribute('data-base') || '').trim();
+    var gos = root.querySelectorAll('[data-cs-go]');
+    var addon = root.querySelector('[data-cs-addon]');
+
+    function link() {
+      if (!base || base === '#') return;
+      var speed = root.querySelector('[data-cs-speed]:checked');
+      var q = [];
+      if (speed) q.push('speed=' + encodeURIComponent(speed.value));
+      if (addon && addon.checked) q.push('addon=' + encodeURIComponent(addon.value || '1'));
+      if (name) q.push('name=' + encodeURIComponent(name));
+      var url = base;
+      if (q.length) url += (base.indexOf('?') > -1 ? '&' : '?') + q.join('&');
+      for (var g = 0; g < gos.length; g++) gos[g].setAttribute('href', url);
+    }
+
+    var inputs = root.querySelectorAll('[data-cs-speed], [data-cs-addon]');
+    for (var n = 0; n < inputs.length; n++) inputs[n].addEventListener('change', link);
+    link();
+
+    // La barre du bas n'apparait qu'une fois le bouton principal passe : sinon
+    // elle double un bouton deja visible a l'ecran.
+    var bar = root.querySelector('[data-cs-bar]');
+    var main = root.querySelector('.cs-pvo-cta');
+    if (bar && main && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        bar.hidden = es[0].isIntersecting || es[0].boundingClientRect.top > 0;
+      }, { threshold: 0 }).observe(main);
+    }
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var all = host.querySelectorAll('[data-cs-pvo]');
+    for (var i = 0; i < all.length; i++) setup(all[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
