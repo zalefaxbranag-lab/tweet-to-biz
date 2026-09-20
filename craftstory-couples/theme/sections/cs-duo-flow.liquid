@@ -245,6 +245,18 @@
             <span class="cs-flow-mk-cap">{{ section.settings.mk_caption }}</span>
           {%- endif -%}
         </div>
+      {%- else -%}
+        {%- comment -%}
+          Aucun fichier charge : un cadre vide, a la bonne forme, plutot que
+          rien du tout. Sans lui on ne voit pas ou deposer la video, et la page
+          a l'air amputee.
+        {%- endcomment -%}
+        <div class="cs-flow-mk-stage cs-flow-mk-empty" style="aspect-ratio:{{ section.settings.mk_ratio }}">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+            {{ section.settings.mk_empty | default: 'Your video goes here — upload an MP4 in the sidebar.' }}
+          </span>
+        </div>
       {%- endif -%}
 
       <div class="cs-flow-mk-prog">
@@ -255,8 +267,11 @@
         <span class="cs-flow-mk-bar"><i data-cs-mk-fill></i></span>
       </div>
 
-      {%- if section.settings.mk_notice != blank -%}
-        <p class="cs-flow-mk-note" data-cs-mk-note>{{ section.settings.mk_notice }}</p>
+      {%- if section.settings.mk_notice != blank or section.settings.mk_stay != blank -%}
+        <div class="cs-flow-mk-note" data-cs-mk-note>
+          {%- if section.settings.mk_notice != blank -%}<p>{{ section.settings.mk_notice }}</p>{%- endif -%}
+          {%- if section.settings.mk_stay != blank -%}<strong>{{ section.settings.mk_stay }}</strong>{%- endif -%}
+        </div>
       {%- endif -%}
 
       {%- comment -%} Le bouton n'existe qu'a 100 %. {%- endcomment -%}
@@ -362,9 +377,11 @@
     { "type": "checkbox", "id": "mk_clock", "label": "Show the time left on the clip", "default": true },
     { "type": "text", "id": "mk_sound", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "mk_caption", "label": "Caption over the clip" },
+    { "type": "text", "id": "mk_empty", "label": "Text while there is no clip", "default": "Your video goes here — upload an MP4 in the sidebar.", "info": "Shown in an empty frame, so the block is visible before you add a file." },
     { "type": "range", "id": "mk_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 5, "unit": "min" },
     { "type": "textarea", "id": "mk_stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
     { "type": "text", "id": "mk_notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears here at the end of the video." },
+    { "type": "text", "id": "mk_stay", "label": "Warning under it, in capitals", "default": "DON'T LEAVE THIS PAGE!" },
     { "type": "text", "id": "mk_cta", "label": "Button once the bar is full", "default": "Your music video preview" },
     { "type": "text", "id": "next_page", "label": "Page that button opens", "default": "/pages/couples-preview" },
 
@@ -466,7 +483,7 @@
   line-height:1.15;letter-spacing:-.015em;color:var(--cs-ink);margin:0}
 /* La seconde ligne est coraille : c'est elle qui tient le regard pendant
    l'attente, pas le titre. */
-.cs-flow-mk-sub{color:var(--cs-coral);font-weight:700;font-size:1rem;line-height:1.4;margin:6px 0 16px}
+.cs-flow-mk-sub{color:var(--cs-coral);font-weight:700;font-size:1rem;line-height:1.4;margin:8px 0 24px}
 .cs-flow-mk-stage{position:relative;border-radius:var(--cs-r-lg);overflow:hidden;
   background:var(--cs-night);aspect-ratio:4/3;box-shadow:0 14px 34px rgba(28,21,51,.16)}
 .cs-flow-mk-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
@@ -480,7 +497,7 @@
 .cs-flow-mk-sound svg{width:14px;height:14px}
 .cs-flow-mk-cap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-weight:800;
   font-size:.86rem;letter-spacing:.02em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
-.cs-flow-mk-prog{margin-top:14px;padding:12px 14px;border-radius:var(--cs-r);
+.cs-flow-mk-prog{margin-top:20px;padding:14px 16px;border-radius:var(--cs-r);
   background:var(--cs-card);border:1px solid var(--cs-line);text-align:left}
 .cs-flow-mk-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px}
 .cs-flow-mk-line span{font-size:.86rem;color:var(--cs-ink2);line-height:1.35}
@@ -489,14 +506,38 @@
 .cs-flow-mk-bar{display:block;height:7px;border-radius:var(--cs-pill);background:var(--cs-line);overflow:hidden}
 .cs-flow-mk-bar i{display:block;height:100%;width:0;border-radius:var(--cs-pill);
   background:linear-gradient(90deg,var(--cs-coral),var(--cs-coral-deep));transition:width .5s linear}
-.cs-flow-mk-note{margin:12px 0 0;padding:11px 14px;border-radius:var(--cs-r);text-align:left;
+.cs-flow-mk-note{margin:18px 0 0;padding:14px 16px;border-radius:var(--cs-r);text-align:left;
   background:rgba(236,91,60,.09);border:1px solid rgba(236,91,60,.26);
   color:var(--cs-coral-deep);font-size:.87rem;font-weight:600;line-height:1.45}
-.cs-flow-mk-go{width:100%;margin-top:14px;white-space:nowrap;animation:cs-flow-in .3s ease both}
+.cs-flow-mk-note p{margin:0}
+/* L'avertissement doit se lire d'un coup d'oeil : c'est lui qui evite qu'on
+   quitte la page pendant que la barre tourne. */
+.cs-flow-mk-note strong{display:block;margin-top:10px;font-size:1.02rem;font-weight:800;
+  letter-spacing:.04em;line-height:1.25;text-transform:uppercase;color:var(--cs-coral-deep)}
+.cs-flow-mk-note p + strong{padding-top:10px;border-top:1px solid rgba(236,91,60,.24)}
+/* Le cadre vide */
+.cs-flow-mk-empty{display:grid;place-items:center;background:var(--cs-paper2);
+  border:2px dashed var(--cs-line);box-shadow:none}
+.cs-flow-mk-empty span{display:flex;flex-direction:column;align-items:center;gap:9px;
+  padding:0 20px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
+.cs-flow-mk-empty svg{width:34px;height:34px}
+.cs-flow-mk-go{width:100%;margin-top:20px;white-space:nowrap;animation:cs-flow-in .3s ease both}
 .cs-flow-mk-go svg{width:19px;height:19px;transition:transform .18s ease}
 .cs-flow-mk-go:hover svg{transform:translateX(3px)}
 @media(prefers-reduced-motion:reduce){
   .cs-flow-step,.cs-flow-wait,.cs-flow-mk,.cs-flow-mk-go{animation:none}}
+
+/* ATTENTION, piege du theme : cs-head pose .cs p{margin:0}, de specificite
+   0,1,1. Une classe seule sur un paragraphe vaut 0,1,0 et PERD, quel que soit
+   l'ordre des feuilles. Toute marge de <p> doit donc s'ecrire avec la racine de
+   la section devant. Sans ca les marges ci-dessus ne s'appliquent pas du tout,
+   et on croit avoir regle un rythme vertical qui n'existe pas. */
+.cs-duo-flow .cs-flow-sub{margin:10px 0 clamp(22px,4vw,30px)}
+.cs-duo-flow .cs-flow-note{margin:-3px 0 9px}
+.cs-duo-flow .cs-flow-err{margin:0 0 14px}
+.cs-duo-flow .cs-flow-mk-sub{margin:8px 0 24px}
+.cs-duo-flow .cs-flow-mk-line{margin:0 0 8px}
+.cs-duo-flow .cs-flow-editnote{margin:18px auto 0}
 {% endstylesheet %}
 {% javascript %}
 (function () {

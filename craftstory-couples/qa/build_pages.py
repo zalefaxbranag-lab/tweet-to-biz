@@ -83,6 +83,16 @@ def main():
         mock_from(template, mock)
         render(mock, html)
 
+    # Une variante du tunnel SANS clip : c'est le seul moyen de voir le cadre
+    # vide, celui que le marchand a devant lui avant d'avoir charge son MP4.
+    flow = os.path.join(OUT, "flow.json")
+    bare = os.path.join(OUT, "flow-bare.json")
+    data = json.load(io.open(flow, encoding="utf-8"))
+    for k in ("mk_video_url", "mk_caption"):
+        data["sections"][0]["settings"].pop(k, None)
+    json.dump(data, io.open(bare, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(bare, "flow-bare.html")
+
     # Une variante avec le verrou allume. Le reglage existe toujours meme s'il
     # est eteint par defaut, donc il doit rester teste.
     mock = os.path.join(OUT, "preview.json")

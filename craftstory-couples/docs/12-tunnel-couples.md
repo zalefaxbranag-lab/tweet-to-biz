@@ -274,3 +274,45 @@ avancement reel se branche, et la structure est deja la.
 Le clip demarre muet et **sans commandes natives** : elles se posaient pile sur
 le sous-titre incruste. Le son revient par un bouton en haut a droite — jamais
 en bas, le bas appartient a la legende — et un doigt sur l'image met en pause.
+
+## Le piege des marges de paragraphe
+
+`cs-head` pose `.cs p{margin:0}`. Sa specificite est **0,1,1** — une classe plus
+un type. Une classe seule posee sur un paragraphe vaut **0,1,0** et **perd**,
+quel que soit l'ordre des feuilles de style, parce que la specificite passe
+avant l'ordre.
+
+Consequence : dans toutes les sections de ce theme, **chaque marge ecrite sur un
+`<p>` avec une classe seule ne s'applique pas du tout**. On croit avoir regle un
+rythme vertical, et l'espacement qu'on voit vient d'ailleurs — interlignes,
+`gap` de flex, marges du parent.
+
+Trouve en mesurant : l'espace entre la ligne coraille et le clip valait `0`
+alors que la regle annonçait `24px`.
+
+La correction est d'ecrire la racine de la section devant :
+
+```css
+.cs-duo-flow .cs-flow-mk-sub{margin:8px 0 24px}   /* 0,2,0 : gagne */
+```
+
+`cs-duo-flow` et `cs-duo-pv-song` ont un bloc dedie en fin de feuille qui releve
+ainsi les dix-sept marges concernees, avec le pourquoi ecrit a cote.
+
+**Les autres sections du theme ont le meme probleme et n'ont pas ete touchees** :
+corriger leurs marges deplacerait visiblement la landing page, sur laquelle
+tournent des publicites. A faire quand ce sera le moment, section par section.
+
+## Le cadre vide du clip
+
+Tant qu'aucun MP4 n'est charge, le bloc video affiche un cadre en pointilles a
+la bonne forme, avec une phrase reglable. Sans lui, la page paraissait amputee
+et on ne voyait pas ou deposer le fichier. Meme chose sur le clip du haut de la
+page d'apres.
+
+## L'avertissement en capitales
+
+L'encart coraille porte deux lignes : la phrase, puis **DON'T LEAVE THIS PAGE!**
+en capitales, separee par un filet. C'est elle qui evite qu'on quitte la page
+pendant que la barre tourne. Reglable, et elle disparait avec l'encart des que
+le bouton apparait.

@@ -76,6 +76,17 @@
             <span class="cs-pvs-cap">{{ section.settings.video_caption }}</span>
           {%- endif -%}
         </div>
+      {%- else -%}
+        {%- comment -%}
+          Aucun fichier charge : un cadre vide a la bonne forme, pour qu'on voie
+          ou deposer la video au lieu d'une page amputee.
+        {%- endcomment -%}
+        <div class="cs-pvs-stage cs-pvs-stage-empty" style="aspect-ratio:{{ section.settings.video_ratio }}">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+            {{ section.settings.video_empty | default: 'Your video goes here — upload an MP4 in the sidebar.' }}
+          </span>
+        </div>
       {%- endif -%}
 
       {%- if section.settings.show_progress -%}
@@ -246,6 +257,7 @@
     { "type": "checkbox", "id": "show_clock", "label": "Show the time left on the clip", "default": true },
     { "type": "text", "id": "sound_label", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "video_caption", "label": "Caption over the clip" },
+    { "type": "text", "id": "video_empty", "label": "Text while there is no clip", "default": "Your video goes here — upload an MP4 in the sidebar.", "info": "Shown in an empty frame, so the block is visible before you add a file." },
     { "type": "text", "id": "notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears here at the end of the video." },
     { "type": "text", "id": "ready_notice", "label": "Notice once it is full", "default": "✓ It's ready. Your preview is waiting below." },
 
@@ -381,6 +393,11 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
   background:var(--cs-coral);color:#fff;box-shadow:0 8px 20px rgba(236,91,60,.4)}
 .cs-pvs-btn svg{width:26px;height:26px;margin-left:3px}
 .cs-pvs-tap{font:inherit;font-size:.9rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.cs-pvs-stage-empty{display:grid;place-items:center;background:var(--cs-paper2);
+  border:2px dashed var(--cs-line);box-shadow:none}
+.cs-pvs-stage-empty span{display:flex;flex-direction:column;align-items:center;gap:9px;
+  padding:0 20px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
+.cs-pvs-stage-empty svg{width:34px;height:34px}
 .cs-pvs-prev-empty{display:grid;place-items:center;background:var(--cs-paper2);border:1px dashed var(--cs-line)}
 .cs-pvs-prev-empty span{padding:0 18px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
 .cs-pvs-time{color:var(--cs-ink3);font-size:.84rem;font-variant-numeric:tabular-nums;margin:11px 0 0}
@@ -421,6 +438,23 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 .cs-pvs-row-v{flex:0 0 auto;font-weight:800;font-size:.94rem;color:var(--cs-ink3);font-variant-numeric:tabular-nums}
 .cs-pvs-rows li.is-strong .cs-pvs-row-v{color:var(--cs-coral)}
 @media(prefers-reduced-motion:reduce){.cs-pvs-after{animation:none}}
+
+/* ATTENTION, piege du theme : cs-head pose .cs p{margin:0}, de specificite
+   0,1,1. Une classe seule sur un paragraphe vaut 0,1,0 et PERD, quel que soit
+   l'ordre des feuilles. Toute marge de <p> doit donc s'ecrire avec la racine de
+   la section devant. Sans ca les marges ci-dessus ne s'appliquent pas du tout,
+   et on croit avoir regle un rythme vertical qui n'existe pas. */
+.cs-duo-pvs .cs-pvs-sub{margin:6px 0 16px}
+.cs-duo-pvs .cs-pvs-note{margin:10px 0 0}
+.cs-duo-pvs .cs-pvs-songsub{margin:6px 0 0}
+.cs-duo-pvs .cs-pvs-prog-top{margin:0 0 8px}
+.cs-duo-pvs .cs-pvs-time{margin:11px 0 0}
+.cs-duo-pvs .cs-pvs-notice{margin:12px 0 0}
+.cs-duo-pvs .cs-pvs-ready{margin:12px 0 0}
+.cs-duo-pvs .cs-pvs-deal-t{margin:0}
+.cs-duo-pvs .cs-pvs-deal-n{margin:4px 0 0}
+.cs-duo-pvs .cs-pvs-timer-t{margin:0}
+.cs-duo-pvs .cs-pvs-timer-n{margin:6px 0 0}
 {% endstylesheet %}
 {% javascript %}
 (function () {
