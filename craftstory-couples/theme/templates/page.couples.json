@@ -20,7 +20,7 @@
           "type": "link",
           "settings": {
             "label": "Create Your Song",
-            "link": "#cs-duo-choose"
+            "link": "/pages/couples-start"
           }
         }
       },
@@ -68,7 +68,7 @@
     "hero": {
       "type": "cs-duo-hero",
       "settings": {
-        "badge": "The #1 Music Video Platform — 12,000+ Music Video Created",
+        "badge": "The #1 Music Video Platform — 12,000+ Music Videos Created",
         "badge_stars": true,
         "eyebrow": "",
         "heading": "I Pressed Play and We Both Started",
@@ -77,7 +77,7 @@
         "body": "Surprise Your Loved One with a Custom Song and an Animated Music Video They'll Never Forget.",
         "cta_icon": "♪",
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "cta_note": "100% Money-Back Guarantee · Delivered by Email",
         "faces_count": "12k+",
         "proof_stars": "5",
@@ -173,7 +173,7 @@
         "show_numbers": true,
         "number_word": "Step",
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "image": "shopify://shop_images/hf_20260920_005500_02ffc134-fbc6-4c84-bed4-57d62fe5422d.png"
       }
     },
@@ -228,7 +228,7 @@
         "heading": "Why +12,000 Couples Love CraftStory",
         "proof_line": "",
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose"
+        "cta_link": "/pages/couples-start"
       }
     },
     "occasions": {
@@ -240,7 +240,7 @@
             "title": "For Your Partner",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start",
             "image": "shopify://shop_images/hf_20260920_010626_1c8d0112-a33d-4b6d-bfdb-7d368233b119.png"
           }
         },
@@ -250,7 +250,7 @@
             "title": "For the Two of You",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start",
             "image": "shopify://shop_images/hf_20260920_010633_3a96fd90-89bc-4674-86f7-d2d4f112cc37.png"
           }
         },
@@ -260,7 +260,7 @@
             "title": "For the Proposal",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start?occasion=Proposal",
             "image": "shopify://shop_images/hf_20260920_010636_650601ac-5c6e-4151-aad9-abe57201379b.png"
           }
         },
@@ -270,7 +270,7 @@
             "title": "For Your Anniversary",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start?occasion=Anniversary",
             "image": "shopify://shop_images/hf_20260920_010640_e1313b82-3b2e-4a50-aeb4-6c9231794bc2.png"
           }
         },
@@ -280,7 +280,7 @@
             "title": "For the First Dance",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start?occasion=First%20dance",
             "image": "shopify://shop_images/hf_20260920_010806_cb046696-72da-4820-adaf-16be6691a8d4.png"
           }
         },
@@ -290,7 +290,7 @@
             "title": "Just Because",
             "note": "",
             "feature": false,
-            "link": "",
+            "link": "/pages/couples-start?occasion=Just%20because",
             "image": "shopify://shop_images/hf_20260920_010813_f6645d73-0289-4757-a9ca-fe15f35ffc3b.png"
           }
         }
@@ -308,7 +308,7 @@
         "heading": "Gift a Song to the One You Love, or to Yourselves!",
         "body": "",
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose"
+        "cta_link": "/pages/couples-start"
       }
     },
     "included": {
@@ -318,7 +318,7 @@
         "heading": "What's Included in Your Song Video",
         "subheading": "When your song and your music video are ready, we'll email you a private link to listen, download and share.",
         "cta_label": "",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "cta_note": ""
       }
     },
@@ -381,7 +381,7 @@
         "heading": "",
         "body": "",
         "cta_label": "Create My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "play_label": "Play or pause",
         "prev_label": "Previous song",
         "next_label": "Next song",
@@ -490,7 +490,7 @@
         "delivery": "",
         "guarantee": "",
         "cta_label": "",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "cta_popup": false,
         "bg": "paper2",
         "padding_top": 36,
@@ -518,7 +518,7 @@
         "urls": "",
         "card_width": 260,
         "cta_label": "Start My Custom Music Video",
-        "cta_link": "#cs-duo-choose",
+        "cta_link": "/pages/couples-start",
         "sound_hint": "Tap a video for sound",
         "sound_label": "Tap for sound",
         "rail_label": "Music videos"

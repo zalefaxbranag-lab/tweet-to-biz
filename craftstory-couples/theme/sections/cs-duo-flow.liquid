@@ -1,0 +1,563 @@
+{%- liquid
+  comment
+    Le tunnel couples. Sept ecrans, un seul chargement de page : tout le reste
+    s'echange dans le DOM, l'etat reste en memoire.
+
+    Ou partent les reponses, par ordre de priorite :
+      1. api_url, si tu le remplis dans l'editeur -> POST JSON vers ton
+         endpoint. C'est la porte pour brancher la generation plus tard :
+         un champ a remplir, rien a recoder.
+      2. sinon -> le formulaire de contact natif de Shopify, donc ta boite
+         mail. Aucun worker, aucune app, ca marche tout de suite.
+
+    L'ecran photo est derriere un reglage, eteint par defaut : le formulaire
+    de contact ne sait pas porter de fichier. On l'allume le jour ou api_url
+    existe.
+  endcomment
+
+  assign rel = section.settings.rel_options | newline_to_br | split: '<br />'
+  assign occ = section.settings.occ_options | newline_to_br | split: '<br />'
+  assign gen = section.settings.genre_options | newline_to_br | split: '<br />'
+  assign voi = section.settings.voice_options | newline_to_br | split: '<br />'
+  assign lang = section.settings.lang_options | newline_to_br | split: '<br />'
+
+-%}
+<div class="cs cs-duo-flow" id="cs-duo-flow"
+     data-cs-flow
+     data-api="{{ section.settings.api_url | escape }}"
+     data-next="{{ section.settings.next_label | default: 'Next' | escape }}"
+     data-last="{{ section.settings.last_label | default: 'Create our song' | escape }}"
+     data-err-req="{{ section.settings.err_required | default: 'Please fill this in before continuing.' | escape }}"
+     data-err-email="{{ section.settings.err_email | default: 'That email address does not look right.' | escape }}"
+     data-err-send="{{ section.settings.err_send | default: 'We could not send that. Check your connection and try again.' | escape }}">
+  <div class="cs-flow-wrap">
+
+    <div class="cs-flow-top">
+      <button type="button" class="cs-flow-back" data-cs-back hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        {{ section.settings.back_label | default: 'Back' }}
+      </button>
+      <div class="cs-flow-prog" aria-hidden="true"><i data-cs-bar></i></div>
+    </div>
+
+    <form class="cs-flow-form" data-cs-form novalidate>
+
+      {%- comment -%} 1. pour qui, prenoms, occasion {%- endcomment -%}
+      <section class="cs-flow-step" data-step="1">
+        <h1 class="cs-flow-h">{{ section.settings.s1_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s1_sub }}</p>
+
+        <fieldset class="cs-flow-fs">
+          <legend>{{ section.settings.s1_who }}</legend>
+          <div class="cs-flow-radios">
+            {%- for r in rel -%}{%- assign v = r | strip -%}{%- if v != blank -%}
+              <label class="cs-flow-radio"><input type="radio" name="relationship" value="{{ v | escape }}"><span>{{ v }}</span></label>
+            {%- endif -%}{%- endfor -%}
+          </div>
+        </fieldset>
+
+        <div class="cs-flow-two">
+          <label class="cs-flow-fld"><span>{{ section.settings.s1_their }}</span>
+            <input type="text" name="their_name" maxlength="24" autocomplete="off" data-req></label>
+          <label class="cs-flow-fld"><span>{{ section.settings.s1_your }}</span>
+            <input type="text" name="your_name" maxlength="24" autocomplete="given-name" data-req></label>
+        </div>
+
+        <fieldset class="cs-flow-fs">
+          <legend>{{ section.settings.s1_occasion }}</legend>
+          <div class="cs-flow-radios">
+            {%- for o in occ -%}{%- assign v = o | strip -%}{%- if v != blank -%}
+              <label class="cs-flow-radio"><input type="radio" name="occasion" value="{{ v | escape }}"><span>{{ v }}</span></label>
+            {%- endif -%}{%- endfor -%}
+          </div>
+        </fieldset>
+      </section>
+
+      {%- comment -%} 2. le son {%- endcomment -%}
+      <section class="cs-flow-step" data-step="2" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s2_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s2_sub }}</p>
+
+        <fieldset class="cs-flow-fs">
+          <legend>{{ section.settings.s2_genre }}</legend>
+          <div class="cs-flow-radios">
+            {%- for g in gen -%}{%- assign v = g | strip -%}{%- if v != blank -%}
+              <label class="cs-flow-radio"><input type="radio" name="genre" value="{{ v | escape }}"><span>{{ v }}</span></label>
+            {%- endif -%}{%- endfor -%}
+          </div>
+        </fieldset>
+
+        <fieldset class="cs-flow-fs">
+          <legend>{{ section.settings.s2_voice }}</legend>
+          {%- if section.settings.s2_voice_note != blank -%}<p class="cs-flow-note">{{ section.settings.s2_voice_note }}</p>{%- endif -%}
+          <div class="cs-flow-radios">
+            {%- for v2 in voi -%}{%- assign v = v2 | strip -%}{%- if v != blank -%}
+              <label class="cs-flow-radio"><input type="radio" name="voice" value="{{ v | escape }}"><span>{{ v }}</span></label>
+            {%- endif -%}{%- endfor -%}
+          </div>
+        </fieldset>
+      </section>
+
+      {%- comment -%} 3, 4, 5 : les trois textes libres {%- endcomment -%}
+      <section class="cs-flow-step" data-step="3" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s3_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s3_sub }}</p>
+        <label class="cs-flow-fld"><span>{{ section.settings.s3_label }}</span>
+          <textarea name="qualities" rows="5" maxlength="900" data-req placeholder="{{ section.settings.s3_ph | escape }}"></textarea></label>
+      </section>
+
+      <section class="cs-flow-step" data-step="4" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s4_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s4_sub }}</p>
+        <label class="cs-flow-fld"><span>{{ section.settings.s4_label }}</span>
+          <textarea name="story" rows="5" maxlength="900" data-req placeholder="{{ section.settings.s4_ph | escape }}"></textarea></label>
+      </section>
+
+      <section class="cs-flow-step" data-step="5" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s5_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s5_sub }}</p>
+        <label class="cs-flow-fld"><span>{{ section.settings.s5_label }}</span>
+          <textarea name="message" rows="5" maxlength="900" placeholder="{{ section.settings.s5_ph | escape }}"></textarea></label>
+      </section>
+
+      {%- comment -%} 6. la photo, seulement si un endpoint peut la recevoir {%- endcomment -%}
+      {%- if section.settings.ask_photo -%}
+      <section class="cs-flow-step" data-step="6" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s6_heading }}</h1>
+        <p class="cs-flow-sub">{{ section.settings.s6_sub }}</p>
+        <label class="cs-flow-up">
+          <input type="file" name="photo" accept="image/*" data-cs-photo>
+          <span class="cs-flow-up-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4M8 8l4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            <b data-cs-photo-label>{{ section.settings.s6_button }}</b>
+          </span>
+          <img class="cs-flow-up-prev" data-cs-photo-prev alt="" hidden>
+        </label>
+        {%- if section.settings.s6_tips != blank -%}<p class="cs-flow-note">{{ section.settings.s6_tips }}</p>{%- endif -%}
+        <label class="cs-flow-check"><input type="checkbox" name="consent" data-req>
+          <span>{{ section.settings.s6_consent }}</span></label>
+      </section>
+      {%- endif -%}
+
+      {%- comment -%} 7. contact {%- endcomment -%}
+      <section class="cs-flow-step" data-step="{% if section.settings.ask_photo %}7{% else %}6{% endif %}" hidden>
+        <h1 class="cs-flow-h">{{ section.settings.s7_heading }}</h1>
+        <p class="cs-flow-sub" data-cs-s7sub data-tpl="{{ section.settings.s7_sub | escape }}">{{ section.settings.s7_sub }}</p>
+        <label class="cs-flow-fld"><span>{{ section.settings.s7_lang }}</span>
+          <select name="language">
+            {%- for l in lang -%}{%- assign v = l | strip -%}{%- if v != blank -%}<option>{{ v }}</option>{%- endif -%}{%- endfor -%}
+          </select></label>
+        <label class="cs-flow-fld"><span>{{ section.settings.s7_email }}</span>
+          <input type="email" name="email" autocomplete="email" data-req data-email></label>
+        <label class="cs-flow-fld"><span>{{ section.settings.s7_phone }}</span>
+          <input type="tel" name="phone" autocomplete="tel"></label>
+      </section>
+
+      <p class="cs-flow-err" data-cs-err role="alert" hidden></p>
+
+      <div class="cs-flow-actions">
+        <button type="button" class="cs-btn cs-btn-primary cs-btn-lg cs-flow-next" data-cs-next>
+          <span data-cs-next-label>{{ section.settings.next_label | default: 'Next' }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </form>
+
+    {%- comment -%}
+      L'ecran d'attente. Aujourd'hui il passe en une seconde et affiche l'ecran
+      final. Le jour ou api_url repond une tache a suivre, c'est ici que la
+      progression reelle s'affichera : la structure est deja la.
+    {%- endcomment -%}
+    <div class="cs-flow-wait" data-cs-wait hidden>
+      <span class="cs-flow-spin" aria-hidden="true"></span>
+      <h1 class="cs-flow-h">{{ section.settings.wait_heading }}</h1>
+      <p class="cs-flow-sub">{{ section.settings.wait_sub }}</p>
+    </div>
+
+    <div class="cs-flow-done" data-cs-done hidden>
+      <span class="cs-flow-tick" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </span>
+      <h1 class="cs-flow-h" data-cs-done-h data-tpl="{{ section.settings.done_heading | escape }}">{{ section.settings.done_heading }}</h1>
+      <p class="cs-flow-sub" data-cs-done-sub data-tpl="{{ section.settings.done_sub | escape }}">{{ section.settings.done_sub }}</p>
+      {%- if section.settings.done_cta_label != blank -%}
+        <a class="cs-btn cs-btn-ghost cs-flow-home" href="{{ section.settings.done_cta_link | default: '/' }}">{{ section.settings.done_cta_label }}</a>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+{% schema %}
+{
+  "name": "CraftStory Duo Flow",
+  "settings": [
+    { "type": "paragraph", "content": "The seven-screen order flow. One page load, then every screen swaps instantly. Answers go to your shop email through Shopify's own contact form — no app, no worker. Fill in the API URL below when the generation service exists and the flow posts there instead." },
+    { "type": "header", "content": "Where the answers go" },
+    { "type": "text", "id": "api_url", "label": "API URL", "info": "Leave empty to use Shopify's contact form (your shop email). Fill it to POST the answers as JSON instead — this is the hook for the song and video generation." },
+    { "type": "checkbox", "id": "ask_photo", "label": "Ask for a photo", "default": false, "info": "Off until the API URL exists: Shopify's contact form cannot carry a file." },
+
+    { "type": "header", "content": "1 — Who it's for" },
+    { "type": "text", "id": "s1_heading", "label": "Heading", "default": "Let's start with the basics" },
+    { "type": "text", "id": "s1_sub", "label": "Subheading", "default": "Tell us about the two of you" },
+    { "type": "text", "id": "s1_who", "label": "Relationship label", "default": "Who is this song for?" },
+    { "type": "textarea", "id": "rel_options", "label": "Relationship options", "default": "Husband\nWife\nPartner\nFiancé\nFiancée\nBoyfriend\nGirlfriend\nThe two of us\nOther" },
+    { "type": "text", "id": "s1_their", "label": "Their name label", "default": "Their first name" },
+    { "type": "text", "id": "s1_your", "label": "Your name label", "default": "Your first name" },
+    { "type": "text", "id": "s1_occasion", "label": "Occasion label", "default": "What's the occasion?" },
+    { "type": "textarea", "id": "occ_options", "label": "Occasion options", "default": "Wedding\nAnniversary\nProposal\nFirst dance\nValentine's\nJust because" },
+
+    { "type": "header", "content": "2 — The sound" },
+    { "type": "text", "id": "s2_heading", "label": "Heading", "default": "Choose your sound" },
+    { "type": "text", "id": "s2_sub", "label": "Subheading", "default": "The style they would actually put on" },
+    { "type": "text", "id": "s2_genre", "label": "Genre label", "default": "Preferred genre" },
+    { "type": "textarea", "id": "genre_options", "label": "Genre options", "default": "Pop\nCountry\nSoul / R&B\nAcoustic\nRock\nJazz\nRap / Hip-Hop" },
+    { "type": "text", "id": "s2_voice", "label": "Voice label", "default": "Preferred voice" },
+    { "type": "text", "id": "s2_voice_note", "label": "Voice note", "default": "A duet works beautifully when the song is about the two of you." },
+    { "type": "textarea", "id": "voice_options", "label": "Voice options", "default": "Female voice\nMale voice\nDuet\nNo preference" },
+
+    { "type": "header", "content": "3 — What makes them special" },
+    { "type": "text", "id": "s3_heading", "label": "Heading", "default": "What makes them, them?" },
+    { "type": "text", "id": "s3_sub", "label": "Subheading", "default": "The character and the qualities you love most" },
+    { "type": "text", "id": "s3_label", "label": "Field label", "default": "Their beautiful qualities" },
+    { "type": "text", "id": "s3_ph", "label": "Placeholder", "default": "The way they laugh, what they are like in the morning, the thing only you notice…" },
+
+    { "type": "header", "content": "4 — Your story" },
+    { "type": "text", "id": "s4_heading", "label": "Heading", "default": "Share your favourite memories" },
+    { "type": "text", "id": "s4_sub", "label": "Subheading", "default": "How you met, and the moments you treasure most" },
+    { "type": "text", "id": "s4_label", "label": "Field label", "default": "Your moments together" },
+    { "type": "text", "id": "s4_ph", "label": "Placeholder", "default": "Where you met, the first trip, the hard year you got through, the running joke…" },
+
+    { "type": "header", "content": "5 — A message from your heart" },
+    { "type": "text", "id": "s5_heading", "label": "Heading", "default": "A message from your heart" },
+    { "type": "text", "id": "s5_sub", "label": "Subheading", "default": "Anything else you want us to work into the song" },
+    { "type": "text", "id": "s5_label", "label": "Field label", "default": "Special message" },
+    { "type": "text", "id": "s5_ph", "label": "Placeholder", "default": "Names, dates, places, an inside joke — we'll do our best to include it." },
+
+    { "type": "header", "content": "6 — The photo" },
+    { "type": "text", "id": "s6_heading", "label": "Heading", "default": "Add a photo of the two of you" },
+    { "type": "text", "id": "s6_sub", "label": "Subheading", "default": "This is how the couple in your music video is built to look like you" },
+    { "type": "text", "id": "s6_button", "label": "Upload button", "default": "Add a photo" },
+    { "type": "text", "id": "s6_tips", "label": "Tips", "default": "One clear photo of you both, faces visible, no sunglasses or hats." },
+    { "type": "text", "id": "s6_consent", "label": "Consent line", "default": "We both agree to our photo being used to create the music video. It is deleted once your video is delivered." },
+
+    { "type": "header", "content": "7 — Contact" },
+    { "type": "text", "id": "s7_heading", "label": "Heading", "default": "Almost there" },
+    { "type": "text", "id": "s7_sub", "label": "Subheading — {name} becomes their first name", "default": "One step away from a song written for {name}." },
+    { "type": "text", "id": "s7_lang", "label": "Language label", "default": "Song language" },
+    { "type": "textarea", "id": "lang_options", "label": "Language options", "default": "English\nFrench\nSpanish\nGerman\nItalian\nPortuguese\nDutch" },
+    { "type": "text", "id": "s7_email", "label": "Email label", "default": "Your email address" },
+    { "type": "text", "id": "s7_phone", "label": "Phone label", "default": "Your phone number (optional)" },
+
+    { "type": "header", "content": "Sending, and the last screen" },
+    { "type": "text", "id": "wait_heading", "label": "Sending heading", "default": "Sending your story…" },
+    { "type": "text", "id": "wait_sub", "label": "Sending subheading", "default": "One moment." },
+    { "type": "text", "id": "done_heading", "label": "Done heading — {name}", "default": "We have everything for {name}'s song." },
+    { "type": "text", "id": "done_sub", "label": "Done subheading — {email}", "default": "We'll write it and email it to {email} within 48 hours." },
+    { "type": "text", "id": "done_cta_label", "label": "Done button", "default": "Back to the page" },
+    { "type": "text", "id": "done_cta_link", "label": "Done button link", "default": "/pages/couples" },
+
+    { "type": "header", "content": "Buttons" },
+    { "type": "text", "id": "next_label", "label": "Next", "default": "Next" },
+    { "type": "text", "id": "last_label", "label": "Last step button", "default": "Create our song" },
+    { "type": "text", "id": "back_label", "label": "Back", "default": "Back" },
+    { "type": "text", "id": "err_required", "label": "Error — missing field", "default": "Please fill this in before continuing." },
+    { "type": "text", "id": "err_email", "label": "Error — bad email", "default": "That email address does not look right." },
+    { "type": "text", "id": "err_send", "label": "Error — send failed", "default": "We could not send that. Check your connection and try again." }
+  ],
+  "presets": [ { "name": "CraftStory Duo Flow" } ]
+}
+{% endschema %}
+{% stylesheet %}
+.cs-duo-flow{background:var(--cs-paper);min-height:100vh;min-height:100dvh;display:flex;align-items:flex-start;justify-content:center}
+/* L'attribut hidden doit gagner. Les regles d'ici posent display:flex sur des
+   elements que le script masque (la barre du haut, le bouton Retour), et une
+   regle d'auteur bat toujours le display:none de la feuille du navigateur :
+   sans cette ligne, Retour s'affiche des le premier ecran et la barre de
+   progression reste par-dessus l'ecran final. */
+.cs-duo-flow [hidden]{display:none !important}
+.cs-flow-wrap{width:100%;max-width:640px;padding:clamp(18px,4vw,40px) 22px clamp(40px,8vw,72px)}
+.cs-flow-top{display:flex;flex-direction:column;gap:14px;margin-bottom:clamp(22px,4vw,34px)}
+.cs-flow-back{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;background:none;border:0;padding:4px 0;
+  font:inherit;font-size:.92rem;font-weight:600;color:var(--cs-ink2);cursor:pointer}
+.cs-flow-back svg{width:17px;height:17px}
+.cs-flow-back:hover{color:var(--cs-ink)}
+.cs-flow-prog{height:4px;border-radius:var(--cs-pill);background:var(--cs-line);overflow:hidden}
+.cs-flow-prog i{display:block;height:100%;width:0;border-radius:var(--cs-pill);background:var(--cs-coral);transition:width .34s cubic-bezier(.2,.75,.3,1)}
+
+/* L'echange d'ecran : court, sinon ca ne donne plus l'impression d'etre instantane. */
+.cs-flow-step{animation:cs-flow-in .22s ease both}
+@keyframes cs-flow-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.cs-flow-h{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.6rem,5.4vw,2.3rem);line-height:1.12;
+  letter-spacing:-.015em;text-align:center;color:var(--cs-ink);margin:0}
+.cs-flow-sub{text-align:center;color:var(--cs-ink2);font-size:1rem;line-height:1.5;margin:10px 0 clamp(22px,4vw,30px)}
+.cs-flow-fs{border:0;padding:0;margin:0 0 clamp(20px,3.4vw,26px)}
+.cs-flow-fs legend{padding:0;font-weight:700;font-size:.94rem;color:var(--cs-ink);margin-bottom:9px}
+.cs-flow-note{font-size:.86rem;color:var(--cs-ink3);line-height:1.45;margin:-3px 0 9px}
+/* Deux colonnes des que la place le permet : empilees, les neuf choix du
+   premier ecran font defiler sur deux hauteurs de telephone avant meme le
+   premier champ. */
+.cs-flow-radios{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px}
+.cs-flow-radio{display:flex;align-items:center;gap:9px;padding:13px 14px;min-width:0;border-radius:var(--cs-r);cursor:pointer;
+  background:var(--cs-card);border:1.5px solid var(--cs-line);font-weight:600;font-size:.94rem;line-height:1.25;
+  transition:border-color .15s ease,background .15s ease}
+.cs-flow-radio:hover{border-color:var(--cs-ink3)}
+.cs-flow-radio input{appearance:none;width:19px;height:19px;flex:0 0 19px;margin:0;border-radius:50%;
+  border:2px solid var(--cs-line);background:var(--cs-card);cursor:pointer;transition:border-color .15s ease}
+.cs-flow-radio:has(input:checked){background:var(--cs-coral);border-color:var(--cs-coral);color:#fff}
+.cs-flow-radio:has(input:checked) input{border-color:#fff;box-shadow:inset 0 0 0 4px var(--cs-coral);background:#fff}
+.cs-flow-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:clamp(20px,3.4vw,26px)}
+@media(max-width:520px){.cs-flow-two{grid-template-columns:1fr}}
+.cs-flow-fld{display:block;margin-bottom:clamp(18px,3vw,24px)}
+.cs-flow-fld > span{display:block;font-weight:700;font-size:.94rem;color:var(--cs-ink);margin-bottom:7px}
+.cs-flow-fld input,.cs-flow-fld select,.cs-flow-fld textarea{
+  width:100%;font:inherit;font-size:1rem;color:var(--cs-ink);background:var(--cs-card);
+  border:1.5px solid var(--cs-line);border-radius:var(--cs-r);padding:13px 15px;
+  transition:border-color .15s ease,box-shadow .15s ease}
+.cs-flow-fld textarea{resize:vertical;line-height:1.5;min-height:118px}
+.cs-flow-fld input:focus,.cs-flow-fld select:focus,.cs-flow-fld textarea:focus{
+  outline:0;border-color:var(--cs-coral);box-shadow:0 0 0 3px rgba(236,91,60,.16)}
+.cs-flow-fld ::placeholder{color:var(--cs-ink3)}
+.cs-flow-up{display:block;cursor:pointer;margin-bottom:16px}
+.cs-flow-up input{position:absolute;opacity:0;width:0;height:0}
+.cs-flow-up-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  padding:clamp(28px,6vw,44px);border:2px dashed var(--cs-line);border-radius:var(--cs-r-lg);
+  background:var(--cs-card);color:var(--cs-ink2);transition:border-color .15s ease}
+.cs-flow-up:hover .cs-flow-up-box{border-color:var(--cs-coral)}
+.cs-flow-up-box svg{width:30px;height:30px}
+.cs-flow-up-prev{width:100%;border-radius:var(--cs-r-lg);margin-top:11px}
+.cs-flow-check{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;line-height:1.45;color:var(--cs-ink2);cursor:pointer}
+.cs-flow-check input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0;accent-color:var(--cs-coral);cursor:pointer}
+.cs-flow-err{margin:0 0 14px;padding:11px 14px;border-radius:var(--cs-r);background:rgba(236,91,60,.1);
+  border:1px solid rgba(236,91,60,.34);color:var(--cs-coral-deep);font-size:.9rem;font-weight:600}
+.cs-flow-actions{margin-top:clamp(8px,2vw,14px)}
+.cs-flow-next{width:100%;white-space:nowrap}
+.cs-flow-next svg{width:19px;height:19px;transition:transform .18s ease}
+.cs-flow-next:hover svg{transform:translateX(3px)}
+.cs-flow-next[disabled]{opacity:.6;pointer-events:none}
+.cs-flow-wait,.cs-flow-done{text-align:center;padding:clamp(40px,10vw,80px) 0;
+  animation:cs-flow-in .24s ease both}
+.cs-flow-spin{display:inline-block;width:34px;height:34px;border-radius:50%;margin-bottom:20px;
+  border:3px solid var(--cs-line);border-top-color:var(--cs-coral);animation:cs-flow-spin .8s linear infinite}
+@keyframes cs-flow-spin{to{transform:rotate(360deg)}}
+.cs-flow-tick{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;margin:0 auto 20px;
+  background:var(--cs-coral);color:#fff}
+.cs-flow-tick svg{width:29px;height:29px}
+.cs-flow-home{margin-top:8px}
+@media(prefers-reduced-motion:reduce){.cs-flow-step,.cs-flow-wait,.cs-flow-done{animation:none}}
+{% endstylesheet %}
+{% javascript %}
+(function () {
+  function setup(root) {
+    if (root.dataset.csFlowReady) return;
+    root.dataset.csFlowReady = '1';
+
+    var form = root.querySelector('[data-cs-form]');
+    var steps = root.querySelectorAll('.cs-flow-step');
+    var bar = root.querySelector('[data-cs-bar]');
+    var back = root.querySelector('[data-cs-back]');
+    var next = root.querySelector('[data-cs-next]');
+    var nextLabel = root.querySelector('[data-cs-next-label]');
+    var err = root.querySelector('[data-cs-err]');
+    var wait = root.querySelector('[data-cs-wait]');
+    var done = root.querySelector('[data-cs-done]');
+    if (!form || !steps.length) return;
+
+    // Les libelles viennent des attributs poses par Liquid : un bloc javascript
+    // est mutualise entre toutes les sections, il ne peut pas les interpoler.
+    var D = root.dataset;
+    var CFG = {
+      nextLabel: D.next || 'Next',
+      lastLabel: D.last || 'Create our song',
+      errRequired: D.errReq || 'Please fill this in before continuing.',
+      errEmail: D.errEmail || 'That email address does not look right.',
+      errSend: D.errSend || 'We could not send that. Check your connection and try again.'
+    };
+    var last = steps.length - 1;
+    var i = 0;
+
+    function fill(el, map) {
+      if (!el) return;
+      var tpl = el.getAttribute('data-tpl') || el.textContent;
+      var out = tpl;
+      for (var k in map) out = out.split('{' + k + '}').join(map[k] || '');
+      el.textContent = out;
+    }
+
+    function show(n) {
+      for (var s = 0; s < steps.length; s++) steps[s].hidden = s !== n;
+      // On re-declenche l'animation : sans ca, un ecran deja vu reapparait sec.
+      steps[n].style.animation = 'none';
+      void steps[n].offsetWidth;
+      steps[n].style.animation = '';
+
+      i = n;
+      bar.style.width = ((n + 1) / steps.length * 100) + '%';
+      back.hidden = n === 0;
+      nextLabel.textContent = n === last ? CFG.lastLabel : CFG.nextLabel;
+      err.hidden = true;
+
+      if (n === last) {
+        var name = (form.elements.their_name && form.elements.their_name.value || '').trim();
+        fill(root.querySelector('[data-cs-s7sub]'), { name: name });
+      }
+      // Le haut de l'ecran, pas le haut du document : la barre reste visible.
+      var top = root.getBoundingClientRect().top + window.pageYOffset - 12;
+      if (window.pageYOffset > top) window.scrollTo({ top: top, behavior: 'smooth' });
+      var first = steps[n].querySelector('input:not([type=radio]):not([type=checkbox]), textarea, select');
+      if (first && window.matchMedia('(min-width:750px)').matches) first.focus();
+    }
+
+    function fail(field, msg) {
+      err.textContent = msg;
+      err.hidden = false;
+      if (field && field.focus) field.focus();
+      return false;
+    }
+
+    function valid(n) {
+      var step = steps[n];
+      var reqs = step.querySelectorAll('[data-req]');
+      for (var r = 0; r < reqs.length; r++) {
+        var f = reqs[r];
+        if (f.type === 'checkbox' ? !f.checked : !f.value.trim()) {
+          return fail(f, CFG.errRequired);
+        }
+        if (f.hasAttribute('data-email') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.value.trim())) {
+          return fail(f, CFG.errEmail);
+        }
+      }
+      // Un groupe de radios n'a pas de champ requis : on verifie le groupe.
+      var groups = {};
+      var radios = step.querySelectorAll('input[type=radio]');
+      for (var g = 0; g < radios.length; g++) groups[radios[g].name] = groups[radios[g].name] || radios[g];
+      for (var key in groups) {
+        if (!step.querySelector('input[name="' + key + '"]:checked')) {
+          return fail(groups[key], CFG.errRequired);
+        }
+      }
+      return true;
+    }
+
+    function answers() {
+      var out = {};
+      var f = form.elements;
+      for (var n = 0; n < f.length; n++) {
+        var el = f[n];
+        if (!el.name || el.type === 'file') continue;
+        if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) continue;
+        out[el.name] = el.type === 'checkbox' ? 'Yes' : el.value.trim();
+      }
+      return out;
+    }
+
+    // Sans endpoint, les reponses partent par le formulaire de contact natif de
+    // Shopify : elles arrivent dans la boite mail de la boutique. C'est ce qui
+    // permet au tunnel de fonctionner sans worker ni application.
+    function sendContact(data) {
+      var lines = [];
+      for (var k in data) if (k !== 'email') lines.push(k + ': ' + data[k]);
+      var body = new URLSearchParams();
+      body.set('form_type', 'contact');
+      body.set('utf8', '✓');
+      body.set('contact[email]', data.email || '');
+      body.set('contact[name]', (data.your_name || '') + ' & ' + (data.their_name || ''));
+      body.set('contact[body]', 'COUPLES SONG REQUEST\n\n' + lines.join('\n'));
+      return fetch('/contact#contact_form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+    }
+
+    function sendApi(url, data) {
+      var photo = form.querySelector('[data-cs-photo]');
+      if (photo && photo.files && photo.files[0]) {
+        var fd = new FormData();
+        for (var k in data) fd.append(k, data[k]);
+        fd.append('photo', photo.files[0]);
+        return fetch(url, { method: 'POST', body: fd });
+      }
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+
+    function submit() {
+      var data = answers();
+      form.hidden = true;
+      root.querySelector('.cs-flow-top').hidden = true;
+      wait.hidden = false;
+
+      var url = (root.getAttribute('data-api') || '').trim();
+      var call = url ? sendApi(url, data) : sendContact(data);
+
+      call.then(function (r) {
+        if (!r.ok && r.status !== 0) throw new Error('HTTP ' + r.status);
+        wait.hidden = true;
+        done.hidden = false;
+        fill(root.querySelector('[data-cs-done-h]'), { name: data.their_name });
+        fill(root.querySelector('[data-cs-done-sub]'), { email: data.email, name: data.their_name });
+      }).catch(function () {
+        wait.hidden = true;
+        form.hidden = false;
+        root.querySelector('.cs-flow-top').hidden = false;
+        err.textContent = CFG.errSend;
+        err.hidden = false;
+      });
+    }
+
+    next.addEventListener('click', function () {
+      if (!valid(i)) return;
+      if (i === last) submit(); else show(i + 1);
+    });
+    back.addEventListener('click', function () { if (i > 0) show(i - 1); });
+
+    // Entree fait avancer, sauf dans une zone de texte ou elle sert a aller a la ligne.
+    form.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA') return;
+      e.preventDefault();
+      next.click();
+    });
+
+    // Un choix de carte sur la landing page arrive en ?occasion=… : on le coche.
+    try {
+      var want = new URLSearchParams(window.location.search).get('occasion');
+      if (want) {
+        var opts = form.querySelectorAll('input[name=occasion]');
+        for (var o = 0; o < opts.length; o++) {
+          if (opts[o].value.toLowerCase() === want.toLowerCase()) { opts[o].checked = true; break; }
+        }
+      }
+    } catch (e) {}
+
+    var photo = form.querySelector('[data-cs-photo]');
+    if (photo) {
+      photo.addEventListener('change', function () {
+        var f = photo.files && photo.files[0];
+        if (!f) return;
+        var label = form.querySelector('[data-cs-photo-label]');
+        if (label) label.textContent = f.name;
+        var prev = form.querySelector('[data-cs-photo-prev]');
+        if (prev) { prev.src = URL.createObjectURL(f); prev.hidden = false; }
+      });
+    }
+
+    show(0);
+  }
+
+  function init(scope) {
+    var host = scope && scope.querySelectorAll ? scope : document;
+    var all = host.querySelectorAll('[data-cs-flow]');
+    for (var i = 0; i < all.length; i++) setup(all[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}

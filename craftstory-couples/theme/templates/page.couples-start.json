@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "head": {
+      "type": "cs-head",
+      "settings": {}
+    },
+    "flow": {
+      "type": "cs-duo-flow",
+      "settings": {
+        "api_url": "",
+        "ask_photo": false,
+        "done_cta_link": "/pages/couples"
+      }
+    }
+  },
+  "order": ["head", "flow"]
+}
