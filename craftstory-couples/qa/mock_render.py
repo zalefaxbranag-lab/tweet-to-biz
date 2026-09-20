@@ -174,7 +174,18 @@ def apply_filter(val, spec, scope):
     if name == "split":
         return str(val).split(args[0]) if args else [str(val)]
     if name == "newline_to_br":
-        return str(val).replace("\n", "<br />")
+        # Liquid garde le saut de ligne apres la balise : le reproduire ici evite
+        # de faire passer un decoupage qui echouerait sur la boutique.
+        return str(val).replace("\n", "<br />\n")
+    if name == "replace":
+        return str(val).replace(str(args[0]), str(args[1]) if len(args) > 1 else "")
+    if name == "join":
+        sep = str(args[0]) if args else ""
+        return sep.join(str(x) for x in val) if isinstance(val, (list, tuple)) else str(val)
+    if name == "strip_newlines":
+        return str(val).replace("\n", "").replace("\r", "")
+    if name == "last":
+        return (val or [""])[-1] if isinstance(val, (list, tuple)) else val
     if name == "image_url":
         return "MOCK_IMAGE"
     if name == "where":

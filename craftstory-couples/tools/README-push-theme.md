@@ -203,3 +203,25 @@ PY
 
 Le remplacement de `main()` est necessaire : `kie.py` l'appelle en fin de
 fichier, donc un import nu demanderait la cle et lancerait une generation.
+
+## Un gabarit JSON ne se verifie pas au MD5
+
+Pour un `.liquid`, le MD5 est la preuve : l'octet part, l'octet arrive. Pour un
+`templates/*.json`, **non** : Shopify reserialise le fichier a l'ecriture. Il
+remet son entete `/* auto-generated */`, reformate, et **retire les reglages
+dont la valeur vaut le defaut du schema**. Le MD5 differe alors qu'aucune
+valeur n'a change.
+
+Vu en vrai : un gabarit pousse a 6330 octets est revenu a 3584. Rien n'avait
+ete perdu — les neuf cles absentes valaient toutes leur defaut.
+
+Donc, apres un push de gabarit, **verifier le sens, pas les octets** :
+
+1. relire le fichier sur le theme ;
+2. pour chaque cle absente, comparer sa valeur locale au defaut du schema de la
+   section ;
+3. un ecart sur une cle qui ne vaut pas son defaut, ca oui, c'est un vrai echec.
+
+Corollaire utile : ecrire dans un gabarit un reglage qui vaut deja le defaut ne
+sert a rien, Shopify l'efface. Ne mettre dans un gabarit que ce qui **s'ecarte**
+du schema.

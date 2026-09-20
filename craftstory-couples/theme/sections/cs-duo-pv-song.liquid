@@ -14,45 +14,82 @@
 -%}
 <div class="cs cs-duo-pvs" data-cs-pvs
      data-timer="{% if section.settings.show_timer %}{{ section.settings.timer_minutes }}{% else %}0{% endif %}"
-     data-timer-end="{{ section.settings.timer_over | escape }}">
+     data-timer-end="{{ section.settings.timer_over | escape }}"
+     data-fill="{{ section.settings.fill_minutes }}"
+     data-stages="{{ section.settings.stages | newline_to_br | replace: '<br />', '|' | escape }}">
   <div class="cs-wrap">
 
-    {%- comment -%} 1. « Vos mots deviennent une chanson » + le clip d'attente {%- endcomment -%}
-    {%- if section.settings.wait_heading != blank or section.settings.video != blank or section.settings.video_url != blank -%}
-      <div class="cs-pvs-top">
-        {%- if section.settings.wait_heading != blank -%}
-          <h1 class="cs-pvs-h1" data-cs-tpl>{{ section.settings.wait_heading }}</h1>
-        {%- endif -%}
-        {%- if section.settings.wait_sub != blank -%}
-          <p class="cs-pvs-sub" data-cs-tpl>{{ section.settings.wait_sub }}</p>
-        {%- endif -%}
+    {%- comment -%}
+      1. Le logo, les deux titres, le clip, la barre d'avancement, l'encart.
 
-        {%- if section.settings.video != blank or section.settings.video_url != blank -%}
-          <div class="cs-pvs-stage">
-            {%- if section.settings.video != blank -%}
-              {%- assign src = section.settings.video.sources | where: 'format', 'mp4' | first -%}
-              <video class="cs-pvs-v" playsinline controls preload="metadata"
-                     src="{{ src.url }}"
-                     {% if section.settings.poster != blank %}poster="{{ section.settings.poster | image_url: width: 900 }}"{% endif %}></video>
-            {%- else -%}
-              <video class="cs-pvs-v" playsinline controls preload="metadata"
-                     src="{{ section.settings.video_url }}"
-                     {% if section.settings.poster != blank %}poster="{{ section.settings.poster | image_url: width: 900 }}"{% endif %}></video>
-            {%- endif -%}
-            {%- if section.settings.show_timer -%}
-              <span class="cs-pvs-clock" data-cs-clock aria-hidden="true">--:--</span>
-            {%- endif -%}
-            {%- if section.settings.video_caption != blank -%}
-              <span class="cs-pvs-cap">{{ section.settings.video_caption }}</span>
-            {%- endif -%}
-          </div>
-        {%- endif -%}
+      La barre n'invente rien : quand il y a un clip, elle EST l'avancee de la
+      lecture et l'horloge le temps qu'il reste. Sans clip, elle se remplit sur
+      la duree reglee, et ne pretend alors rien d'autre que « patiente ».
+    {%- endcomment -%}
+    <div class="cs-pvs-top">
+      {%- if section.settings.logo != blank -%}
+        <img class="cs-pvs-logo" src="{{ section.settings.logo | image_url: width: 600 }}"
+             alt="{{ section.settings.logo.alt | default: shop.name | escape }}"
+             style="width:{{ section.settings.logo_width }}px" loading="eager">
+      {%- endif -%}
 
-        {%- if section.settings.wait_note != blank -%}
-          <p class="cs-pvs-note" data-cs-tpl>{{ section.settings.wait_note }}</p>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
+      {%- if section.settings.wait_heading != blank -%}
+        <h1 class="cs-pvs-h1" data-cs-tpl>{{ section.settings.wait_heading }}</h1>
+      {%- endif -%}
+      {%- if section.settings.wait_sub != blank -%}
+        <p class="cs-pvs-sub" data-cs-tpl>{{ section.settings.wait_sub }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.video != blank or section.settings.video_url != blank -%}
+        <div class="cs-pvs-stage" style="aspect-ratio:{{ section.settings.video_ratio }}">
+          {%- if section.settings.video != blank -%}
+            {%- assign src = section.settings.video.sources | where: 'format', 'mp4' | first -%}
+            {%- assign vsrc = src.url -%}
+          {%- else -%}
+            {%- assign vsrc = section.settings.video_url -%}
+          {%- endif -%}
+          {%- comment -%}
+            Demarrage muet : pas de commandes natives, elles se posent pile sur
+            le sous-titre incruste. Le son revient par le bouton en haut a
+            droite, jamais par-dessus la legende du bas.
+          {%- endcomment -%}
+          <video class="cs-pvs-v" playsinline preload="metadata"
+                 {% if section.settings.autoplay %}autoplay muted{% else %}controls{% endif %}
+                 src="{{ vsrc }}"
+                 {% if section.settings.poster != blank %}poster="{{ section.settings.poster | image_url: width: 900 }}"{% endif %}></video>
+          {%- if section.settings.show_clock -%}
+            <span class="cs-pvs-clock" data-cs-clock aria-hidden="true">--:--</span>
+          {%- endif -%}
+          {%- if section.settings.autoplay -%}
+            <button type="button" class="cs-pvs-sound" data-cs-sound>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              <span>{{ section.settings.sound_label | default: 'Tap for sound' }}</span>
+            </button>
+          {%- endif -%}
+          {%- if section.settings.video_caption != blank -%}
+            <span class="cs-pvs-cap">{{ section.settings.video_caption }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_progress -%}
+        <div class="cs-pvs-prog" data-cs-prog>
+          <p class="cs-pvs-prog-top">
+            <span data-cs-stage>{{ section.settings.stages | newline_to_br | split: '<br />' | first | strip }}</span>
+            <b data-cs-pct>0%</b>
+          </p>
+          <span class="cs-pvs-bar"><i data-cs-fill></i></span>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.notice != blank -%}
+        <p class="cs-pvs-notice" data-cs-tpl>{{ section.settings.notice }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.wait_note != blank -%}
+        <p class="cs-pvs-note" data-cs-tpl>{{ section.settings.wait_note }}</p>
+      {%- endif -%}
+    </div>
 
     {%- comment -%} 2. l'apercu du morceau {%- endcomment -%}
     <div class="cs-pvs-song">
@@ -160,13 +197,32 @@
     { "type": "paragraph", "content": "Write {name} anywhere in a heading and it becomes their first name, taken from ?name= in the URL. The flow adds it to its last button by itself." },
 
     { "type": "header", "content": "1 — While we write it" },
+    { "type": "image_picker", "id": "logo", "label": "Logo or artwork above the heading" },
+    { "type": "range", "id": "logo_width", "label": "Its width", "min": 60, "max": 280, "step": 10, "default": 150, "unit": "px" },
     { "type": "text", "id": "wait_heading", "label": "Heading", "default": "Your words are becoming a song." },
-    { "type": "text", "id": "wait_sub", "label": "Subheading", "default": "Watch this while we write it." },
-    { "type": "video", "id": "video", "label": "Clip (upload MP4)", "info": "Landscape 16:9." },
+    { "type": "text", "id": "wait_sub", "label": "Second line", "default": "Watch this while we make your song and your music video.", "info": "Shown in coral, under the heading." },
+    { "type": "video", "id": "video", "label": "Clip (upload MP4)" },
     { "type": "video_url", "id": "video_url", "label": "Or a clip URL", "accept": ["youtube", "vimeo"] },
     { "type": "image_picker", "id": "poster", "label": "Clip cover" },
+    { "type": "select", "id": "video_ratio", "label": "Clip shape", "default": "4/3",
+      "options": [
+        { "value": "16/9", "label": "Wide (16:9)" },
+        { "value": "4/3", "label": "Classic (4:3)" },
+        { "value": "1/1", "label": "Square (1:1)" },
+        { "value": "4/5", "label": "Tall (4:5)" }
+      ] },
+    { "type": "checkbox", "id": "autoplay", "label": "Start the clip on arrival, muted", "default": true },
+    { "type": "checkbox", "id": "show_clock", "label": "Show the time left on the clip", "default": true },
+    { "type": "text", "id": "sound_label", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "video_caption", "label": "Caption over the clip" },
-    { "type": "text", "id": "wait_note", "label": "Line under the clip" },
+
+    { "type": "header", "content": "The progress bar" },
+    { "type": "paragraph", "content": "With a clip, the bar is the clip's own progress and the clock is the time left in it — nothing is invented. Without a clip, it fills over the number of minutes below." },
+    { "type": "checkbox", "id": "show_progress", "label": "Show the progress bar", "default": true },
+    { "type": "textarea", "id": "stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
+    { "type": "range", "id": "fill_minutes", "label": "Fill time without a clip", "min": 1, "max": 10, "step": 1, "default": 2, "unit": "min" },
+    { "type": "text", "id": "notice", "label": "Notice under the bar", "default": "⚡ Your free song and music video preview appears here at the end of the clip." },
+    { "type": "text", "id": "wait_note", "label": "Small line under it all" },
 
     { "type": "header", "content": "2 — The song preview" },
     { "type": "text", "id": "song_title", "label": "Title", "default": "{name}'s song" },
@@ -223,17 +279,39 @@
 .cs-duo-pvs [hidden]{display:none !important}
 .cs-duo-pvs .cs-wrap{max-width:560px}
 .cs-pvs-top{text-align:center}
+.cs-pvs-logo{display:block;height:auto;margin:0 auto 16px}
 .cs-pvs-h1{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.35rem,4.6vw,1.9rem);line-height:1.15;
   letter-spacing:-.015em;color:var(--cs-ink);margin:0}
-.cs-pvs-sub{color:var(--cs-ink2);font-size:.98rem;line-height:1.45;margin:7px 0 16px}
+/* La seconde ligne est coraille : c'est elle qui tient le regard pendant
+   l'attente, pas le titre. */
+.cs-pvs-sub{color:var(--cs-coral);font-weight:700;font-size:1rem;line-height:1.4;margin:6px 0 16px}
 .cs-pvs-stage{position:relative;border-radius:var(--cs-r-lg);overflow:hidden;background:var(--cs-night);
-  aspect-ratio:16/9;box-shadow:0 14px 34px rgba(28,21,51,.16)}
+  aspect-ratio:4/3;box-shadow:0 14px 34px rgba(28,21,51,.16)}
 .cs-pvs-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cs-pvs-clock{position:absolute;top:10px;left:10px;padding:4px 9px;border-radius:var(--cs-pill);
   background:rgba(28,21,51,.72);color:#fff;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
 .cs-pvs-cap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-weight:800;
   font-size:.86rem;letter-spacing:.02em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+/* En haut a droite, jamais en bas : le bas appartient a la legende. */
+.cs-pvs-sound{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border:0;border-radius:var(--cs-pill);cursor:pointer;
+  background:rgba(28,21,51,.72);color:#fff;font:inherit;font-size:.76rem;font-weight:700}
+.cs-pvs-sound:hover{background:rgba(28,21,51,.88)}
+.cs-pvs-sound svg{width:14px;height:14px}
 .cs-pvs-note{color:var(--cs-ink3);font-size:.84rem;line-height:1.45;margin:10px 0 0}
+
+/* L'avancement */
+.cs-pvs-prog{margin-top:14px;padding:12px 14px;border-radius:var(--cs-r);
+  background:var(--cs-card);border:1px solid var(--cs-line);text-align:left}
+.cs-pvs-prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px}
+.cs-pvs-prog-top span{font-size:.86rem;color:var(--cs-ink2);line-height:1.35}
+.cs-pvs-prog-top b{flex:0 0 auto;font-size:.86rem;font-weight:800;color:var(--cs-coral);font-variant-numeric:tabular-nums}
+.cs-pvs-bar{display:block;height:7px;border-radius:var(--cs-pill);background:var(--cs-line);overflow:hidden}
+.cs-pvs-bar i{display:block;height:100%;width:0;border-radius:var(--cs-pill);
+  background:linear-gradient(90deg,var(--cs-coral),var(--cs-coral-deep));transition:width .4s linear}
+.cs-pvs-notice{display:flex;align-items:flex-start;gap:7px;margin:12px 0 0;padding:11px 14px;
+  border-radius:var(--cs-r);background:rgba(236,91,60,.09);border:1px solid rgba(236,91,60,.26);
+  color:var(--cs-coral-deep);font-size:.87rem;font-weight:600;line-height:1.45;text-align:left}
 
 /* L'apercu du morceau */
 .cs-pvs-song{margin-top:clamp(26px,5vw,40px);text-align:center}
@@ -316,7 +394,6 @@
     if (!mins) return;
     var panel = root.querySelector('[data-cs-timer]');
     var big = root.querySelector('[data-cs-big]');
-    var clock = root.querySelector('[data-cs-clock]');
     var end = 0;
     // La fin est posee une seule fois et gardee dans le navigateur du
     // visiteur : sans ca le rebours repart a chaque rechargement, et une
@@ -333,16 +410,13 @@
 
     function tick() {
       var left = Math.max(0, Math.round((end - Date.now()) / 1000));
-      var txt = two(Math.floor(left / 60)) + ':' + two(left % 60);
-      if (big) big.textContent = txt;
-      if (clock) clock.textContent = txt;
+      if (big) big.textContent = two(Math.floor(left / 60)) + ':' + two(left % 60);
       if (left > 0) return;
       clearInterval(id);
       if (panel) {
         panel.classList.add('is-over');
         if (big) big.textContent = root.getAttribute('data-timer-end') || '';
       }
-      if (clock) clock.hidden = true;
     }
     tick();
     var id = setInterval(tick, 1000);
@@ -384,10 +458,83 @@
     });
   }
 
+  // L'avancement du haut de page. Avec un clip, la barre est sa lecture et
+  // l'horloge le temps restant : rien n'est simule. Sans clip, elle se remplit
+  // sur la duree reglee, et n'annonce alors qu'une attente.
+  function progress(root) {
+    var fill = root.querySelector('[data-cs-fill]');
+    var pct = root.querySelector('[data-cs-pct]');
+    var label = root.querySelector('[data-cs-stage]');
+    var clock = root.querySelector('[data-cs-clock]');
+    if (!fill && !clock) return;
+
+    var stages = (root.getAttribute('data-stages') || '').split('|');
+    var clean = [];
+    for (var i = 0; i < stages.length; i++) {
+      if (stages[i].trim()) clean.push(stages[i].trim());
+    }
+
+    function paint(p, remain) {
+      p = Math.max(0, Math.min(100, p));
+      if (fill) fill.style.width = p + '%';
+      if (pct) pct.textContent = Math.round(p) + '%';
+      if (label && clean.length) {
+        var n = Math.min(clean.length - 1, Math.floor(p / (100 / clean.length)));
+        if (label.textContent !== clean[n]) label.textContent = clean[n];
+      }
+      if (clock && remain !== null) clock.textContent = two(Math.floor(remain / 60)) + ':' + two(Math.round(remain % 60));
+    }
+
+    var v = root.querySelector('.cs-pvs-v');
+    if (v) {
+      var follow = function () {
+        if (!isFinite(v.duration) || !v.duration) return;
+        paint(v.currentTime / v.duration * 100, v.duration - v.currentTime);
+      };
+      v.addEventListener('loadedmetadata', follow);
+      v.addEventListener('timeupdate', follow);
+      v.addEventListener('ended', function () { paint(100, 0); });
+      follow();
+      return;
+    }
+
+    var mins = parseFloat(root.getAttribute('data-fill') || '2') || 2;
+    var start = Date.now();
+    paint(0, null);
+    var id = setInterval(function () {
+      var p = (Date.now() - start) / (mins * 60000) * 100;
+      paint(p, null);
+      if (p >= 100) clearInterval(id);
+    }, 500);
+  }
+
+  function sound(root) {
+    var v = root.querySelector('.cs-pvs-v');
+    var btn = root.querySelector('[data-cs-sound]');
+    var stage = root.querySelector('.cs-pvs-stage');
+    if (!v) return;
+    if (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        v.muted = false;
+        v.play();
+        btn.hidden = true;
+      });
+    }
+    // Sans commandes natives, le doigt sur l'image doit au moins mettre en pause.
+    if (stage && btn) {
+      stage.addEventListener('click', function () {
+        if (v.paused) { v.play(); } else { v.pause(); }
+      });
+    }
+  }
+
   function setup(root) {
     if (root.dataset.csPvsReady) return;
     root.dataset.csPvsReady = '1';
     personalise(root);
+    sound(root);
+    progress(root);
     countdown(root);
     player(root);
   }

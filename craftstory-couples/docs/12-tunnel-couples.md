@@ -131,7 +131,7 @@ Deux sections neuves, et deux deja ecrites qu'on reutilise :
 
 | Section | Ce qu'elle porte |
 |---|---|
-| `cs-duo-pv-song` | le clip d'attente, l'apercu du morceau, la preuve, le tarif, le rebours, les lignes du morceau complet |
+| `cs-duo-pv-song` | le logo, les deux titres, le clip, la barre d'avancement, l'encart, l'apercu du morceau, la preuve, le tarif, le rebours, les lignes du morceau complet |
 | `cs-duo-pv-offer` | le choix de vitesse, l'option, le bouton, la garantie, la suite, la barre du bas |
 | `cs-duo-reviews` | les avis, en disposition **liste** (nouveau reglage) avec le recapitulatif de note |
 | `cs-duo-faq` | les questions, telle quelle |
@@ -183,3 +183,27 @@ python3 qa/mock_render.py gabarit.json -o page.html
 
 C'est ce qui a montre les etapes numerotees 4, 5, 6 : `forloop.index` comptait
 aussi les vitesses et l'option. Un compteur a part regle ca.
+
+## Le haut de la page, et pourquoi la barre ne triche pas
+
+Le haut reprend la page du concurrent : un emplacement pour ton logo ou ta
+creation, le titre en serif sombre, **la seconde ligne en coraille**, le clip,
+la barre d'avancement, puis l'encart coraille.
+
+La barre **n'invente rien**. Quand il y a un clip :
+
+- la barre est l'avancee de sa lecture ;
+- l'horloge en haut a gauche est le temps qu'il reste ;
+- l'etiquette change au fil des etapes (« Reading your story… », « Writing your
+  lyrics… », « Recording your song… », « Animating your music video… »).
+
+C'est exactement ce que fait la page qu'on reprend : chez eux `06:05` et `4%`
+sont le restant et l'avancee de leur video, pas une animation. Un clip de deux
+minutes donne donc une barre qui se remplit en deux minutes, sans rien regler.
+
+Sans clip, elle se remplit sur **Fill time without a clip** (deux minutes par
+defaut) et n'annonce alors qu'une attente.
+
+Le clip demarre muet et **sans commandes natives** : elles se posaient pile sur
+le sous-titre incruste. Le son revient par un bouton en haut a droite — jamais
+en bas, le bas appartient a la legende — et un doigt sur l'image met en pause.

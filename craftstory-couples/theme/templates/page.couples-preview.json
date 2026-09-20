@@ -1,34 +1,120 @@
 {
   "sections": {
-    "head": { "type": "cs-head", "settings": {} },
+    "head": {
+      "type": "cs-head",
+      "settings": {}
+    },
     "song": {
       "type": "cs-duo-pv-song",
       "blocks": {
-        "r1": { "type": "row", "settings": { "icon": "♪", "label": "Your full song", "note": "No preview cut", "was": "0:58", "value": "3:00" } },
-        "r2": { "type": "row", "settings": { "icon": "▶", "label": "Your animated music video", "value": "Included" } },
-        "r3": { "type": "row", "settings": { "icon": "↓", "label": "MP3 and MP4 to keep", "value": "Forever" } }
+        "r1": {
+          "type": "row",
+          "settings": {
+            "icon": "♪",
+            "label": "Your full song",
+            "note": "No preview cut",
+            "was": "0:58",
+            "value": "3:00"
+          }
+        },
+        "r2": {
+          "type": "row",
+          "settings": {
+            "icon": "▶",
+            "label": "Your animated music video",
+            "value": "Included"
+          }
+        },
+        "r3": {
+          "type": "row",
+          "settings": {
+            "icon": "↓",
+            "label": "MP3 and MP4 to keep",
+            "value": "Forever"
+          }
+        }
       },
-      "block_order": ["r1", "r2", "r3"],
+      "block_order": [
+        "r1",
+        "r2",
+        "r3"
+      ],
       "settings": {
         "wait_heading": "Your words are becoming a song.",
-        "wait_sub": "Watch this while we write it.",
+        "wait_sub": "Watch this while we make your song and your music video.",
         "song_title": "{name}'s song",
         "preview_length": "0:58",
         "show_timer": false,
-        "timer_minutes": 30
+        "timer_minutes": 30,
+        "video_ratio": "4/3",
+        "autoplay": true,
+        "show_clock": true,
+        "sound_label": "Tap for sound",
+        "show_progress": true,
+        "stages": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…",
+        "fill_minutes": 2,
+        "notice": "⚡ Your free song and music video preview appears here at the end of the clip.",
+        "logo_width": 150
       }
     },
     "offer": {
       "type": "cs-duo-pv-offer",
       "blocks": {
-        "s1": { "type": "speed", "settings": { "label": "30-minute delivery", "note": "Ready while you wait", "badge": "MOST POPULAR", "value": "30min" } },
-        "s2": { "type": "speed", "settings": { "label": "48-hour delivery", "note": "Standard", "value": "48h" } },
-        "a1": { "type": "addon", "settings": { "label": "Keep the lyrics forever", "note": "A printable sheet with the words and the cover art.", "value": "1" } },
-        "n1": { "type": "step", "settings": { "title": "Unlock now", "body": "One payment. Production starts the moment you click." } },
-        "n2": { "type": "step", "settings": { "title": "Your full song arrives", "body": "In your inbox, within the time you picked. Yours to keep." } },
-        "n3": { "type": "step", "settings": { "title": "Play it for them", "body": "A car, a first dance, a kitchen on a Tuesday." } }
+        "s1": {
+          "type": "speed",
+          "settings": {
+            "label": "30-minute delivery",
+            "note": "Ready while you wait",
+            "badge": "MOST POPULAR",
+            "value": "30min"
+          }
+        },
+        "s2": {
+          "type": "speed",
+          "settings": {
+            "label": "48-hour delivery",
+            "note": "Standard",
+            "value": "48h"
+          }
+        },
+        "a1": {
+          "type": "addon",
+          "settings": {
+            "label": "Keep the lyrics forever",
+            "note": "A printable sheet with the words and the cover art.",
+            "value": "1"
+          }
+        },
+        "n1": {
+          "type": "step",
+          "settings": {
+            "title": "Unlock now",
+            "body": "One payment. Production starts the moment you click."
+          }
+        },
+        "n2": {
+          "type": "step",
+          "settings": {
+            "title": "Your full song arrives",
+            "body": "In your inbox, within the time you picked. Yours to keep."
+          }
+        },
+        "n3": {
+          "type": "step",
+          "settings": {
+            "title": "Play it for them",
+            "body": "A car, a first dance, a kitchen on a Tuesday."
+          }
+        }
       },
-      "block_order": ["s1", "s2", "a1", "n1", "n2", "n3"],
+      "block_order": [
+        "s1",
+        "s2",
+        "a1",
+        "n1",
+        "n2",
+        "n3"
+      ],
       "settings": {
         "speed_heading": "Choose your delivery speed",
         "cta_label": "Unlock our full song",
@@ -44,11 +130,30 @@
     "reviews": {
       "type": "cs-duo-reviews",
       "blocks": {
-        "v1": { "type": "review", "settings": { "stars": "★★★★★" } },
-        "v2": { "type": "review", "settings": { "stars": "★★★★★" } },
-        "v3": { "type": "review", "settings": { "stars": "★★★★★" } }
+        "v1": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "v2": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        },
+        "v3": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★"
+          }
+        }
       },
-      "block_order": ["v1", "v2", "v3"],
+      "block_order": [
+        "v1",
+        "v2",
+        "v3"
+      ],
       "settings": {
         "layout": "list",
         "eyebrow": "",
@@ -60,13 +165,49 @@
     "faq": {
       "type": "cs-duo-faq",
       "blocks": {
-        "q1": { "type": "qa", "settings": { "q": "What if I don't like the full song?", "a": "<p>Tell us within 30 days and you get a full refund. No questions asked.</p>" } },
-        "q2": { "type": "qa", "settings": { "q": "Is my payment secure?", "a": "<p>Yes. Payment is handled by Shopify's own checkout. We never see your card details.</p>" } },
-        "q3": { "type": "qa", "settings": { "q": "How quickly do I get the full song after paying?", "a": "<p>Within the time you picked at the top of this page.</p>" } },
-        "q4": { "type": "qa", "settings": { "q": "How do I share it with them?", "a": "<p>You get a private link plus the files. Play it from your phone, send the link, or put the video on a TV.</p>" } },
-        "q5": { "type": "qa", "settings": { "q": "What happens if I don't unlock it now?", "a": "<p>Nothing is lost. Your answers are saved and you can come back, at the regular rate.</p>" } }
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "q": "What if I don't like the full song?",
+            "a": "<p>Tell us within 30 days and you get a full refund. No questions asked.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "q": "Is my payment secure?",
+            "a": "<p>Yes. Payment is handled by Shopify's own checkout. We never see your card details.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "q": "How quickly do I get the full song after paying?",
+            "a": "<p>Within the time you picked at the top of this page.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "q": "How do I share it with them?",
+            "a": "<p>You get a private link plus the files. Play it from your phone, send the link, or put the video on a TV.</p>"
+          }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "q": "What happens if I don't unlock it now?",
+            "a": "<p>Nothing is lost. Your answers are saved and you can come back, at the regular rate.</p>"
+          }
+        }
       },
-      "block_order": ["q1", "q2", "q3", "q4", "q5"],
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5"
+      ],
       "settings": {
         "heading": "Questions",
         "sub": "Everything you're wondering, answered.",
@@ -87,5 +228,12 @@
       }
     }
   },
-  "order": ["head", "song", "offer", "reviews", "faq", "help"]
+  "order": [
+    "head",
+    "song",
+    "offer",
+    "reviews",
+    "faq",
+    "help"
+  ]
 }
