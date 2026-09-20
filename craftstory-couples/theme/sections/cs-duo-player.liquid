@@ -62,12 +62,6 @@
             ]
           </script>
         </div>
-      {%- elsif request.design_mode -%}
-        <div class="cs-pl-empty">
-          <strong>No songs yet — this section stays hidden on the storefront.</strong>
-          Upload an MP3 under Content ▸ Files, copy its URL, and paste it into a Song block.
-          The player appears the moment one has a URL.
-        </div>
       {%- endif -%}
 
       {%- if section.blocks.size > 0 -%}
@@ -275,9 +269,6 @@
 .cs-pl-count{text-align:center;font-size:.76rem;font-weight:700;font-variant-numeric:tabular-nums;
   color:var(--cs-night-ink2);margin-top:11px;letter-spacing:.04em}
 .cs-pl-audio{display:none}
-.cs-pl-empty{max-width:600px;margin:0 auto;text-align:center;border:1px dashed var(--cs-night-ink2);
-  border-radius:var(--cs-r-lg);padding:22px;color:var(--cs-night-ink2);font-size:.93rem;line-height:1.55}
-.cs-pl-empty strong{display:block;color:var(--cs-night-ink);margin-bottom:5px}
 .cs-pl-incl{list-style:none;margin:clamp(26px,4vw,40px) auto 0;padding:0;max-width:620px;
   display:flex;flex-direction:column;gap:13px}
 .cs-pl-incl li{display:flex;gap:11px;align-items:flex-start;font-size:.99rem;line-height:1.45}
@@ -302,8 +293,6 @@
   --cs-night-ink:var(--cs-ink);--cs-night-ink2:var(--cs-ink2);--cs-night-line:var(--cs-line)}
 .cs.cs-duo-player .cs-pl-incl strong{color:var(--cs-coral)}
 .cs.cs-duo-player .cs-pl-inclb{color:var(--cs-ink)}
-.cs.cs-duo-player .cs-pl-empty{color:var(--cs-ink);border-color:var(--cs-ink3)}
-.cs.cs-duo-player .cs-pl-empty strong{color:var(--cs-coral)}
 
 /* Le libelle et la fleche restent sur une seule ligne : sur un ecran etroit
    le bouton passait sur deux lignes avec la fleche seule a droite. */

@@ -173,6 +173,9 @@
 .cs-reel-empty strong{display:block;color:var(--cs-coral);margin-bottom:5px}
 .cs-reel-cta{display:flex;justify-content:center;margin-top:clamp(22px,3vw,34px)}
 .cs-reel-cta .cs-btn{white-space:nowrap}
+/* La meme fleche que sur les autres boutons de la page. */
+.cs-reel-cta .cs-btn::after{content:"\2192";font-weight:800;line-height:1;transition:transform .18s ease}
+.cs-reel-cta .cs-btn:hover::after{transform:translateX(3px)}
 @media(max-width:560px){.cs-reel-cta{width:100%}.cs-reel-cta .cs-btn{width:100%;font-size:clamp(.82rem,3.7vw,1.07rem);padding-left:16px;padding-right:16px}}
 {% endstylesheet %}
 {% javascript %}
