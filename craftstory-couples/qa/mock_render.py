@@ -25,6 +25,15 @@ SKILL = ("/tmp/claude-0/-home-user-tweet-to-biz/0f745d77-01e7-52b5-af58-7952d84a
          "/scratchpad/skill/craftstory-project/code/theme")
 SEC = "theme/sections"
 
+# Un damier discret aux couleurs du theme, encode une fois pour toutes.
+PLACEHOLDER = (
+    "data:image/svg+xml;utf8,"
+    "%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2080%2080%27%3E"
+    "%3Crect%20width%3D%2780%27%20height%3D%2780%27%20fill%3D%27%23F6EAD9%27/%3E"
+    "%3Cpath%20d%3D%27M0%200h40v40H0zM40%2040h40v40H40z%27%20fill%3D%27%23ECDDC9%27/%3E"
+    "%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%2714%27%20fill%3D%27%23EC5B3C%27%20opacity%3D%27.35%27/%3E"
+    "%3C/svg%3E")
+
 TOKEN = re.compile(r"\{\{-?\s*(?P<out>.*?)\s*-?\}\}|\{%-?\s*(?P<tag>.*?)\s*-?%\}", re.S)
 BLOCKY = ("if", "unless", "for", "case", "comment", "schema", "stylesheet", "javascript", "form")
 
@@ -187,7 +196,9 @@ def apply_filter(val, spec, scope):
     if name == "last":
         return (val or [""])[-1] if isinstance(val, (list, tuple)) else val
     if name == "image_url":
-        return "MOCK_IMAGE"
+        # Un vrai visuel en data-URI : pas de requete, pas de 404 qui polluent
+        # la console, et une planche de contact lisible.
+        return PLACEHOLDER
     if name == "where":
         key, want = args[0], args[1]
         return [x for x in (val or []) if isinstance(x, dict) and x.get(key) == want]
@@ -340,7 +351,7 @@ def do_tag(node, scope, warn):
             out.append(render(kids or [], scope, warn))
         scope[var], scope["forloop"] = keep
         return "".join(out)
-    if word in ("liquid", "echo", "increment", "decrement", "render", "include", "break", "continue", "form"):
+    if word in ("liquid", "echo", "increment", "decrement", "render", "include", "break", "continue", "form", "#"):
         if word == "liquid":
             return render(parse("{% " + " %}{% ".join(
                 l.strip() for l in rest.splitlines() if l.strip()) + " %}"), scope, warn)

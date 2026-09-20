@@ -23,6 +23,11 @@
         une note inventee est interdite ici comme ailleurs, et un panneau vide
         vaut mieux qu'un chiffre faux.
       {%- endcomment -%}
+      {%- if section.settings.image != blank -%}
+        <img class="cs-rev-hero" src="{{ section.settings.image | image_url: width: 1200 }}"
+             alt="{{ section.settings.image.alt | escape }}" loading="lazy">
+      {%- endif -%}
+
       {%- if section.settings.rating_score != blank -%}
         {%- assign bars = section.settings.rating_bars | newline_to_br | split: '<br />' -%}
         <div class="cs-rev-score">
@@ -56,7 +61,12 @@
                        alt="{{ block.settings.image.alt | default: 'Customer review' | escape }}" loading="lazy">
                 {%- else -%}
                   <blockquote class="cs-rev-q">
-                    {%- if block.settings.stars != blank -%}<span class="cs-rev-stars" aria-hidden="true">{{ block.settings.stars }}</span>{%- endif -%}
+                    {%- if block.settings.stars != blank or block.settings.date != blank -%}
+                      <span class="cs-rev-line">
+                        {%- if block.settings.stars != blank -%}<span class="cs-rev-stars" aria-hidden="true">{{ block.settings.stars }}</span>{%- endif -%}
+                        {%- if block.settings.date != blank -%}<time class="cs-rev-date">{{ block.settings.date }}</time>{%- endif -%}
+                      </span>
+                    {%- endif -%}
                     <p>{{ block.settings.quote }}</p>
                     {%- if block.settings.name != blank -%}
                       <footer class="cs-rev-by">
@@ -64,7 +74,11 @@
                           <img class="cs-rev-face" src="{{ block.settings.avatar | image_url: width: 120 }}"
                                alt="{{ block.settings.name | escape }}" width="44" height="44" loading="lazy">
                         {%- endif -%}
-                        <span class="cs-rev-who">{{ block.settings.name }}{% if block.settings.meta != blank %}<span class="cs-rev-meta">{{ block.settings.meta }}</span>{% endif %}</span>
+                        <span class="cs-rev-who">{{ block.settings.name }}
+                          {%- if block.settings.verified -%}
+                            <span class="cs-rev-ok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>{{ section.settings.verified_label | default: 'Verified purchase' }}</span>
+                          {%- elsif block.settings.meta != blank -%}<span class="cs-rev-meta">{{ block.settings.meta }}</span>{%- endif -%}
+                        </span>
                       </footer>
                     {%- endif -%}
                   </blockquote>
@@ -104,6 +118,8 @@
         { "value": "list", "label": "Stacked list" }
       ],
       "info": "The stacked list suits a page where reading every review is the point, like the page after the flow." },
+    { "type": "image_picker", "id": "image", "label": "Image above the reviews" },
+    { "type": "text", "id": "verified_label", "label": "Verified wording", "default": "Verified purchase" },
     { "type": "header", "content": "Rating summary" },
     { "type": "paragraph", "content": "The panel above the reviews. It only appears once a score is filled in, and the same rule applies as to the reviews themselves: a real score or none." },
     { "type": "text", "id": "rating_score", "label": "Score", "info": "For example 4.9" },
@@ -122,7 +138,9 @@
       { "type": "textarea", "id": "quote", "label": "Quote (their exact words)" },
       { "type": "text", "id": "stars", "label": "Stars", "default": "★★★★★" },
       { "type": "text", "id": "name", "label": "Who said it" },
-      { "type": "text", "id": "meta", "label": "Context", "info": "For example: 10th anniversary" }
+      { "type": "text", "id": "meta", "label": "Context", "info": "For example: 10th anniversary" },
+      { "type": "text", "id": "date", "label": "Date", "info": "Shown next to the stars. For example: 2 weeks ago" },
+      { "type": "checkbox", "id": "verified", "label": "Show the verified-purchase mark", "default": false, "info": "Only tick it for someone who really bought. It replaces the context line." }
     ] }
   ],
   "presets": [
@@ -147,6 +165,11 @@
 .cs-duo-rev[data-layout="list"] .cs-rev-dots{display:none !important}
 
 /* Le recapitulatif de note */
+.cs-rev-hero{display:block;width:100%;height:auto;border-radius:var(--cs-r-lg);margin-bottom:clamp(18px,3.4vw,26px)}
+.cs-rev-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.cs-rev-date{flex:0 0 auto;color:var(--cs-ink3);font-size:.78rem}
+.cs-rev-ok{display:flex;align-items:center;gap:4px;color:#2e6b48;font-size:.78rem;font-weight:700}
+.cs-rev-ok svg{width:13px;height:13px}
 .cs-rev-score{display:flex;gap:clamp(14px,3vw,26px);align-items:center;margin-bottom:clamp(18px,3.4vw,26px);
   padding:clamp(16px,3vw,22px);border-radius:var(--cs-r-lg);background:var(--cs-card);border:1px solid var(--cs-line)}
 .cs-rev-score-n{flex:0 0 auto;text-align:center}

@@ -148,7 +148,7 @@
     { "type": "text", "id": "speed_heading", "label": "Heading", "default": "Choose your delivery speed" },
 
     { "type": "header", "content": "2 — The button" },
-    { "type": "text", "id": "cta_label", "label": "Button", "default": "Unlock our full song" },
+    { "type": "text", "id": "cta_label", "label": "Button", "default": "Unlock {name}'s full music video" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "/pages/couples", "info": "A product page, a checkout link, anything. The speed and add-on are added to it." },
     { "type": "text", "id": "cta_note", "label": "Line under the button" },
     { "type": "checkbox", "id": "sticky", "label": "Repeat the button in a bar at the bottom", "default": true },
@@ -276,10 +276,17 @@
     if (root.dataset.csPvoReady) return;
     root.dataset.csPvoReady = '1';
 
-    // {name} vient de ?name=. Sans le parametre on retire le gabarit plutot
-    // que de laisser un trou dans la phrase.
+    // Le prenom vient des reponses mises de cote par le tunnel dans l'onglet,
+    // et a defaut de ?name= pour qu'un lien partage reste lisible. Sans lui, on
+    // retire le gabarit plutot que de laisser un trou dans la phrase.
     var name = '';
-    try { name = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
+    try {
+      var a = JSON.parse(window.sessionStorage.getItem('csDuoFlow') || '{}') || {};
+      name = (a.their_name || '').trim();
+    } catch (e) {}
+    if (!name) {
+      try { name = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
+    }
     var tpl = root.querySelectorAll('[data-cs-tpl]');
     for (var i = 0; i < tpl.length; i++) {
       var t = tpl[i].getAttribute('data-cs-orig') || tpl[i].textContent;
@@ -287,6 +294,7 @@
       tpl[i].textContent = name
         ? t.split('{name}').join(name)
         : t.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
+      if (!tpl[i].textContent) tpl[i].hidden = true;
     }
 
     // Le choix voyage dans le lien. Rien n'est achete ici : le jour ou le

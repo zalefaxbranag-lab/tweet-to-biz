@@ -9,7 +9,10 @@ import sys
 from playwright.sync_api import sync_playwright
 
 D = "/tmp/claude-0/-home-user-tweet-to-biz/0f745d77-01e7-52b5-af58-7952d84aecf6/scratchpad/flow/"
-BASE = "file://" + D
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+from serve import start as _serve
+_srv, _base = _serve(D)
+BASE = _base + "/"
 ok = True
 
 
@@ -65,7 +68,8 @@ with sync_playwright() as pw:
     ctx.add_init_script(STUB)
     errs = []
     pg = ctx.new_page()
-    pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
+    pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "404" not in m.text else None)
+    pg.on("response", lambda r: errs.append("HTTP %d %s" % (r.status, r.url)) if r.status >= 400 else None)
     pg.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
     pg.goto(BASE + "flow.html?occasion=Proposal")
     pg.wait_for_timeout(250)
@@ -132,22 +136,22 @@ with sync_playwright() as pw:
     check("l'e-mail n'est pas duplique", body.count("thomas@exemple.com"), 0)
     check("ecran d'attente pendant la navigation", pg.is_visible("[data-cs-wait]"), True)
 
-    print("\n--- RETOUR DE SHOPIFY ---")
-    check("prenom et e-mail mis de cote", pg.evaluate("JSON.parse(sessionStorage.getItem('csDuoFlow'))"),
-          {"name": "Marie", "email": "thomas@exemple.com"})
-    pg.goto(BASE + "flow.html?contact_posted=true")
-    pg.wait_for_timeout(250)
-    check("ecran final direct", pg.is_visible("[data-cs-done]"), True)
-    check("formulaire masque", pg.is_hidden(".cs-flow-form"), True)
-    check("barre masquee", pg.is_hidden(".cs-flow-top"), True)
-    check("titre final", pg.inner_text("[data-cs-done-h]"), "We have everything for Marie's song.")
-    check("sous-titre final", pg.inner_text("[data-cs-done-sub]"),
-          "We'll write it and email it to thomas@exemple.com within 48 hours.")
-    check("la cle est nettoyee", pg.evaluate("sessionStorage.getItem('csDuoFlow')"), None)
-    check("pas de note d'editeur en ligne", pg.is_hidden("[data-cs-editnote]"), True)
-    pg.screenshot(path=D + "shot-done.png")
+    print("\n--- CE QUI EST MIS DE COTE POUR LA PAGE D'APRES ---")
+    stash = pg.evaluate("JSON.parse(sessionStorage.getItem('csDuoFlow'))")
+    for k, v in (("their_name", "Marie"), ("your_name", "Thomas"), ("relationship", "Wife"),
+                 ("genre", "Pop"), ("voice", "Duet"), ("language", "French"),
+                 ("occasion", "Other"), ("occasion_other", "Le jour ou on a adopte le chien")):
+        check("l'onglet garde " + k, stash.get(k), v)
+    check("le message vide n'y est pas", "message" in stash, False)
 
-    print("\n--- DANS L'EDITEUR DE THEME ---")
+    print("\n--- RETOUR DE SHOPIFY : ON ENCHAINE ---")
+    pg.goto(BASE + "flow.html?contact_posted=true")
+    pg.wait_for_timeout(500)
+    check("saut vers la page d'attente", pg.url.endswith("/pages/couples-preview?name=Marie"), True)
+    check("les reponses survivent au saut",
+          pg.evaluate("(JSON.parse(sessionStorage.getItem('csDuoFlow'))||{}).their_name"), "Marie")
+
+    print("\n--- DANS L'EDITEUR DE THEME : PAS DE SAUT DE PAGE ---")
     ed = ctx.new_page()
     ed.add_init_script("window.Shopify = { designMode: true };")
     ed.goto(BASE + "flow.html")
@@ -158,7 +162,9 @@ with sync_playwright() as pw:
         ed.click("[data-cs-next]")
         ed.wait_for_timeout(200)
     check("rien n'est envoye", ed.evaluate("window.__submits.length + window.__posts.length"), 0)
-    check("ecran final quand meme", ed.is_visible("[data-cs-done]"), True)
+    check("on reste sur la page du tunnel", ed.url.endswith("flow.html"), True)
+    check("ecran de repli affiche", ed.is_visible("[data-cs-done]"), True)
+    check("titre de repli", ed.inner_text("[data-cs-done-h]"), "We have everything for Marie's song.")
     check("la note explique pourquoi", "Shopify blocks form submissions in the editor" in ed.inner_text("[data-cs-editnote]"), True)
     ed.screenshot(path=D + "shot-editor.png", full_page=True)
 

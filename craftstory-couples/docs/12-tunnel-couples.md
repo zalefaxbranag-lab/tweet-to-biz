@@ -184,25 +184,88 @@ python3 qa/mock_render.py gabarit.json -o page.html
 C'est ce qui a montre les etapes numerotees 4, 5, 6 : `forloop.index` comptait
 aussi les vitesses et l'option. Un compteur a part regle ca.
 
+## L'enchainement complet
+
+Il n'y a plus d'ecran de confirmation. Des que les reponses sont parties, le
+tunnel saute sur la page d'attente :
+
+```
+/pages/couples-start          six ecrans
+      |  envoi natif vers /contact
+      v
+/pages/couples-start?contact_posted=true      Shopify confirme
+      |  saut immediat
+      v
+/pages/couples-preview?name=Marie
+      |  VERROUILLE : on ne voit que l'attente
+      |  la barre se remplit sur bar_minutes (cinq par defaut)
+      v
+      OUVERT : l'attente reste en haut, tout le reste apparait
+```
+
+Le reglage **Page after the flow** porte la destination. Vide, le tunnel
+s'arrete sur son ecran de repli — ce qui arrive aussi dans l'editeur de theme,
+ou un saut de page ferait perdre la barre laterale.
+
+### Les reponses suivent, sans serveur
+
+Le tunnel met **toutes** ses reponses de cote dans le `sessionStorage` de
+l'onglet avant d'envoyer. La page d'attente les relit pour composer ses
+titres :
+
+| Gabarit | Devient |
+|---|---|
+| `{name}` | son prenom |
+| `{you}` | ton prenom |
+| `{rel}` | la relation (Wife, Partner…) |
+| `{occasion}` | l'occasion, la precision libre si elle existe |
+| `{genre}` | le genre musical |
+| `{voice}` | la voix |
+
+D'ou `Marie's Unique Music Video` et `Soul / R&B melody, written for Marie
+(Wife)`. Rien n'est stocke cote serveur, et ca meurt avec l'onglet. Un
+`?name=` dans l'URL sert de secours pour qu'un lien partage reste lisible.
+
+Quand une reponse manque, le gabarit **et ce qui l'entoure** sont retires : pas
+de `('s song` ni de parenthese vide.
+
+## Le verrou
+
+`cs-duo-pv-song` est le seul a decider. Sa feuille de style masque les sections
+qui suivent tant que `html[data-cs-lock="1"]` :
+
+```css
+html[data-cs-lock="1"] .cs-pvs-after,
+html[data-cs-lock="1"] .cs-duo-pvo,
+html[data-cs-lock="1"] .cs-duo-rev,
+html[data-cs-lock="1"] .cs-duo-faq,
+html[data-cs-lock="1"] .cs-duo-help{display:none !important}
+```
+
+Cette feuille n'est chargee que si la section est sur la page : pas de section
+d'attente, pas de verrou. Et **jamais dans l'editeur de theme**, sinon le
+marchand ne pourrait ni voir ni modifier le bas de sa page.
+
+L'echeance d'ouverture est posee **une seule fois par visiteur** et gardee dans
+son navigateur : recharger ne la fait pas repartir, et une page ouverte reste
+ouverte.
+
 ## Le haut de la page, et pourquoi la barre ne triche pas
 
 Le haut reprend la page du concurrent : un emplacement pour ton logo ou ta
 creation, le titre en serif sombre, **la seconde ligne en coraille**, le clip,
 la barre d'avancement, puis l'encart coraille.
 
-La barre **n'invente rien**. Quand il y a un clip :
+La barre porte l'attente avant l'ouverture, sur **How long the bar takes**
+(cinq minutes par defaut). L'horloge sur le clip montre le temps qu'il reste,
+et l'etiquette suit les etapes (« Reading your story… », « Writing your
+lyrics… », « Recording your song… », « Animating your music video… »).
 
-- la barre est l'avancee de sa lecture ;
-- l'horloge en haut a gauche est le temps qu'il reste ;
-- l'etiquette change au fil des etapes (« Reading your story… », « Writing your
-  lyrics… », « Recording your song… », « Animating your music video… »).
-
-C'est exactement ce que fait la page qu'on reprend : chez eux `06:05` et `4%`
-sont le restant et l'avancee de leur video, pas une animation. Un clip de deux
-minutes donne donc une barre qui se remplit en deux minutes, sans rien regler.
-
-Sans clip, elle se remplit sur **Fill time without a clip** (deux minutes par
-defaut) et n'annonce alors qu'une attente.
+C'est une vraie echeance, pas un decor : elle est posee une fois par visiteur,
+elle ne repart pas au rechargement, et elle ouvre reellement la page. Ce qu'elle
+**ne fait pas** encore, c'est refleter une production en cours — il n'y en a
+pas. Le jour ou `api_url` renvoie une tache a suivre, c'est ici que son
+avancement reel se branche, et la structure est deja la.
 
 Le clip demarre muet et **sans commandes natives** : elles se posaient pile sur
 le sous-titre incruste. Le son revient par un bouton en haut a droite — jamais

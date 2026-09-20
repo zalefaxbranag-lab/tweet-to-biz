@@ -25,6 +25,12 @@
 <div class="cs cs-duo-flow" id="cs-duo-flow"
      data-cs-flow
      data-api="{{ section.settings.api_url | escape }}"
+     {%- comment -%}
+       data-next-page, PAS data-next : data-next porte deja le libelle du
+       bouton Suivant. Deux attributs du meme nom sur la meme balise, et le
+       bouton se met a afficher une URL.
+     {%- endcomment -%}
+     data-next-page="{{ section.settings.next_page | escape }}"
      data-next="{{ section.settings.next_label | default: 'Next' | escape }}"
      data-last="{{ section.settings.last_label | default: 'Create our song' | escape }}"
      data-err-req="{{ section.settings.err_required | default: 'Please fill this in before continuing.' | escape }}"
@@ -268,9 +274,14 @@
     { "type": "text", "id": "s7_email", "label": "Email label", "default": "Your email address" },
     { "type": "text", "id": "s7_phone", "label": "Phone label", "default": "Your phone number (optional)" },
 
-    { "type": "header", "content": "Sending, and the last screen" },
+    { "type": "header", "content": "Where they land next" },
+    { "type": "paragraph", "content": "Once the answers are sent, the flow goes straight to this page — no confirmation screen. Leave it empty to stop on the screen below instead." },
+    { "type": "text", "id": "next_page", "label": "Page after the flow", "default": "/pages/couples-preview" },
+
+    { "type": "header", "content": "Sending, and the fallback screen" },
     { "type": "text", "id": "wait_heading", "label": "Sending heading", "default": "Sending your story…" },
     { "type": "text", "id": "wait_sub", "label": "Sending subheading", "default": "One moment." },
+    { "type": "paragraph", "content": "Only seen when the page above is empty, or inside the theme editor, where the flow must not leave the page." },
     { "type": "text", "id": "done_heading", "label": "Done heading — {name}", "default": "We have everything for {name}'s song." },
     { "type": "text", "id": "done_sub", "label": "Done subheading — {email}", "default": "We'll write it and email it to {email} within 48 hours." },
     { "type": "text", "id": "done_cta_label", "label": "Done button", "default": "Back to the page" },
@@ -497,12 +508,15 @@
       return k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ');
     }
 
+    // Tout est mis de cote, pas seulement le prenom : la page d'apres compose
+    // ses titres avec le genre, la relation et l'occasion. Ca reste dans
+    // l'onglet du visiteur, rien ne part ailleurs, et ca meurt avec l'onglet.
+    function stash(data) {
+      try { window.sessionStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {}
+    }
+
     function sendNative(data) {
-      try {
-        window.sessionStorage.setItem(STORE, JSON.stringify({
-          name: data.their_name || '', email: data.email || ''
-        }));
-      } catch (e) {}
+      stash(data);
 
       var lines = [];
       for (var k in data) if (k !== 'email') lines.push(niceKey(k) + ': ' + data[k]);
@@ -544,7 +558,21 @@
       });
     }
 
+    // Une fois l'envoi passe, on ne s'arrete plus sur un ecran de confirmation :
+    // on enchaine directement sur la page d'attente, ou le morceau se prepare.
+    // L'ecran ci-dessous ne sert plus que de repli — page d'arrivee vide, ou
+    // editeur de theme, ou l'on ne veut evidemment pas quitter la page.
+    function goNext(who) {
+      var next = (root.getAttribute('data-next-page') || '').trim();
+      if (!next) return false;
+      var q = [];
+      if (who.name) q.push('name=' + encodeURIComponent(who.name));
+      window.location.replace(next + (next.indexOf('?') > -1 ? '&' : '?') + q.join('&'));
+      return true;
+    }
+
     function finish(who) {
+      if (goNext(who)) return;
       form.hidden = true;
       root.querySelector('.cs-flow-top').hidden = true;
       wait.hidden = true;
@@ -552,8 +580,6 @@
       fill(root.querySelector('[data-cs-done-h]'), { name: who.name });
       fill(root.querySelector('[data-cs-done-sub]'), { email: who.email, name: who.name });
 
-      // Le bouton final emporte le prenom : la page d'apres s'en sert pour
-      // personnaliser ses titres, sans rien stocker cote serveur.
       var home = root.querySelector('.cs-flow-home');
       if (home && who.name) {
         var base = home.getAttribute('data-cs-href') || home.getAttribute('href') || '';
@@ -574,6 +600,9 @@
       // ce cas, tester le tunnel depuis l'editeur finit TOUJOURS sur une
       // erreur d'envoi qui n'existe pas sur la boutique en ligne.
       if (window.Shopify && window.Shopify.designMode) {
+        stash(data);
+        // Pas de saut de page dans l'editeur : on y perdrait la barre laterale.
+        root.removeAttribute('data-next-page');
         finish(who);
         var note = root.querySelector('[data-cs-editnote]');
         if (note) {
@@ -588,6 +617,7 @@
       var url = (root.getAttribute('data-api') || '').trim();
       if (!url) { sendNative(data); return; }
 
+      stash(data);
       sendApi(url, data).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         finish(who);
@@ -669,10 +699,12 @@
       posted = new URLSearchParams(window.location.search).get('contact_posted') === 'true';
     } catch (e) {}
     if (posted) {
+      // On ne l'efface pas : la page d'attente en a besoin pour ses titres.
+      // Elle meurt avec l'onglet, ce qui suffit.
       var who = { name: '', email: '' };
       try {
-        who = JSON.parse(window.sessionStorage.getItem(STORE) || '{}') || who;
-        window.sessionStorage.removeItem(STORE);
+        var raw = JSON.parse(window.sessionStorage.getItem(STORE) || '{}');
+        who = { name: raw.their_name || '', email: raw.email || '' };
       } catch (e) {}
       finish(who);
       return;
