@@ -3,6 +3,8 @@
 #   python3 kie.py probe          -> quels modeles ton compte accepte (0 credit)
 #   python3 kie.py page           -> les 9 visuels de la page (~18 cr/image)
 #   python3 kie.py demo --photo p -> 3 visuels avec VOTRE couple (photo requise)
+#   python3 kie.py faces          -> les 5 visages des avis et du hero (~90 cr)
+#   python3 kie.py banner         -> le fond de How It Works, desktop + mobile
 # La cle est demandee a l'ecran si KIE_KEY n'est pas dans l'environnement :
 # elle ne passe donc pas par l'historique du shell.
 import argparse, base64, getpass, json, mimetypes, os, sys, time
@@ -27,6 +29,37 @@ REAL = ("Photorealistic editorial photograph, full-frame camera, 35mm lens at f/
         "light, realistic skin texture with visible pores, shallow depth of field, subtle "
         "film grain, warm filmic colour grade. Not an illustration, not a render, not "
         "AI-looking, no plastic skin, no over-smoothing.")
+
+# Les avatars ne doivent PAS avoir le rendu editorial : une photo de profil est
+# un cliche de telephone, cadre de travers, lumiere quelconque. D'ou ce style
+# de remplacement, pose emplacement par emplacement.
+PHONE = ("Candid smartphone photo used as a social media profile picture. Head and "
+         "shoulders, face centred and filling most of the frame, shot slightly above eye "
+         "level at arm's length. Natural daylight, soft and uneven. Real skin with pores "
+         "and slight shine, no retouching, no makeup styling. Relaxed genuine expression, "
+         "looking at the lens. Slightly imperfect framing, mild motion softness, ordinary "
+         "phone-camera colour. Not a studio portrait, not a professional headshot, not a "
+         "stock photo, no ring light, no plain white backdrop, no glamour, no airbrushing.")
+
+# Cinq visages pour la rangee du hero et les avis. Ils s'affichent en cercles de
+# 38 a 44 px : a cette taille seuls la forme du visage, les cheveux, le teint et
+# LE FOND se distinguent. D'ou cinq fonds franchement differents.
+FACES = {
+ "face-daniel": ("1:1", "A man in his early forties, short dark hair greying at the temples, light stubble, plain navy crewneck. Sitting in a car in daylight, out-of-focus windscreen and grey sky behind him. Cool neutral grey background.", PHONE),
+ "face-amelia": ("1:1", "A woman in her early thirties and a man beside her, cheeks nearly touching, both slightly windblown. She has long light-brown hair, he has a close beard. Outdoors on a bright overcast day, blurred green hedge behind them. Cool green background.", PHONE),
+ "face-priya": ("1:1", "A woman in her early thirties, dark hair pulled back loosely, small gold hoop earrings, mustard knit jumper. Indoors by a window, warm cream wall behind her, soft light on one side of her face. Warm cream background.", PHONE),
+ "face-marco": ("1:1", "A man in his mid thirties, thick dark curly hair, olive skin, white t-shirt. Outdoors in late afternoon sun, blurred warm terracotta wall behind him, strong golden side light. Warm orange background.", PHONE),
+ "face-hero":  ("1:1", "A woman in her early fifties, silver-grey bob, reading glasses pushed up on her head, deep red blouse. Indoors in a kitchen, blurred dark wood cabinets behind her. Dark background.", PHONE),
+}
+
+# Le fond de la section How It Works. Un voile noir a 60 % passe par-dessus et le
+# texte est cale a gauche : il faut une image CLAIRE et un tiers gauche vide.
+# 3:2 plutot que 16:9 parce que ce ratio est deja passe sur ce compte, et la
+# section recadre en cover de toute facon.
+BANNER = {
+ "how-desktop": ("3:2", "A couple in their thirties slow-dancing barefoot in a warm living room at golden hour. They are in the right third of the frame, turned three-quarters away from camera, her cheek against his shoulder, his hand at her waist, an unposed in-between moment. Low late afternoon sun floods through a tall window behind them, rimming their hair and shoulders, dust suspended in the light. The left third is deliberately quiet: a bare warm plaster wall with the soft rectangle of window light falling across it, nothing to read. Amber and terracotta palette, cream walls, bright warm highlights that keep their detail. Not a dark scene, not low key."),
+ "how-mobile":  ("1:1", "The same couple in their thirties slow-dancing barefoot in the same warm living room at golden hour, small in the lower-right corner of the frame, turned three-quarters away from camera, her cheek against his shoulder. Low sun pours in from out of frame to the right, rimming their hair. The upper two thirds of the frame are deliberately empty: a bare warm plaster wall with a soft rectangle of window light, no objects, no furniture. Amber and terracotta palette, bright warm highlights. Not a dark scene, not low key."),
+}
 
 PAGE = {
  "first-dance": ("3:2", "A newly married couple in their thirties sharing their first dance in a warmly lit reception hall, string lights overhead, guests blurred behind, her head on his shoulder, mid-movement, candid."),
@@ -133,7 +166,9 @@ def poll(k, tid, tries=90, every=2.0):
 def run(k, model, slots, out, ref, dry):
     out.mkdir(parents=True, exist_ok=True)
     ok, bad = [], []
-    for i, (name, (aspect, txt)) in enumerate(slots.items(), 1):
+    for i, (name, slot) in enumerate(slots.items(), 1):
+        aspect, txt = slot[0], slot[1]
+        style = slot[2] if len(slot) > 2 else REAL
         if ref:
             # Le libelle de scene est parfois un fragment, parfois une phrase complete :
             # on l'isole apres "Scene:" pour que la consigne reste grammaticale dans les deux cas.
@@ -142,9 +177,9 @@ def run(k, model, slots, out, ref, dry):
                       "truth for both faces: keep exactly what it shows and add no features that "
                       "are not in it. Render the faces in the same style as the scene, never a "
                       "pasted photograph; keep head size and body proportions. %s %s"
-                      % (txt if txt.endswith(".") else txt + ".", REAL, NOSPLIT))
+                      % (txt if txt.endswith(".") else txt + ".", style, NOSPLIT))
         else:
-            prompt = "%s %s %s" % (txt, REAL, NOSPLIT)
+            prompt = "%s %s %s" % (txt, style, NOSPLIT)
         print("\n[%d/%d] %s  (%s)" % (i, len(slots), name, aspect))
         if dry:
             print("  DRY-RUN %d car : %s..." % (len(prompt), prompt[:200])); continue
@@ -173,7 +208,7 @@ def run(k, model, slots, out, ref, dry):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", choices=["probe", "page", "demo", "vsl"])
+    ap.add_argument("command", choices=["probe", "page", "demo", "vsl", "faces", "banner"])
     ap.add_argument("--photo"); ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--out", default="./kie-out"); ap.add_argument("--only")
     ap.add_argument("--dry-run", action="store_true")
@@ -199,7 +234,8 @@ def main():
         else:
             print("\nAucun modele reconnu - colle-moi la sortie complete ci-dessus.")
         return
-    slots = dict({"page": PAGE, "demo": DEMO, "vsl": VSL}[a.command])
+    slots = dict({"page": PAGE, "demo": DEMO, "vsl": VSL,
+                  "faces": FACES, "banner": BANNER}[a.command])
     if a.only:
         w = {s.strip() for s in a.only.split(",")}
         slots = {x: y for x, y in slots.items() if x in w}
