@@ -20,6 +20,22 @@ L'ecran 6 est derriere la case **Ask for a photo**, eteinte par defaut : le
 formulaire de contact de Shopify ne sait pas porter de fichier. On l'allume le
 jour ou l'API existe.
 
+## « Other » et son champ libre
+
+La derniere occasion de la liste ouvre un champ texte : beaucoup de choix
+proposes, et quand meme la place d'ecrire un besoin precis. Trois reglages :
+**Option that opens a free field** (`Other`, mot pour mot comme dans la liste),
+son libelle et son invite.
+
+Le champ vit dans le meme `fieldset` que ses boutons, et le script part de la
+pour retrouver le groupe : le deplacer dans un autre fieldset suffit a
+l'attacher a un autre choix, sans toucher au code.
+
+Il devient obligatoire quand l'option est cochee, et **se vide en se
+refermant** : une precision abandonnee ne part pas avec le reste. Les champs
+vides ne sont plus portes du tout dans le message — un telephone non renseigne
+n'apparait plus comme une ligne vide.
+
 ## Ou partent les reponses
 
 1. **`api_url` rempli** → `POST` JSON vers cet endpoint (ou `multipart` si une
@@ -27,6 +43,32 @@ jour ou l'API existe.
    un champ a remplir dans l'editeur, rien a recoder.
 2. **`api_url` vide** → formulaire de contact natif de Shopify, donc la boite
    mail de la boutique. Aucun worker, aucune application.
+
+### Pourquoi un vrai envoi de formulaire, et pas un fetch
+
+Le second cas fait un `<form>` que le navigateur poste lui-meme. C'etait un
+`fetch` au depart, et c'etait un mauvais choix pour deux raisons :
+
+- Un `fetch` peut repondre **200 alors que Shopify a servi une page de
+  captcha**. Rien n'est parti, et on annoncerait quand meme au client que son
+  histoire est envoyee. Avec un envoi natif, c'est Shopify qui tranche : il ne
+  renvoie sur `?contact_posted=true` qu'en cas de reussite reelle.
+- Si un captcha est demande, le visiteur le voit et peut le resoudre.
+
+Ca coute un rechargement au tout dernier clic. Le prenom et l'e-mail sont mis
+de cote dans le `sessionStorage` de l'onglet juste avant, relus au retour pour
+garder l'ecran final personnalise, puis effaces.
+
+### Tester depuis l'editeur de theme ne prouve rien
+
+Shopify **bloque les envois de formulaire dans l'editeur**. Le tunnel detecte
+`Shopify.designMode` : il montre l'ecran final sans rien envoyer et affiche un
+encart jaune qui le dit. Sans ce cas, tester le tunnel depuis l'editeur
+finissait toujours sur « We could not send that », une erreur qui n'existe pas
+sur la boutique en ligne.
+
+Pour verifier un envoi reel, il faut donc **publier la page** et l'ouvrir sur
+la boutique, pas dans l'editeur.
 
 Pas de produit, pas de panier, pas de paiement : le tunnel collecte et se
 termine sur un message. C'est volontaire.
