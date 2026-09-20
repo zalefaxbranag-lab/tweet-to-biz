@@ -5,6 +5,7 @@
 #   python3 kie.py demo --photo p -> 3 visuels avec VOTRE couple (photo requise)
 #   python3 kie.py faces          -> les 5 visages des avis et du hero (~90 cr)
 #   python3 kie.py banner         -> le fond de How It Works, desktop + mobile
+#   python3 kie.py cards          -> les 6 photos des cartes cadeaux (~108 cr)
 # La cle est demandee a l'ecran si KIE_KEY n'est pas dans l'environnement :
 # elle ne passe donc pas par l'historique du shell.
 import argparse, base64, getpass, json, mimetypes, os, sys, time
@@ -59,6 +60,29 @@ FACES = {
 BANNER = {
  "how-desktop": ("3:2", "A couple in their thirties slow-dancing barefoot in a warm living room at golden hour. They are in the right third of the frame, turned three-quarters away from camera, her cheek against his shoulder, his hand at her waist, an unposed in-between moment. Low late afternoon sun floods through a tall window behind them, rimming their hair and shoulders, dust suspended in the light. The left third is deliberately quiet: a bare warm plaster wall with the soft rectangle of window light falling across it, nothing to read. Amber and terracotta palette, cream walls, bright warm highlights that keep their detail. Not a dark scene, not low key."),
  "how-mobile":  ("1:1", "The same couple in their thirties slow-dancing barefoot in the same warm living room at golden hour, small in the lower-right corner of the frame, turned three-quarters away from camera, her cheek against his shoulder. Low sun pours in from out of frame to the right, rimming their hair. The upper two thirds of the frame are deliberately empty: a bare warm plaster wall with a soft rectangle of window light, no objects, no furniture. Amber and terracotta palette, bright warm highlights. Not a dark scene, not low key."),
+}
+
+# Les six cartes cadeaux. Contraintes lues dans la section, pas devinees :
+#   - aspect-ratio 4/5, affiche a ~200 px de large sur deux colonnes ;
+#   - un voile assombrit le bas a 82 %, la mi-hauteur a 32 %, le haut a 6 % ;
+#   - le titre est blanc, en bas a gauche, parfois sur deux lignes.
+# D'ou : sujet unique et gros dans les deux tiers du haut, bas de cadre simple
+# puisqu'il sera ecrase, et une couleur dominante par carte pour que la grille
+# se lise d'un coup d'oeil.
+OCCASION = ("Photorealistic editorial photograph, full-frame camera, 35mm lens at f/2, "
+            "natural light, realistic skin texture, shallow depth of field, subtle film "
+            "grain, warm filmic colour grade. One single unmistakable subject, large in "
+            "frame, placed in the upper two thirds; the bottom third of the image is "
+            "simple and uncluttered. Vertical 4:5. Not an illustration, not a render, no "
+            "plastic skin, no text, no confetti, no balloons, no stock-photo posing.")
+
+CARDS = {
+ "card-partner": ("4:5", "Close on a woman's hands holding out a small wrapped gift to a man sitting opposite her at a kitchen table, his hands just starting to reach for it. Both faces partly out of frame at the top. Warm amber lamplight, deep honey tones, dark wood table.", OCCASION),
+ "card-two": ("4:5", "A couple in their thirties lying back on a picnic blanket at blue hour, heads together, both looking straight up, one earphone each, faint smiles. Seen from directly above. Cool teal and deep blue evening tones.", OCCASION),
+ "card-proposal": ("4:5", "A man on one knee on a quiet coastal path at golden hour, holding up a small open ring box, a woman standing with both hands over her mouth. Seen from a respectful distance, both small but unmistakable against a blazing gold sky and sea. Strong golden backlight.", OCCASION),
+ "card-anniversary": ("4:5", "A couple in their fifties leaning in to blow out two candles on a small cake between them, faces lit from below by the flames, eyes closed, laughing. Deep red and candlelit amber, dark room behind.", OCCASION),
+ "card-firstdance": ("4:5", "A bride and groom alone in the middle of a dance floor, mid-turn, her dress catching the light, guests reduced to soft dark shapes around the edges. Hanging string lights above, large warm bokeh. Honey and champagne tones.", OCCASION),
+ "card-justbecause": ("4:5", "A couple in their late twenties in a bright ordinary kitchen on a weekday morning, mid-laugh, he is mid-spin holding her hand up, both in sweatshirts, cereal bowls forgotten on the counter. Soft grey daylight through a window, muted sage and cool white tones.", OCCASION),
 }
 
 PAGE = {
@@ -208,7 +232,7 @@ def run(k, model, slots, out, ref, dry):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", choices=["probe", "page", "demo", "vsl", "faces", "banner"])
+    ap.add_argument("command", choices=["probe", "page", "demo", "vsl", "faces", "banner", "cards"])
     ap.add_argument("--photo"); ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--out", default="./kie-out"); ap.add_argument("--only")
     ap.add_argument("--dry-run", action="store_true")
@@ -235,7 +259,7 @@ def main():
             print("\nAucun modele reconnu - colle-moi la sortie complete ci-dessus.")
         return
     slots = dict({"page": PAGE, "demo": DEMO, "vsl": VSL,
-                  "faces": FACES, "banner": BANNER}[a.command])
+                  "faces": FACES, "banner": BANNER, "cards": CARDS}[a.command])
     if a.only:
         w = {s.strip() for s in a.only.split(",")}
         slots = {x: y for x, y in slots.items() if x in w}
