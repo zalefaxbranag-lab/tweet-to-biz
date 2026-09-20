@@ -204,8 +204,22 @@ tunnel saute sur la page d'attente :
 ```
 
 Le reglage **Page after the flow** porte la destination. Vide, le tunnel
-s'arrete sur son ecran de repli — ce qui arrive aussi dans l'editeur de theme,
-ou un saut de page ferait perdre la barre laterale.
+s'arrete sur son ecran de repli.
+
+### Tester depuis l'editeur de theme
+
+Dans l'editeur, deux choses sont volontairement bridees : Shopify **bloque les
+envois de formulaire**, et le tunnel **ne saute pas de page** — on y perdrait la
+barre laterale. Cet ecran de repli est donc le seul visible depuis l'editeur.
+
+Il ne doit alors pas mentir : en mode editeur il se reecrit tout seul en
+« Answers captured. », dit ou le tunnel va en ligne, et son bouton devient
+**See the waiting page** avec le prenom deja dans l'URL. Un clic et on voit la
+suite.
+
+C'est le point qui a failli passer inapercu : tant que les pages ne sont pas
+publiees, l'editeur est le SEUL endroit ou le marchand peut tester son tunnel.
+Un ecran de repli muet le laissait croire que rien n'avait ete fait.
 
 ### Les reponses suivent, sans serveur
 

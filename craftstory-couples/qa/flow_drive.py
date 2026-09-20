@@ -164,7 +164,14 @@ with sync_playwright() as pw:
     check("rien n'est envoye", ed.evaluate("window.__submits.length + window.__posts.length"), 0)
     check("on reste sur la page du tunnel", ed.url.endswith("flow.html"), True)
     check("ecran de repli affiche", ed.is_visible("[data-cs-done]"), True)
-    check("titre de repli", ed.inner_text("[data-cs-done-h]"), "We have everything for Marie's song.")
+    check("titre remplace", ed.inner_text("[data-cs-done-h]"), "Answers captured.")
+    check("le texte dit ou ca va en ligne",
+          "goes straight to /pages/couples-preview" in ed.inner_text("[data-cs-done-sub]"), True)
+    check("bouton mis en avant", ed.eval_on_selector(".cs-flow-home", "e=>e.className"),
+          "cs-btn cs-flow-home cs-btn-primary")
+    check("libelle du bouton", ed.inner_text(".cs-flow-home"), "See the waiting page")
+    check("le bouton emporte le prenom", ed.get_attribute(".cs-flow-home", "href"),
+          "/pages/couples-preview?name=Marie")
     check("la note explique pourquoi", "Shopify blocks form submissions in the editor" in ed.inner_text("[data-cs-editnote]"), True)
     ed.screenshot(path=D + "shot-editor.png", full_page=True)
 

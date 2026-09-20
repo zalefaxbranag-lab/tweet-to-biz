@@ -601,14 +601,39 @@
       // erreur d'envoi qui n'existe pas sur la boutique en ligne.
       if (window.Shopify && window.Shopify.designMode) {
         stash(data);
-        // Pas de saut de page dans l'editeur : on y perdrait la barre laterale.
+        // Pas de saut automatique dans l'editeur : on y perdrait la barre
+        // laterale. Mais cet ecran doit alors dire exactement ce qui se passe
+        // en ligne et donner le moyen d'y aller — sinon le marchand ne peut
+        // pas voir son propre tunnel depuis le seul endroit ou il peut le
+        // tester, tant que ses pages ne sont pas publiees.
+        var next = (root.getAttribute('data-next-page') || '').trim();
         root.removeAttribute('data-next-page');
         finish(who);
+
+        var h = root.querySelector('[data-cs-done-h]');
+        var sub2 = root.querySelector('[data-cs-done-sub]');
+        if (h) h.textContent = 'Answers captured.';
+        if (sub2) {
+          sub2.textContent = next
+            ? 'On the live storefront this screen never appears: the flow goes '
+              + 'straight to ' + next + '. Tap below to see it.'
+            : 'No page is set after the flow, so this screen is what they see.';
+        }
+        var go = root.querySelector('.cs-flow-home');
+        if (go && next) {
+          go.classList.remove('cs-btn-ghost');
+          go.classList.add('cs-btn-primary');
+          go.textContent = 'See the waiting page';
+          go.setAttribute('href', next + (next.indexOf('?') > -1 ? '&' : '?')
+            + 'name=' + encodeURIComponent(who.name || ''));
+        }
+
         var note = root.querySelector('[data-cs-editnote]');
         if (note) {
-          note.textContent = 'Theme editor preview: nothing was actually sent. '
-            + 'Shopify blocks form submissions in the editor. Publish the page '
-            + 'and try it on the live storefront to receive the email.';
+          note.textContent = 'Theme editor only. Nothing was sent — Shopify '
+            + 'blocks form submissions in the editor — and the flow does not '
+            + 'jump pages here, so you keep the sidebar. Both work normally on '
+            + 'the live storefront.';
           note.hidden = false;
         }
         return;
