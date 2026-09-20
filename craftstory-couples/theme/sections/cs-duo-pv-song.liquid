@@ -219,7 +219,7 @@
     { "type": "paragraph", "content": "Structure and forms only: nothing is wired to a generator or to a payment, so most fields start empty on purpose." },
 
     { "type": "header", "content": "The wait, and the unlock" },
-    { "type": "checkbox", "id": "lock", "label": "Hide the rest of the page until the bar is full", "default": true, "info": "Never applied inside the theme editor, so you can always edit the bottom of the page." },
+    { "type": "checkbox", "id": "lock", "label": "Hide the rest of the page until the bar is full", "default": false, "info": "Off by default: the wait now happens on the flow page, and people only reach this one by tapping its button. Turn it on only if you make this page the landing point instead. Never applied inside the theme editor." },
     { "type": "range", "id": "bar_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 5, "unit": "min" },
     { "type": "paragraph", "content": "The deadline is set once per visitor and kept in their browser: reloading does not restart it, and once the page is unlocked it stays unlocked." },
     { "type": "checkbox", "id": "show_progress", "label": "Show the progress bar", "default": true },
@@ -517,7 +517,18 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       open();
     }
 
-    if (locking) document.documentElement.setAttribute('data-cs-lock', '1');
+    // Verrou eteint : l'attente a deja eu lieu sur la page du tunnel. Relancer
+    // une barre a zero ici ferait croire a la personne qu'elle doit attendre
+    // une seconde fois. On ouvre donc tout de suite et on retire la barre.
+    if (!locking) {
+      open();
+      var panel2 = root.querySelector('.cs-pvs-prog');
+      if (panel2) panel2.hidden = true;
+      if (clock) clock.hidden = true;
+      return;
+    }
+
+    document.documentElement.setAttribute('data-cs-lock', '1');
     paint();
     var id = setInterval(paint, 500);
   }

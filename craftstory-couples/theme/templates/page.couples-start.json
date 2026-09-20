@@ -1,3 +1,15 @@
+/*
+ * Le tunnel couples. Deux sections, aucun reglage ecrit ici.
+ *
+ * Ce n'est pas un oubli : Shopify reserialise ce fichier a chaque ecriture et
+ * EFFACE tout reglage dont la valeur vaut le defaut du schema. Ecrire les
+ * valeurs voulues ici ne servait donc a rien — elles disparaissaient — et ca
+ * faisait croire a un push rate a chaque verification par MD5.
+ *
+ * Les valeurs vivent dans le schema de cs-duo-flow : les titres de l'attente,
+ * le clip, la duree de la barre, les etapes, le bouton et la page qu'il ouvre.
+ * On n'ecrit ici que ce qui s'ECARTE du schema.
+ */
 {
   "sections": {
     "head": {
@@ -6,12 +18,7 @@
     },
     "flow": {
       "type": "cs-duo-flow",
-      "settings": {
-        "api_url": "",
-        "ask_photo": false,
-        "done_cta_label": "See your song preview",
-        "done_cta_link": "/pages/couples-preview"
-      }
+      "settings": {}
     }
   },
   "order": ["head", "flow"]

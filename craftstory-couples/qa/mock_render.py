@@ -353,8 +353,13 @@ def do_tag(node, scope, warn):
         return "".join(out)
     if word in ("liquid", "echo", "increment", "decrement", "render", "include", "break", "continue", "form", "#"):
         if word == "liquid":
-            return render(parse("{% " + " %}{% ".join(
-                l.strip() for l in rest.splitlines() if l.strip()) + " %}"), scope, warn)
+            # Un bloc liquid peut contenir un comment...endcomment dont chaque
+            # ligne de prose deviendrait sinon une fausse balise.
+            body2 = re.sub(r"\bcomment\b.*?\bendcomment\b", "", rest, flags=re.S)
+            lines = [l.strip() for l in body2.splitlines() if l.strip()]
+            if not lines:
+                return ""
+            return render(parse("{% " + " %}{% ".join(lines) + " %}"), scope, warn)
         return ""
     warn.add(word)
     return ""

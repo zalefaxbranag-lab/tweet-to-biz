@@ -31,6 +31,8 @@
        bouton se met a afficher une URL.
      {%- endcomment -%}
      data-next-page="{{ section.settings.next_page | escape }}"
+     data-mk-min="{{ section.settings.mk_minutes }}"
+     data-mk-stages="{{ section.settings.mk_stages | newline_to_br | replace: '<br />', '|' | escape }}"
      data-next="{{ section.settings.next_label | default: 'Next' | escape }}"
      data-last="{{ section.settings.last_label | default: 'Create our song' | escape }}"
      data-err-req="{{ section.settings.err_required | default: 'Please fill this in before continuing.' | escape }}"
@@ -192,20 +194,82 @@
       <p class="cs-flow-sub">{{ section.settings.wait_sub }}</p>
     </div>
 
-    <div class="cs-flow-done" data-cs-done hidden>
-      <span class="cs-flow-tick" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-      </span>
-      <h1 class="cs-flow-h" data-cs-done-h data-tpl="{{ section.settings.done_heading | escape }}">{{ section.settings.done_heading }}</h1>
-      <p class="cs-flow-sub" data-cs-done-sub data-tpl="{{ section.settings.done_sub | escape }}">{{ section.settings.done_sub }}</p>
+    {%- comment -%}
+      L'ecran d'attente, sur la page du tunnel. Il apparait AU CLIC sur le
+      dernier bouton, sans changement de page : c'est la suite immediate du
+      dernier champ, pas un accuse de reception.
+
+      Il ne bouge plus ensuite. La barre se remplit, et c'est seulement une
+      fois pleine qu'un bouton apparait pour ouvrir la page d'apres.
+    {%- endcomment -%}
+    <div class="cs-flow-mk" data-cs-mk hidden>
+      {%- if section.settings.mk_logo != blank -%}
+        <img class="cs-flow-mk-logo" src="{{ section.settings.mk_logo | image_url: width: 600 }}"
+             alt="{{ section.settings.mk_logo.alt | default: shop.name | escape }}"
+             style="width:{{ section.settings.mk_logo_width }}px">
+      {%- endif -%}
+
+      {%- if section.settings.mk_heading != blank -%}
+        <h1 class="cs-flow-mk-h">{{ section.settings.mk_heading }}</h1>
+      {%- endif -%}
+      {%- if section.settings.mk_sub != blank -%}
+        <p class="cs-flow-mk-sub">{{ section.settings.mk_sub }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.mk_video != blank or section.settings.mk_video_url != blank -%}
+        <div class="cs-flow-mk-stage" style="aspect-ratio:{{ section.settings.mk_ratio }}">
+          {%- if section.settings.mk_video != blank -%}
+            {%- assign mksrc = section.settings.mk_video.sources | where: 'format', 'mp4' | first -%}
+            {%- assign mkv = mksrc.url -%}
+          {%- else -%}
+            {%- assign mkv = section.settings.mk_video_url -%}
+          {%- endif -%}
+          {%- comment -%}
+            preload="none" et pas de src : la video n'est chargee qu'au moment
+            ou l'ecran s'affiche. Sinon chaque visiteur telecharge un clip
+            qu'il ne verra qu'a la fin du tunnel, ou jamais.
+          {%- endcomment -%}
+          <video class="cs-flow-mk-v" data-cs-mk-src="{{ mkv | escape }}" playsinline preload="none"
+                 {% if section.settings.mk_autoplay %}muted{% else %}controls{% endif %}
+                 {% if section.settings.mk_poster != blank %}poster="{{ section.settings.mk_poster | image_url: width: 900 }}"{% endif %}></video>
+          {%- if section.settings.mk_clock -%}
+            <span class="cs-flow-mk-clock" data-cs-mk-clock aria-hidden="true">--:--</span>
+          {%- endif -%}
+          {%- if section.settings.mk_autoplay -%}
+            <button type="button" class="cs-flow-mk-sound" data-cs-mk-sound>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 8.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              <span>{{ section.settings.mk_sound | default: 'Tap for sound' }}</span>
+            </button>
+          {%- endif -%}
+          {%- if section.settings.mk_caption != blank -%}
+            <span class="cs-flow-mk-cap">{{ section.settings.mk_caption }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="cs-flow-mk-prog">
+        <p class="cs-flow-mk-line">
+          <span data-cs-mk-stage>{{ section.settings.mk_stages | newline_to_br | split: '<br />' | first | strip }}</span>
+          <b data-cs-mk-pct>0%</b>
+        </p>
+        <span class="cs-flow-mk-bar"><i data-cs-mk-fill></i></span>
+      </div>
+
+      {%- if section.settings.mk_notice != blank -%}
+        <p class="cs-flow-mk-note" data-cs-mk-note>{{ section.settings.mk_notice }}</p>
+      {%- endif -%}
+
+      {%- comment -%} Le bouton n'existe qu'a 100 %. {%- endcomment -%}
+      <a class="cs-btn cs-btn-primary cs-btn-lg cs-flow-mk-go" data-cs-mk-go href="#" hidden>
+        <span>{{ section.settings.mk_cta | default: 'Your music video preview' }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+      </a>
+
       {%- comment -%}
         Visible seulement dans l'editeur de theme, jamais pour un visiteur :
         d'ou un texte en dur, il n'a pas a etre reglable.
       {%- endcomment -%}
       <p class="cs-flow-editnote" data-cs-editnote hidden></p>
-      {%- if section.settings.done_cta_label != blank -%}
-        <a class="cs-btn cs-btn-ghost cs-flow-home" href="{{ section.settings.done_cta_link | default: '/' }}">{{ section.settings.done_cta_label }}</a>
-      {%- endif -%}
     </div>
 
   </div>
@@ -274,18 +338,35 @@
     { "type": "text", "id": "s7_email", "label": "Email label", "default": "Your email address" },
     { "type": "text", "id": "s7_phone", "label": "Phone label", "default": "Your phone number (optional)" },
 
-    { "type": "header", "content": "Where they land next" },
-    { "type": "paragraph", "content": "Once the answers are sent, the flow goes straight to this page — no confirmation screen. Leave it empty to stop on the screen below instead." },
-    { "type": "text", "id": "next_page", "label": "Page after the flow", "default": "/pages/couples-preview" },
-
-    { "type": "header", "content": "Sending, and the fallback screen" },
+    { "type": "header", "content": "Sending" },
     { "type": "text", "id": "wait_heading", "label": "Sending heading", "default": "Sending your story…" },
     { "type": "text", "id": "wait_sub", "label": "Sending subheading", "default": "One moment." },
-    { "type": "paragraph", "content": "Only seen when the page above is empty, or inside the theme editor, where the flow must not leave the page." },
-    { "type": "text", "id": "done_heading", "label": "Done heading — {name}", "default": "We have everything for {name}'s song." },
-    { "type": "text", "id": "done_sub", "label": "Done subheading — {email}", "default": "We'll write it and email it to {email} within 48 hours." },
-    { "type": "text", "id": "done_cta_label", "label": "Done button", "default": "Back to the page" },
-    { "type": "text", "id": "done_cta_link", "label": "Done button link", "default": "/pages/couples" },
+
+    { "type": "header", "content": "While we make it" },
+    { "type": "paragraph", "content": "This is what replaces the last question the moment they tap the final button. Same page, no reload. The screen then stays put while the bar fills, and only when it reaches 100% does a button appear to open the page below." },
+    { "type": "image_picker", "id": "mk_logo", "label": "Logo or artwork" },
+    { "type": "range", "id": "mk_logo_width", "label": "Its width", "min": 60, "max": 280, "step": 10, "default": 150, "unit": "px" },
+    { "type": "text", "id": "mk_heading", "label": "Heading", "default": "Your words are becoming a music video." },
+    { "type": "text", "id": "mk_sub", "label": "Second line", "default": "Watch this while we make it.", "info": "Shown in coral, under the heading." },
+    { "type": "video", "id": "mk_video", "label": "Clip (upload MP4)" },
+    { "type": "video_url", "id": "mk_video_url", "label": "Or a clip URL", "accept": ["youtube", "vimeo"] },
+    { "type": "image_picker", "id": "mk_poster", "label": "Clip cover" },
+    { "type": "select", "id": "mk_ratio", "label": "Clip shape", "default": "4/3",
+      "options": [
+        { "value": "16/9", "label": "Wide (16:9)" },
+        { "value": "4/3", "label": "Classic (4:3)" },
+        { "value": "1/1", "label": "Square (1:1)" },
+        { "value": "4/5", "label": "Tall (4:5)" }
+      ] },
+    { "type": "checkbox", "id": "mk_autoplay", "label": "Start the clip muted as soon as the screen appears", "default": true },
+    { "type": "checkbox", "id": "mk_clock", "label": "Show the time left on the clip", "default": true },
+    { "type": "text", "id": "mk_sound", "label": "Sound button", "default": "Tap for sound" },
+    { "type": "text", "id": "mk_caption", "label": "Caption over the clip" },
+    { "type": "range", "id": "mk_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 5, "unit": "min" },
+    { "type": "textarea", "id": "mk_stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
+    { "type": "text", "id": "mk_notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears here at the end of the video." },
+    { "type": "text", "id": "mk_cta", "label": "Button once the bar is full", "default": "Your music video preview" },
+    { "type": "text", "id": "next_page", "label": "Page that button opens", "default": "/pages/couples-preview" },
 
     { "type": "header", "content": "Buttons" },
     { "type": "text", "id": "next_label", "label": "Next", "default": "Next" },
@@ -369,16 +450,53 @@
 .cs-flow-next svg{width:19px;height:19px;transition:transform .18s ease}
 .cs-flow-next:hover svg{transform:translateX(3px)}
 .cs-flow-next[disabled]{opacity:.6;pointer-events:none}
-.cs-flow-wait,.cs-flow-done{text-align:center;padding:clamp(40px,10vw,80px) 0;
-  animation:cs-flow-in .24s ease both}
+.cs-flow-wait{text-align:center;padding:clamp(40px,10vw,80px) 0;animation:cs-flow-in .24s ease both}
 .cs-flow-spin{display:inline-block;width:34px;height:34px;border-radius:50%;margin-bottom:20px;
   border:3px solid var(--cs-line);border-top-color:var(--cs-coral);animation:cs-flow-spin .8s linear infinite}
 @keyframes cs-flow-spin{to{transform:rotate(360deg)}}
 .cs-flow-tick{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;margin:0 auto 20px;
   background:var(--cs-coral);color:#fff}
 .cs-flow-tick svg{width:29px;height:29px}
-.cs-flow-home{margin-top:8px}
-@media(prefers-reduced-motion:reduce){.cs-flow-step,.cs-flow-wait,.cs-flow-done{animation:none}}
+
+/* L'ecran d'attente : la suite immediate du dernier champ. */
+.cs-flow-mk{text-align:center;padding:clamp(6px,2vw,14px) 0 clamp(20px,4vw,32px);
+  animation:cs-flow-in .26s ease both}
+.cs-flow-mk-logo{display:block;height:auto;margin:0 auto 16px}
+.cs-flow-mk-h{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.35rem,4.6vw,1.9rem);
+  line-height:1.15;letter-spacing:-.015em;color:var(--cs-ink);margin:0}
+/* La seconde ligne est coraille : c'est elle qui tient le regard pendant
+   l'attente, pas le titre. */
+.cs-flow-mk-sub{color:var(--cs-coral);font-weight:700;font-size:1rem;line-height:1.4;margin:6px 0 16px}
+.cs-flow-mk-stage{position:relative;border-radius:var(--cs-r-lg);overflow:hidden;
+  background:var(--cs-night);aspect-ratio:4/3;box-shadow:0 14px 34px rgba(28,21,51,.16)}
+.cs-flow-mk-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cs-flow-mk-clock{position:absolute;top:10px;left:10px;padding:4px 9px;border-radius:var(--cs-pill);
+  background:rgba(28,21,51,.72);color:#fff;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+/* En haut a droite, jamais en bas : le bas appartient a la legende. */
+.cs-flow-mk-sound{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border:0;border-radius:var(--cs-pill);cursor:pointer;
+  background:rgba(28,21,51,.72);color:#fff;font:inherit;font-size:.76rem;font-weight:700}
+.cs-flow-mk-sound:hover{background:rgba(28,21,51,.88)}
+.cs-flow-mk-sound svg{width:14px;height:14px}
+.cs-flow-mk-cap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-weight:800;
+  font-size:.86rem;letter-spacing:.02em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.cs-flow-mk-prog{margin-top:14px;padding:12px 14px;border-radius:var(--cs-r);
+  background:var(--cs-card);border:1px solid var(--cs-line);text-align:left}
+.cs-flow-mk-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px}
+.cs-flow-mk-line span{font-size:.86rem;color:var(--cs-ink2);line-height:1.35}
+.cs-flow-mk-line b{flex:0 0 auto;font-size:.86rem;font-weight:800;color:var(--cs-coral);
+  font-variant-numeric:tabular-nums}
+.cs-flow-mk-bar{display:block;height:7px;border-radius:var(--cs-pill);background:var(--cs-line);overflow:hidden}
+.cs-flow-mk-bar i{display:block;height:100%;width:0;border-radius:var(--cs-pill);
+  background:linear-gradient(90deg,var(--cs-coral),var(--cs-coral-deep));transition:width .5s linear}
+.cs-flow-mk-note{margin:12px 0 0;padding:11px 14px;border-radius:var(--cs-r);text-align:left;
+  background:rgba(236,91,60,.09);border:1px solid rgba(236,91,60,.26);
+  color:var(--cs-coral-deep);font-size:.87rem;font-weight:600;line-height:1.45}
+.cs-flow-mk-go{width:100%;margin-top:14px;white-space:nowrap;animation:cs-flow-in .3s ease both}
+.cs-flow-mk-go svg{width:19px;height:19px;transition:transform .18s ease}
+.cs-flow-mk-go:hover svg{transform:translateX(3px)}
+@media(prefers-reduced-motion:reduce){
+  .cs-flow-step,.cs-flow-wait,.cs-flow-mk,.cs-flow-mk-go{animation:none}}
 {% endstylesheet %}
 {% javascript %}
 (function () {
@@ -396,7 +514,7 @@
     var nextLabel = root.querySelector('[data-cs-next-label]');
     var err = root.querySelector('[data-cs-err]');
     var wait = root.querySelector('[data-cs-wait]');
-    var done = root.querySelector('[data-cs-done]');
+    var mk = root.querySelector('[data-cs-mk]');
     if (!form || !steps.length) return;
 
     // Les libelles viennent des attributs poses par Liquid : un bloc javascript
@@ -558,34 +676,98 @@
       });
     }
 
-    // Une fois l'envoi passe, on ne s'arrete plus sur un ecran de confirmation :
-    // on enchaine directement sur la page d'attente, ou le morceau se prepare.
-    // L'ecran ci-dessous ne sert plus que de repli — page d'arrivee vide, ou
-    // editeur de theme, ou l'on ne veut evidemment pas quitter la page.
-    function goNext(who) {
-      var next = (root.getAttribute('data-next-page') || '').trim();
-      if (!next) return false;
-      var q = [];
-      if (who.name) q.push('name=' + encodeURIComponent(who.name));
-      window.location.replace(next + (next.indexOf('?') > -1 ? '&' : '?') + q.join('&'));
-      return true;
-    }
+    // L'attente prend la place du dernier champ, sur la meme page : c'est la
+    // suite immediate du clic, pas un accuse de reception. Aucun changement de
+    // page ici — le seul saut viendra du bouton, une fois la barre pleine.
+    var MKEND = 'csDuoMakeAt';
 
     function finish(who) {
-      if (goNext(who)) return;
       form.hidden = true;
       root.querySelector('.cs-flow-top').hidden = true;
       wait.hidden = true;
-      done.hidden = false;
-      fill(root.querySelector('[data-cs-done-h]'), { name: who.name });
-      fill(root.querySelector('[data-cs-done-sub]'), { email: who.email, name: who.name });
+      if (!mk) return;
+      mk.hidden = false;
 
-      var home = root.querySelector('.cs-flow-home');
-      if (home && who.name) {
-        var base = home.getAttribute('data-cs-href') || home.getAttribute('href') || '';
-        home.setAttribute('data-cs-href', base);
-        home.setAttribute('href', base + (base.indexOf('?') > -1 ? '&' : '?')
-          + 'name=' + encodeURIComponent(who.name));
+      // La video n'est chargee qu'ici : inutile de la faire telecharger a
+      // quelqu'un qui abandonnera au deuxieme ecran.
+      var v = mk.querySelector('.cs-flow-mk-v');
+      if (v && !v.src) {
+        var src = v.getAttribute('data-cs-mk-src');
+        if (src) {
+          v.src = src;
+          if (v.muted) { v.play(); }
+        }
+      }
+
+      var mins = parseFloat(root.getAttribute('data-mk-min') || '5') || 5;
+      var fillBar = mk.querySelector('[data-cs-mk-fill]');
+      var pctEl = mk.querySelector('[data-cs-mk-pct]');
+      var stageEl = mk.querySelector('[data-cs-mk-stage]');
+      var clockEl = mk.querySelector('[data-cs-mk-clock]');
+      var noteEl = mk.querySelector('[data-cs-mk-note]');
+      var go = mk.querySelector('[data-cs-mk-go]');
+
+      var stages = [];
+      var raw = (root.getAttribute('data-mk-stages') || '').split('|');
+      for (var n = 0; n < raw.length; n++) { if (raw[n].trim()) stages.push(raw[n].trim()); }
+
+      // L'echeance est posee une seule fois et gardee : un rechargement ne la
+      // fait pas repartir, et une attente finie reste finie.
+      var end = 0;
+      try {
+        end = parseInt(window.localStorage.getItem(MKEND) || '0', 10);
+        if (!end || isNaN(end)) {
+          end = Date.now() + mins * 60000;
+          window.localStorage.setItem(MKEND, String(end));
+        }
+      } catch (e) { end = Date.now() + mins * 60000; }
+
+      function ready() {
+        if (!go) return;
+        var base = (root.getAttribute('data-next-page') || '').trim();
+        if (!base) return;
+        var q = who.name ? '?name=' + encodeURIComponent(who.name) : '';
+        if (q && base.indexOf('?') > -1) q = '&' + q.slice(1);
+        go.setAttribute('href', base + q);
+        go.hidden = false;
+        if (noteEl) noteEl.hidden = true;
+      }
+
+      function paint() {
+        var left = Math.max(0, (end - Date.now()) / 1000);
+        var p = Math.max(0, Math.min(100, (1 - left / (mins * 60)) * 100));
+        if (fillBar) fillBar.style.width = p + '%';
+        if (pctEl) pctEl.textContent = Math.round(p) + '%';
+        if (clockEl) {
+          // Arrondir les secondes AVANT de decouper : arrondir le reste donnait
+          // « 04:60 » quand il restait 4 min 59,7 s.
+          var whole = Math.round(left);
+          clockEl.textContent = ('0' + Math.floor(whole / 60)).slice(-2) + ':'
+            + ('0' + (whole % 60)).slice(-2);
+        }
+        if (stageEl && stages.length) {
+          var k = Math.min(stages.length - 1, Math.floor(p / (100 / stages.length)));
+          if (stageEl.textContent !== stages[k]) stageEl.textContent = stages[k];
+        }
+        if (left > 0) return;
+        clearInterval(tick);
+        ready();
+      }
+
+      paint();
+      var tick = setInterval(paint, 500);
+
+      var snd = mk.querySelector('[data-cs-mk-sound]');
+      if (snd && v) {
+        snd.addEventListener('click', function (e) {
+          e.stopPropagation();
+          v.muted = false;
+          v.play();
+          snd.hidden = true;
+        });
+        mk.querySelector('.cs-flow-mk-stage').addEventListener('click', function () {
+          if (v.paused) { v.play(); } else { v.pause(); }
+        });
       }
     }
 
@@ -598,42 +780,17 @@
 
       // Dans l'editeur de theme, Shopify bloque les envois de formulaire. Sans
       // ce cas, tester le tunnel depuis l'editeur finit TOUJOURS sur une
-      // erreur d'envoi qui n'existe pas sur la boutique en ligne.
+      // erreur d'envoi qui n'existe pas sur la boutique en ligne. L'ecran
+      // d'attente s'affiche quand meme : c'est le seul endroit ou le marchand
+      // peut le voir tant que ses pages ne sont pas publiees.
       if (window.Shopify && window.Shopify.designMode) {
         stash(data);
-        // Pas de saut automatique dans l'editeur : on y perdrait la barre
-        // laterale. Mais cet ecran doit alors dire exactement ce qui se passe
-        // en ligne et donner le moyen d'y aller — sinon le marchand ne peut
-        // pas voir son propre tunnel depuis le seul endroit ou il peut le
-        // tester, tant que ses pages ne sont pas publiees.
-        var next = (root.getAttribute('data-next-page') || '').trim();
-        root.removeAttribute('data-next-page');
         finish(who);
-
-        var h = root.querySelector('[data-cs-done-h]');
-        var sub2 = root.querySelector('[data-cs-done-sub]');
-        if (h) h.textContent = 'Answers captured.';
-        if (sub2) {
-          sub2.textContent = next
-            ? 'On the live storefront this screen never appears: the flow goes '
-              + 'straight to ' + next + '. Tap below to see it.'
-            : 'No page is set after the flow, so this screen is what they see.';
-        }
-        var go = root.querySelector('.cs-flow-home');
-        if (go && next) {
-          go.classList.remove('cs-btn-ghost');
-          go.classList.add('cs-btn-primary');
-          go.textContent = 'See the waiting page';
-          go.setAttribute('href', next + (next.indexOf('?') > -1 ? '&' : '?')
-            + 'name=' + encodeURIComponent(who.name || ''));
-        }
-
         var note = root.querySelector('[data-cs-editnote]');
         if (note) {
-          note.textContent = 'Theme editor only. Nothing was sent — Shopify '
-            + 'blocks form submissions in the editor — and the flow does not '
-            + 'jump pages here, so you keep the sidebar. Both work normally on '
-            + 'the live storefront.';
+          note.textContent = 'Theme editor only: nothing was sent, Shopify '
+            + 'blocks form submissions here. On the live storefront the answers '
+            + 'reach your inbox and this same screen appears.';
           note.hidden = false;
         }
         return;
@@ -717,8 +874,9 @@
     }
 
     // Shopify renvoie sur la page avec ?contact_posted=true quand le message
-    // est reellement parti. On reprend le prenom et l'e-mail mis de cote juste
-    // avant l'envoi pour que l'ecran final reste personnalise.
+    // est reellement parti. C'est ce retour qui affiche l'ecran d'attente : le
+    // rechargement du POST natif passe par la, et l'echeance gardee fait que
+    // la barre reprend ou elle etait plutot que de repartir de zero.
     var posted = false;
     try {
       posted = new URLSearchParams(window.location.search).get('contact_posted') === 'true';

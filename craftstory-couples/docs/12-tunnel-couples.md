@@ -115,7 +115,7 @@ python3 qa/template_check.py theme/templates/page.couples-start.json
 Puis le rendu reel, qui a trouve les deux pieges ci-dessus :
 
 ```
-python3 qa/flow_render.py theme/sections/cs-duo-flow.liquid -o flow.html
+python3 qa/build_pages.py # theme/sections/cs-duo-flow.liquid -o flow.html
 python3 qa/flow_drive.py      # 31 assertions, du premier ecran a l'envoi
 ```
 
@@ -186,46 +186,44 @@ aussi les vitesses et l'option. Un compteur a part regle ca.
 
 ## L'enchainement complet
 
-Il n'y a plus d'ecran de confirmation. Des que les reponses sont parties, le
-tunnel saute sur la page d'attente :
+Il n'y a pas d'ecran de confirmation. Le clic sur le dernier bouton remplace la
+question par **l'attente, sur la meme page**, sans rechargement :
 
 ```
 /pages/couples-start          six ecrans
-      |  envoi natif vers /contact
+      |  clic sur le dernier bouton
+      |  envoi natif vers /contact, retour en ?contact_posted=true
       v
-/pages/couples-start?contact_posted=true      Shopify confirme
-      |  saut immediat
+  L'ATTENTE prend la place du formulaire, meme page
+      |  logo, titre, seconde ligne coraille, clip, barre, encart
+      |  la barre se remplit sur mk_minutes (cinq par defaut)
       v
-/pages/couples-preview?name=Marie
-      |  VERROUILLE : on ne voit que l'attente
-      |  la barre se remplit sur bar_minutes (cinq par defaut)
+  BARRE PLEINE -> un bouton apparait
+      |  « Your music video preview »
       v
-      OUVERT : l'attente reste en haut, tout le reste apparait
+/pages/couples-preview?name=Marie      tout le long ecran
 ```
 
-Le reglage **Page after the flow** porte la destination. Vide, le tunnel
-s'arrete sur son ecran de repli.
+Cet ecran **ne bouge plus** une fois affiche. Aucun saut automatique : le seul
+changement de page vient du bouton, et seulement a 100 %.
+
+L'echeance est posee une fois par visiteur et gardee dans son navigateur :
+recharger ne fait pas repartir la barre, et une attente finie reste finie.
+
+Le clip n'est **charge qu'a cet instant** (`preload="none"`, `src` posee par le
+script) : personne ne telecharge une video qu'il ne verra qu'a la fin du
+tunnel, ou jamais.
 
 ### Tester depuis l'editeur de theme
 
-Dans l'editeur, deux choses sont volontairement bridees : Shopify **bloque les
-envois de formulaire**, et le tunnel **ne saute pas de page** — on y perdrait la
-barre laterale. Cet ecran de repli est donc le seul visible depuis l'editeur.
-
-Il ne doit alors pas mentir : en mode editeur il se reecrit tout seul en
-« Answers captured. », dit ou le tunnel va en ligne, et son bouton devient
-**See the waiting page** avec le prenom deja dans l'URL. Un clic et on voit la
-suite.
-
-C'est le point qui a failli passer inapercu : tant que les pages ne sont pas
-publiees, l'editeur est le SEUL endroit ou le marchand peut tester son tunnel.
-Un ecran de repli muet le laissait croire que rien n'avait ete fait.
+Shopify **bloque les envois de formulaire** dans l'editeur. L'attente s'affiche
+quand meme — c'est le seul endroit ou le marchand peut la voir tant que ses
+pages ne sont pas publiees — avec un encart qui dit que rien n'est parti.
 
 ### Les reponses suivent, sans serveur
 
 Le tunnel met **toutes** ses reponses de cote dans le `sessionStorage` de
-l'onglet avant d'envoyer. La page d'attente les relit pour composer ses
-titres :
+l'onglet avant d'envoyer. La page d'apres les relit pour composer ses titres :
 
 | Gabarit | Devient |
 |---|---|
@@ -243,28 +241,20 @@ D'ou `Marie's Unique Music Video` et `Soul / R&B melody, written for Marie
 Quand une reponse manque, le gabarit **et ce qui l'entoure** sont retires : pas
 de `('s song` ni de parenthese vide.
 
-## Le verrou
+## Le verrou de la page d'apres, eteint par defaut
 
-`cs-duo-pv-song` est le seul a decider. Sa feuille de style masque les sections
-qui suivent tant que `html[data-cs-lock="1"]` :
+`cs-duo-pv-song` sait masquer tout ce qui suit son bloc d'attente, tant que
+`html[data-cs-lock="1"]`. **Le reglage est eteint**, parce que l'attente a lieu
+sur la page du tunnel et qu'on n'arrive ici qu'en cliquant son bouton.
 
-```css
-html[data-cs-lock="1"] .cs-pvs-after,
-html[data-cs-lock="1"] .cs-duo-pvo,
-html[data-cs-lock="1"] .cs-duo-rev,
-html[data-cs-lock="1"] .cs-duo-faq,
-html[data-cs-lock="1"] .cs-duo-help{display:none !important}
-```
+Verrou eteint, la page s'ouvre d'entree **et retire sa barre** : relancer un
+rebours a zero ferait croire a la personne qu'elle doit attendre une deuxieme
+fois.
 
-Cette feuille n'est chargee que si la section est sur la page : pas de section
-d'attente, pas de verrou. Et **jamais dans l'editeur de theme**, sinon le
-marchand ne pourrait ni voir ni modifier le bas de sa page.
+On l'allume seulement si l'on fait de cette page le point d'arrivee direct.
+Jamais dans l'editeur de theme, sinon le bas de la page serait inmodifiable.
 
-L'echeance d'ouverture est posee **une seule fois par visiteur** et gardee dans
-son navigateur : recharger ne la fait pas repartir, et une page ouverte reste
-ouverte.
-
-## Le haut de la page, et pourquoi la barre ne triche pas
+## Le haut de l'attente
 
 Le haut reprend la page du concurrent : un emplacement pour ton logo ou ta
 creation, le titre en serif sombre, **la seconde ligne en coraille**, le clip,

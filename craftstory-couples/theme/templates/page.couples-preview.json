@@ -64,7 +64,7 @@
         "r3"
       ],
       "settings": {
-        "lock": true,
+        "lock": false,
         "bar_minutes": 5,
         "wait_heading": "Your words are becoming a music video.",
         "wait_sub": "Watch this while we make it.",

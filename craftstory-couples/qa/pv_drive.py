@@ -11,9 +11,12 @@ from playwright.sync_api import sync_playwright
 
 D = "/tmp/claude-0/-home-user-tweet-to-biz/0f745d77-01e7-52b5-af58-7952d84aecf6/scratchpad/flow/"
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+from build_pages import main as _build
+_build()
 from serve import start as _serve
 _srv, _base = _serve(D)
 URL = _base + "/preview.html"
+URL_LOCKED = _base + "/preview-locked.html"
 ok = True
 
 
@@ -46,14 +49,14 @@ with sync_playwright() as pw:
                            args=["--autoplay-policy=no-user-gesture-required"])
     errs = []
 
-    def page(offset_ms):
+    def page(offset_ms, url=None):
         ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
         ctx.add_init_script(boot(offset_ms))
         pg = ctx.new_page()
         pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "404" not in m.text else None)
         pg.on("response", lambda r: errs.append("HTTP %d %s" % (r.status, r.url)) if r.status >= 400 else None)
-        pg.goto(URL)
+        pg.goto(url or URL)
         pg.wait_for_timeout(700)
         return pg
 
@@ -61,15 +64,16 @@ with sync_playwright() as pw:
               (".cs-duo-rev", "les avis"), (".cs-duo-faq", "les questions"),
               (".cs-duo-help", "l'aide"))
 
-    print("\n--- VERROUILLE, ARRIVEE FRAICHE ---")
+    print("\n--- TELLE QU'ELLE EST CONFIGUREE : OUVERTE ---")
+    # On n'y arrive qu'en cliquant le bouton du tunnel, donc rien n'est masque.
     p = page(None)
-    check("attribut de verrou", p.get_attribute("html", "data-cs-lock"), "1")
-    check("l'attente est visible", p.is_visible(".cs-pvs-top"), True)
+    check("ouverte d'entree", p.get_attribute("html", "data-cs-lock"), "0")
     for sel, name in HIDDEN:
-        check(name + " est masque", p.is_hidden(sel), True)
-    check("encart d'attente visible", p.is_visible(".cs-pvs-notice"), True)
-    check("encart pret masque", p.is_hidden("[data-cs-ready]"), True)
-    check("la barre demarre a zero", p.inner_text("[data-cs-pct]") in ("0%", "1%"), True)
+        check(name + " est visible", p.is_visible(sel), True)
+    check("pas de barre qui repart de zero", p.is_hidden(".cs-pvs-prog"), True)
+    check("pas d'horloge sur le clip", p.is_hidden("[data-cs-clock]"), True)
+    check("encart d'attente masque", p.is_hidden(".cs-pvs-notice"), True)
+    check("encart pret visible", p.is_visible("[data-cs-ready]"), True)
 
     print("\n--- LES REPONSES DANS LES MOTS ---")
     check("titre de l'apercu", p.eval_on_selector(".cs-pvs-title", "e=>e.textContent"),
@@ -85,28 +89,24 @@ with sync_playwright() as pw:
     check("etiquette de lecture", p.eval_on_selector(".cs-pvs-tap", "e=>e.textContent"),
           "Tap to play preview")
 
-    print("\n--- A MI-PARCOURS : L'ECHEANCE NE REPART PAS ---")
-    p = page(30000)   # 30 s restantes sur une barre d'une minute
-    pct = int(p.inner_text("[data-cs-pct]").rstrip("%"))
-    check("environ la moitie", 45 <= pct <= 55, True)
-    print("   pourcentage:", pct, "% | etape:", p.inner_text("[data-cs-stage]"),
-          "| horloge:", p.inner_text("[data-cs-clock]"))
-    check("toujours verrouille", p.get_attribute("html", "data-cs-lock"), "1")
-    p.reload(); p.wait_for_timeout(700)
-    again = int(p.inner_text("[data-cs-pct]").rstrip("%"))
-    check("le rechargement ne remet pas a zero", again >= pct, True)
-
-    print("\n--- OUVERT ---")
-    p = page(-1000)   # echeance deja passee
-    p.wait_for_timeout(900)
-    check("le verrou est leve", p.get_attribute("html", "data-cs-lock"), "0")
-    check("l'attente reste en haut", p.is_visible(".cs-pvs-top"), True)
-    check("le clip est toujours la", p.is_visible(".cs-pvs-stage"), True)
+    print("\n--- LE REGLAGE DE VERROU, QUAND ON L'ALLUME ---")
+    lk = page(150000, URL_LOCKED)   # la moitie de bar_minutes, cinq par defaut
+    check("verrou pose", lk.get_attribute("html", "data-cs-lock"), "1")
     for sel, name in HIDDEN:
-        check(name + " apparait", p.is_visible(sel), True)
-    check("encart d'attente masque", p.is_hidden(".cs-pvs-notice"), True)
-    check("encart pret visible", p.is_visible("[data-cs-ready]"), True)
-    check("barre pleine", p.inner_text("[data-cs-pct]"), "100%")
+        check(name + " est masque", lk.is_hidden(sel), True)
+    check("l'attente reste visible", lk.is_visible(".cs-pvs-top"), True)
+    pct = int(lk.inner_text("[data-cs-pct]").rstrip("%"))
+    check("la barre est a la moitie", 45 <= pct <= 55, True)
+    lk.reload(); lk.wait_for_timeout(700)
+    check("le rechargement ne remet pas a zero",
+          int(lk.inner_text("[data-cs-pct]").rstrip("%")) >= pct, True)
+
+    lk2 = page(-1000, URL_LOCKED)
+    lk2.wait_for_timeout(900)
+    check("echeance passee : le verrou tombe", lk2.get_attribute("html", "data-cs-lock"), "0")
+    for sel, name in HIDDEN:
+        check(name + " apparait", lk2.is_visible(sel), True)
+    check("encart pret visible", lk2.is_visible("[data-cs-ready]"), True)
 
     print("\n--- L'APERCU EN MP4 ---")
     p.click(".cs-pvs-cover")

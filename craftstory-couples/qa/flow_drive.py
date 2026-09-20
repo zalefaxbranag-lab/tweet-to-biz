@@ -10,6 +10,8 @@ from playwright.sync_api import sync_playwright
 
 D = "/tmp/claude-0/-home-user-tweet-to-biz/0f745d77-01e7-52b5-af58-7952d84aecf6/scratchpad/flow/"
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+from build_pages import main as _build
+_build()
 from serve import start as _serve
 _srv, _base = _serve(D)
 BASE = _base + "/"
@@ -24,9 +26,14 @@ def check(label, got, want):
           + ("" if good else f"  (attendu {want!r})"))
 
 
+# Ce que le tunnel met de cote : un nouvel onglet n'en herite pas, donc les
+# phases qui simulent un retour doivent l'avoir pose avant le chargement.
+STASH = """try{sessionStorage.setItem('csDuoFlow', JSON.stringify({their_name:'Marie', your_name:'Thomas', relationship:'Wife', genre:'Pop', voice:'Duet', language:'French', email:'thomas@exemple.com'}));}catch(e){}"""
+
 # On intercepte l'envoi natif au lieu de le laisser naviguer, et on garde les
 # champs pour les verifier. fetch est bouchonne pour la branche api_url.
 STUB = """
+try{localStorage.removeItem('csDuoMakeAt');}catch(e){}
 window.__posts = [];
 window.__submits = [];
 HTMLFormElement.prototype.submit = function () {
@@ -134,7 +141,7 @@ with sync_playwright() as pw:
     check("le message vide est omis", "Message:" not in body, True)
     check("le telephone vide est omis", "Phone:" not in body, True)
     check("l'e-mail n'est pas duplique", body.count("thomas@exemple.com"), 0)
-    check("ecran d'attente pendant la navigation", pg.is_visible("[data-cs-wait]"), True)
+    check("ecran d'envoi pendant la navigation", pg.is_visible("[data-cs-wait]"), True)
 
     print("\n--- CE QUI EST MIS DE COTE POUR LA PAGE D'APRES ---")
     stash = pg.evaluate("JSON.parse(sessionStorage.getItem('csDuoFlow'))")
@@ -144,12 +151,55 @@ with sync_playwright() as pw:
         check("l'onglet garde " + k, stash.get(k), v)
     check("le message vide n'y est pas", "message" in stash, False)
 
-    print("\n--- RETOUR DE SHOPIFY : ON ENCHAINE ---")
+    print("\n--- L'ATTENTE, SUR LA MEME PAGE ---")
     pg.goto(BASE + "flow.html?contact_posted=true")
-    pg.wait_for_timeout(500)
-    check("saut vers la page d'attente", pg.url.endswith("/pages/couples-preview?name=Marie"), True)
-    check("les reponses survivent au saut",
-          pg.evaluate("(JSON.parse(sessionStorage.getItem('csDuoFlow'))||{}).their_name"), "Marie")
+    pg.wait_for_timeout(600)
+    check("on ne quitte pas la page", pg.url.endswith("flow.html?contact_posted=true"), True)
+    check("l'attente est affichee", pg.is_visible("[data-cs-mk]"), True)
+    check("le formulaire a disparu", pg.is_hidden(".cs-flow-form"), True)
+    check("la barre du tunnel a disparu", pg.is_hidden(".cs-flow-top"), True)
+    check("titre", pg.inner_text(".cs-flow-mk-h"), "Your words are becoming a music video.")
+    check("seconde ligne en coraille",
+          pg.eval_on_selector(".cs-flow-mk-sub", "e=>getComputedStyle(e).color"), "rgb(236, 91, 60)")
+    check("le clip n'est charge qu'a cet instant",
+          pg.eval_on_selector(".cs-flow-mk-v", "e=>e.getAttribute('src')"), "/clip.webm")
+    check("il demarre muet", pg.eval_on_selector(".cs-flow-mk-v", "e=>e.muted"), True)
+    check("encart visible", pg.is_visible("[data-cs-mk-note]"), True)
+    check("pas encore de bouton", pg.is_hidden("[data-cs-mk-go]"), True)
+    print("   etape:", pg.inner_text("[data-cs-mk-stage]"), "| barre:", pg.inner_text("[data-cs-mk-pct]"),
+          "| horloge:", pg.inner_text("[data-cs-mk-clock]"))
+
+    print("\n--- A MI-PARCOURS, PUIS A 100 % ---")
+    mid = ctx.new_page()
+    mid.add_init_script("try{localStorage.setItem('csDuoMakeAt', String(Date.now()+150000));}catch(e){}\n" + STASH)
+    mid.goto(BASE + "flow.html?contact_posted=true")
+    mid.wait_for_timeout(700)
+    pct = int(mid.inner_text("[data-cs-mk-pct]").rstrip("%"))
+    check("la moitie de la barre", 45 <= pct <= 55, True)
+    check("toujours pas de bouton", mid.is_hidden("[data-cs-mk-go]"), True)
+    mid.reload(); mid.wait_for_timeout(700)
+    check("le rechargement ne remet pas la barre a zero",
+          int(mid.inner_text("[data-cs-mk-pct]").rstrip("%")) >= pct, True)
+
+    full = ctx.new_page()
+    full.add_init_script("try{localStorage.setItem('csDuoMakeAt', String(Date.now()-500));}catch(e){}\n" + STASH)
+    full.goto(BASE + "flow.html?contact_posted=true")
+    full.wait_for_timeout(900)
+    check("barre pleine", full.inner_text("[data-cs-mk-pct]"), "100%")
+    check("le bouton apparait", full.is_visible("[data-cs-mk-go]"), True)
+    check("l'encart cede la place", full.is_hidden("[data-cs-mk-note]"), True)
+    check("libelle du bouton", full.inner_text("[data-cs-mk-go]").strip(), "Your music video preview")
+    check("il emporte le prenom", full.get_attribute("[data-cs-mk-go]", "href"),
+          "/pages/couples-preview?name=Marie")
+    check("l'attente reste en place", full.is_visible(".cs-flow-mk-stage"), True)
+
+    print("\n--- LE BOUTON MENE A LA PAGE D'APRES ---")
+    full.click("[data-cs-mk-go]")
+    full.wait_for_load_state()
+    full.wait_for_timeout(700)
+    check("on y est", full.url.endswith("/pages/couples-preview?name=Marie"), True)
+    check("la page est ouverte d'entree", full.get_attribute("html", "data-cs-lock"), "0")
+    check("le titre reprend le prenom", full.inner_text(".cs-pvs-title"), "Marie's Unique Music Video")
 
     print("\n--- DANS L'EDITEUR DE THEME : PAS DE SAUT DE PAGE ---")
     ed = ctx.new_page()
@@ -163,16 +213,9 @@ with sync_playwright() as pw:
         ed.wait_for_timeout(200)
     check("rien n'est envoye", ed.evaluate("window.__submits.length + window.__posts.length"), 0)
     check("on reste sur la page du tunnel", ed.url.endswith("flow.html"), True)
-    check("ecran de repli affiche", ed.is_visible("[data-cs-done]"), True)
-    check("titre remplace", ed.inner_text("[data-cs-done-h]"), "Answers captured.")
-    check("le texte dit ou ca va en ligne",
-          "goes straight to /pages/couples-preview" in ed.inner_text("[data-cs-done-sub]"), True)
-    check("bouton mis en avant", ed.eval_on_selector(".cs-flow-home", "e=>e.className"),
-          "cs-btn cs-flow-home cs-btn-primary")
-    check("libelle du bouton", ed.inner_text(".cs-flow-home"), "See the waiting page")
-    check("le bouton emporte le prenom", ed.get_attribute(".cs-flow-home", "href"),
-          "/pages/couples-preview?name=Marie")
-    check("la note explique pourquoi", "Shopify blocks form submissions in the editor" in ed.inner_text("[data-cs-editnote]"), True)
+    check("l'attente s'affiche quand meme", ed.is_visible("[data-cs-mk]"), True)
+    check("la note dit pourquoi",
+          "nothing was sent" in ed.inner_text("[data-cs-editnote]"), True)
     ed.screenshot(path=D + "shot-editor.png", full_page=True)
 
     check("aucune erreur console", errs, [])
