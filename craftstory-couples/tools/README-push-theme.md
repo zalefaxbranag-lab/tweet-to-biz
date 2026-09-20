@@ -183,3 +183,23 @@ reglage** : le defaut du schema s'applique.
 ```
 python3 qa/template_check.py theme/templates/page.couples.json
 ```
+
+## Les prompts images : une seule source
+
+`docs/11-prompts-images.md` n'est pas ecrit a la main. Il est **genere depuis
+`tools/kie.py`**, qui assemble scene + style + negatif exactement comme il les
+envoie a l'API. Recopier les prompts a la main les ferait diverger du script au
+premier ajustement.
+
+Pour le regenerer apres avoir touche a un prompt :
+
+```
+cd tools && python3 - <<'PY'
+src = open("kie.py", encoding="utf-8").read().replace("\nmain()\n", "\n")
+ns = {}; exec(compile(src, "kie.py", "exec"), ns)
+# ... voir l'historique git du fichier docs/11-prompts-images.md
+PY
+```
+
+Le remplacement de `main()` est necessaire : `kie.py` l'appelle en fin de
+fichier, donc un import nu demanderait la cle et lancerait une generation.
