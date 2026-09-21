@@ -394,7 +394,7 @@
         "q1": {
           "type": "qa",
           "settings": {
-            "q": "What makes this song special?",
+            "q": "What makes this music video special ?",
             "a": "<p>It is written from scratch for the two of you. Your names, your places and the moments only you two know go into the lyrics, and the music video is animated around the same story.</p>",
             "open": false,
             "delivery_line": false,
@@ -405,7 +405,7 @@
         "q2": {
           "type": "qa",
           "settings": {
-            "q": "How long until I receive the song?",
+            "q": "How long until I receive the song ?",
             "a": "<p>Your free preview arrives within minutes. The finished song and music video follow within 48 hours.</p>",
             "open": false,
             "delivery_line": false,
@@ -416,7 +416,7 @@
         "q3": {
           "type": "qa",
           "settings": {
-            "q": "What if I need it faster?",
+            "q": "What if I need it faster ?",
             "a": "<p>Tell us the date when you order and we will say straight away whether we can make it. If we cannot, you pay nothing.</p>",
             "open": false,
             "delivery_line": false,
@@ -427,7 +427,7 @@
         "q4": {
           "type": "qa",
           "settings": {
-            "q": "What occasions work best?",
+            "q": "What occasions work best ?",
             "a": "<p>Weddings, proposals, anniversaries, the wedding morning, a long stretch apart, or no occasion at all. Anything with a story behind it works.</p>",
             "open": false,
             "delivery_line": false,
@@ -438,7 +438,7 @@
         "q5": {
           "type": "qa",
           "settings": {
-            "q": "How do you create the song?",
+            "q": "How do you create the music video ?",
             "a": "<p>You answer five plain questions about the two of you. We turn those answers into lyrics, record the song in the genre you pick, and animate a music video to match.</p>",
             "open": false,
             "delivery_line": false,
@@ -449,7 +449,7 @@
         "q6": {
           "type": "qa",
           "settings": {
-            "q": "How do I get my song?",
+            "q": "How do I get my music video ?",
             "a": "<p>By email, as a private link you can open on any phone or computer. Nothing is shipped and nothing can get lost in the post.</p>",
             "open": false,
             "delivery_line": false,
@@ -460,7 +460,7 @@
         "q7": {
           "type": "qa",
           "settings": {
-            "q": "Can I play it at a party or event?",
+            "q": "Can I play it at a party or event ?",
             "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car. Play it wherever you want, as often as you want.</p>",
             "open": false,
             "delivery_line": false,
@@ -501,7 +501,7 @@
     "help": {
       "type": "cs-duo-help",
       "settings": {
-        "heading": "Still Have",
+        "heading": "Still Have Questions ?",
         "highlight": "Questions?",
         "intro": "Our friendly team is here to help. Email us anytime at",
         "email": "Sarah@craftstory.co",

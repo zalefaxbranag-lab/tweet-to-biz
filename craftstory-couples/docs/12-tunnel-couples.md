@@ -316,3 +316,66 @@ L'encart coraille porte deux lignes : la phrase, puis **DON'T LEAVE THIS PAGE!**
 en capitales, separee par un filet. C'est elle qui evite qu'on quitte la page
 pendant que la barre tourne. Reglable, et elle disparait avec l'encart des que
 le bouton apparait.
+
+---
+
+# Le thème à publier : v32
+
+`CraftStory v32 LIVE + couples (a publier)` — id **208344875339**, non publié.
+
+## Pourquoi une duplication et pas une mise a jour du brouillon
+
+Le brouillon (`v31 + page couples`) datait du 19 septembre. Entre-temps **une
+seule chose avait change sur le live** : `config/settings_data.json`, le 21 a
+14:53, parce que **Microsoft Clarity** avait ete installe. Publier le brouillon
+tel quel aurait donc **arrete le suivi Clarity** sans que rien ne le signale.
+
+Rapatrier ce fichier dans le brouillon demandait de le retranscrire a la main :
+191 reglages qui portent les couleurs, les polices et le logo de TOUT le site.
+Essai fait, **le MD5 l'a refuse** (11263 octets au lieu de 9096). Une erreur sur
+une couleur ou une police y passerait inapercue et casserait la boutique.
+
+D'ou le choix : **`themeDuplicate` sur le live**. Shopify recopie lui-meme ses
+507 fichiers, a l'octet, `settings_data.json` compris. Je n'ecris plus que les
+fichiers que j'ai ecrits, verifiables au MD5 contre mes copies locales.
+
+## Ce qui a ete pousse sur v32
+
+| Quoi | Combien | Verification |
+|---|---|---|
+| Sections du tunnel et des pages | 14 | MD5 identique a mes copies locales |
+| Sections retouchees mais inutilisees (`demos`, `trust`, `vsl`) | 3 | MD5 identique |
+| `templates/page.couples-preview.json` | 1 | **MD5 identique au brouillon** |
+| `templates/page.couples-start.json` | 1 | reglages vides des deux cotes |
+| `templates/page.couples.json` | 1 | verifie **valeur par valeur** |
+
+Le dernier ne peut pas se verifier au MD5 : Shopify normalise un gabarit quand
+l'**editeur** enregistre, pas quand l'API ecrit. Sa verification est donc
+semantique — et elle a servi : l'editeur avait change sept questions de la FAQ
+(« song » → « music video », espaces avant les `?`) et le titre de la section
+aide, que ma copie locale avait perdus (`'Still Have'` tronque). Les valeurs du
+brouillon ont ete reportees, puis reverifiees une a une.
+
+## Ce qui n'a PAS ete repris
+
+`cs-duo-cta`, `cs-duo-order`, `cs-duo-popup`, `cs-duo-totop` et
+`snippets/cs-duo-probe.liquid`. Aucun gabarit ne les reference, et les quatre
+premiers sont precisement les elements que le proprietaire avait demande de
+retirer. Ils restent sur l'ancien brouillon si besoin.
+
+## La preuve
+
+- 25 fichiers critiques du live (layout, reglages, en-tete, pied de page, page
+  d'accueil, panier, les 9 gabarits produits, les assets `cs-*` du tunnel
+  enfants) : **empreintes identiques au live**, aucune absente.
+- 14 sections couples : **empreintes identiques aux copies locales**.
+- 79 verifications sur le tunnel, 37 sur la page d'apres : **tout passe**.
+
+## Ce qui reste a faire, par le proprietaire
+
+1. Publier **v32** : Boutique en ligne → Themes → Publier.
+2. Passer les trois pages en **Visible** : `couples`, `couples-start`,
+   `couples-preview`. Elles sont encore masquees, et une page masquee renvoie
+   404 quel que soit le theme publie.
+
+Dans cet ordre : publiees avant le theme, elles s'afficheraient vides.
