@@ -426,6 +426,17 @@ retirer. Ils restent sur l'ancien brouillon si besoin.
 - 14 sections couples : **empreintes identiques aux copies locales**.
 - 79 verifications sur le tunnel, 37 sur la page d'apres : **tout passe**.
 
+## Les six emplacements de plans, prets dans l'editeur
+
+`page.couples-preview.json` porte **six blocs Beat** avec leurs paroles deja
+ecrites, au-dessus des blocs Face. Il reste a chacun un fichier a deposer, et
+un champ **Song file URL** au niveau de la section : le montage tourne des que
+les sept fichiers sont la.
+
+Le gabarit est arrive **a l'octet** cette fois (10 240, MD5 identique) parce
+qu'on n'y a ecrit que ce qui s'ECARTE du schema. Tout le reste vit dans le
+schema de la section, ou Shopify ne peut pas l'effacer.
+
 ## Ce qui reste a faire, par le proprietaire
 
 1. Publier **v32** : Boutique en ligne → Themes → Publier.

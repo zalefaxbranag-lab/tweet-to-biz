@@ -7,6 +7,46 @@
     "song": {
       "type": "cs-duo-pv-song",
       "blocks": {
+        "b1": {
+          "type": "beat",
+          "settings": {
+            "line": "Before {name}, the days all looked the same"
+          }
+        },
+        "b2": {
+          "type": "beat",
+          "settings": {
+            "line": "Then one evening that was never meant to matter",
+            "drift": "out"
+          }
+        },
+        "b3": {
+          "type": "beat",
+          "settings": {
+            "line": "And nothing was ordinary again",
+            "drift": "left"
+          }
+        },
+        "b4": {
+          "type": "beat",
+          "settings": {
+            "line": "Through the year that tried to break us"
+          }
+        },
+        "b5": {
+          "type": "beat",
+          "settings": {
+            "line": "Still here. Still choosing you.",
+            "drift": "right"
+          }
+        },
+        "b6": {
+          "type": "beat",
+          "settings": {
+            "line": "{name}, this one is yours.",
+            "drift": "out"
+          }
+        },
         "f1": {
           "type": "face",
           "settings": {}
@@ -54,6 +94,12 @@
         }
       },
       "block_order": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
         "f1",
         "f2",
         "f3",
