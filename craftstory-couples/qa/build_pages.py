@@ -93,6 +93,16 @@ def main():
     json.dump(data, io.open(bare, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     render(bare, "flow-bare.html")
 
+    # Une variante avec api_url rempli ET sans clip : c'est la seule qui montre
+    # la branche JSON du tunnel, et leur photo qui prend la place du cadre vide.
+    api = os.path.join(OUT, "flow-api.json")
+    data = json.load(io.open(flow, encoding="utf-8"))
+    for k in ("mk_video_url", "mk_caption"):
+        data["sections"][0]["settings"].pop(k, None)
+    data["sections"][0]["settings"]["api_url"] = "/fake-api"
+    json.dump(data, io.open(api, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(api, "flow-api.html")
+
     # Une variante avec le verrou allume. Le reglage existe toujours meme s'il
     # est eteint par defaut, donc il doit rester teste.
     mock = os.path.join(OUT, "preview.json")

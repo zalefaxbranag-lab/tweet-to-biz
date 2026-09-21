@@ -4,7 +4,7 @@ Page dediee, ecrans instantanes. Un seul chargement : `/pages/couples-start`
 charge la page une fois, puis chaque ecran s'echange dans le DOM. L'etat reste
 en memoire, rien n'est stocke.
 
-## Les six ecrans (sept avec la photo)
+## Les sept ecrans
 
 | # | Ecran | Champs | Obligatoire |
 |---|---|---|---|
@@ -13,12 +13,66 @@ en memoire, rien n'est stocke.
 | 3 | Ce qui la/le rend unique | qualites (texte libre) | oui |
 | 4 | Votre histoire | souvenirs (texte libre) | oui |
 | 5 | Un mot de toi | message (texte libre) | **non** |
-| 6 | La photo | fichier + consentement | reglage, eteint |
+| 6 | **La photo** | une ou deux images + consentement | **oui** |
 | 7 | Contact | langue, e-mail, telephone | e-mail oui |
 
-L'ecran 6 est derriere la case **Ask for a photo**, eteinte par defaut : le
-formulaire de contact de Shopify ne sait pas porter de fichier. On l'allume le
-jour ou l'API existe.
+## L'ecran photo
+
+Il n'est plus derriere un reglage, et il n'est plus optionnel : **sans visage,
+il n'y a pas de preview a montrer**. C'est la meme place que dans le tunnel
+enfants — juste avant le contact, apres l'histoire, quand la personne a deja
+tout raconte et n'abandonne plus.
+
+Un seul champ, `multiple`, **une ou deux images** : une photo du couple, ou une
+de chacun. Les deux se valent comme reference — le modele accepte plusieurs
+images en entree, et deux visages separes donnent meme une meilleure
+ressemblance qu'une photo de groupe. Au-dela de deux, les deux premieres sont
+gardees et un message le dit.
+
+### Reduites dans le navigateur, envoyees en dataURL
+
+Une photo de telephone pese 4 Mo. Chaque fichier passe par un `canvas` :
+**1280 px sur le grand cote, JPEG qualite 0,82**, forme conservee. Puis
+`toDataURL`, et le dataURL part **dans le meme JSON que les reponses**
+(`photo`, `photo2`, `photo_count`).
+
+Pas de `multipart` : c'est exactement le format que le worker des enfants
+recoit deja (`cs-generate.js` envoie un dataURL dans un POST JSON). Rien a
+ecrire de son cote.
+
+### Obligatoire, mais jamais redemande
+
+Le champ porte `data-req`, et le script le lui **retire des qu'une photo est
+gardee**. Il faut ce detour : apres un rechargement un champ fichier est
+toujours vide, alors que la photo, elle, est encore la. Sans ca l'ecran
+redemanderait un fichier deja fourni.
+
+Les photos sont posees dans le `sessionStorage` (`csDuoPhotos`) **des le
+depot**, pas seulement a l'envoi : un rechargement au milieu du tunnel, ou le
+retour du POST natif, ne fait pas recommencer. Le quota peut refuser deux
+images ; ce n'est pas bloquant, elles partent quand meme avec l'envoi.
+
+### Deux messages d'erreur a elles
+
+« Remplis ce champ » ne veut rien dire devant un depot de photo ou une case a
+cocher. `valid()` lit un `data-req-msg` par champ :
+
+- sans photo → « Add at least one photo to continue. »
+- consentement non coche → « Please tick the box so we can use your photo. »
+
+### Sans `api_url`, la photo ne peut pas partir
+
+Un formulaire de contact Shopify **ne sait pas porter de fichier**. On ne fait
+pas semblant : le message qui arrive dans la boite mail dit combien de photos
+ont ete deposees, qu'elles sont restees dans le navigateur du visiteur, et quoi
+remplir pour les recevoir. Le reglage **API URL** est le seul chemin.
+
+### Leur photo prend la place du cadre vide
+
+Sur l'ecran d'attente, si aucun clip n'est charge, leur premiere photo remplit
+le cadre (assombrie, en `object-fit:cover`). L'attente devient la leur au lieu
+d'un rectangle vide, et ca leur prouve d'un coup d'oeil que la photo est bien
+partie avec le reste.
 
 ## « Other » et son champ libre
 
@@ -38,9 +92,10 @@ n'apparait plus comme une ligne vide.
 
 ## Ou partent les reponses
 
-1. **`api_url` rempli** → `POST` JSON vers cet endpoint (ou `multipart` si une
-   photo accompagne la demande). C'est la porte pour brancher la generation :
-   un champ a remplir dans l'editeur, rien a recoder.
+1. **`api_url` rempli** → un seul `POST` JSON vers cet endpoint, reponses et
+   photos ensemble (`photo`, `photo2` en dataURL, `photo_count`). C'est la
+   porte pour brancher la generation : un champ a remplir dans l'editeur, rien
+   a recoder.
 2. **`api_url` vide** → formulaire de contact natif de Shopify, donc la boite
    mail de la boutique. Aucun worker, aucune application.
 

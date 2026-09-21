@@ -10,9 +10,12 @@
       2. sinon -> le formulaire de contact natif de Shopify, donc ta boite
          mail. Aucun worker, aucune app, ca marche tout de suite.
 
-    L'ecran photo est derriere un reglage, eteint par defaut : le formulaire
-    de contact ne sait pas porter de fichier. On l'allume le jour ou api_url
-    existe.
+    L'ecran photo (6) est obligatoire : sans visage, il n'y a pas de preview
+    a montrer. Le formulaire de contact de Shopify ne sait pas porter de
+    fichier, donc les photos sont reduites dans le navigateur et envoyees en
+    dataURL avec le reste du JSON — exactement ce que le worker des enfants
+    recoit deja. Sans api_url elles restent dans l'onglet du visiteur, et le
+    message qui arrive dans la boite mail le dit.
   endcomment
 
   assign rel = section.settings.rel_options | newline_to_br | split: '<br />'
@@ -37,7 +40,10 @@
      data-last="{{ section.settings.last_label | default: 'Create our song' | escape }}"
      data-err-req="{{ section.settings.err_required | default: 'Please fill this in before continuing.' | escape }}"
      data-err-email="{{ section.settings.err_email | default: 'That email address does not look right.' | escape }}"
-     data-err-send="{{ section.settings.err_send | default: 'We could not send that. Check your connection and try again.' | escape }}">
+     data-err-send="{{ section.settings.err_send | default: 'We could not send that. Check your connection and try again.' | escape }}"
+     data-ph-one="{{ section.settings.s6_one | default: '1 photo added — tap to change' | escape }}"
+     data-ph-two="{{ section.settings.s6_two | default: '2 photos added — tap to change' | escape }}"
+     data-ph-max="{{ section.settings.err_photo_max | default: 'Two photos is the maximum — we kept the first two.' | escape }}">
   <div class="cs-flow-wrap">
 
     <div class="cs-flow-top">
@@ -140,27 +146,36 @@
           <textarea name="message" rows="5" maxlength="900" placeholder="{{ section.settings.s5_ph | escape }}"></textarea></label>
       </section>
 
-      {%- comment -%} 6. la photo, seulement si un endpoint peut la recevoir {%- endcomment -%}
-      {%- if section.settings.ask_photo -%}
+      {%- comment -%}
+        6. la photo. Un seul champ, un ou deux fichiers : une photo du couple,
+        ou une de chacun. Les deux se valent comme reference — le modele prend
+        plusieurs images en entree.
+
+        Obligatoire, et c'est le script qui le tient : le champ perd son
+        data-req des qu'une photo est gardee, pour qu'un retour en arriere ou
+        un rechargement ne redemande pas un fichier deja fourni.
+      {%- endcomment -%}
       <section class="cs-flow-step" data-step="6" hidden>
         <h1 class="cs-flow-h">{{ section.settings.s6_heading }}</h1>
         <p class="cs-flow-sub">{{ section.settings.s6_sub }}</p>
         <label class="cs-flow-up">
-          <input type="file" name="photo" accept="image/*" data-cs-photo>
+          <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" multiple data-cs-photo data-req
+                 data-req-msg="{{ section.settings.err_photo | default: 'Add at least one photo to continue.' | escape }}">
           <span class="cs-flow-up-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4M8 8l4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
             <b data-cs-photo-label>{{ section.settings.s6_button }}</b>
+            {%- if section.settings.s6_hint != blank -%}<i>{{ section.settings.s6_hint }}</i>{%- endif -%}
           </span>
-          <img class="cs-flow-up-prev" data-cs-photo-prev alt="" hidden>
         </label>
+        <div class="cs-flow-up-grid" data-cs-photo-prev hidden></div>
         {%- if section.settings.s6_tips != blank -%}<p class="cs-flow-note">{{ section.settings.s6_tips }}</p>{%- endif -%}
-        <label class="cs-flow-check"><input type="checkbox" name="consent" data-req>
+        <label class="cs-flow-check"><input type="checkbox" name="consent" data-req
+            data-req-msg="{{ section.settings.err_consent | default: 'Please tick the box so we can use your photo.' | escape }}">
           <span>{{ section.settings.s6_consent }}</span></label>
       </section>
-      {%- endif -%}
 
       {%- comment -%} 7. contact {%- endcomment -%}
-      <section class="cs-flow-step" data-step="{% if section.settings.ask_photo %}7{% else %}6{% endif %}" hidden>
+      <section class="cs-flow-step" data-step="7" hidden>
         <h1 class="cs-flow-h">{{ section.settings.s7_heading }}</h1>
         <p class="cs-flow-sub" data-cs-s7sub data-tpl="{{ section.settings.s7_sub | escape }}">{{ section.settings.s7_sub }}</p>
         <label class="cs-flow-fld"><span>{{ section.settings.s7_lang }}</span>
@@ -295,8 +310,7 @@
   "settings": [
     { "type": "paragraph", "content": "The seven-screen order flow. One page load, then every screen swaps instantly. Answers go to your shop email through Shopify's own contact form — no app, no worker. Fill in the API URL below when the generation service exists and the flow posts there instead." },
     { "type": "header", "content": "Where the answers go" },
-    { "type": "text", "id": "api_url", "label": "API URL", "info": "Leave empty to use Shopify's contact form (your shop email). Fill it to POST the answers as JSON instead — this is the hook for the song and video generation." },
-    { "type": "checkbox", "id": "ask_photo", "label": "Ask for a photo", "default": false, "info": "Off until the API URL exists: Shopify's contact form cannot carry a file." },
+    { "type": "text", "id": "api_url", "label": "API URL", "info": "Leave empty to use Shopify's contact form (your shop email). Fill it to POST the answers as JSON instead — this is the hook for the song and video generation, and the only way the photos reach you: a Shopify contact form cannot carry a file." },
 
     { "type": "header", "content": "1 — Who it's for" },
     { "type": "text", "id": "s1_heading", "label": "Heading", "default": "Let's start with the basics" },
@@ -339,11 +353,15 @@
     { "type": "text", "id": "s5_ph", "label": "Placeholder", "default": "Names, dates, places, an inside joke — we'll do our best to include it." },
 
     { "type": "header", "content": "6 — The photo" },
-    { "type": "text", "id": "s6_heading", "label": "Heading", "default": "Add a photo of the two of you" },
-    { "type": "text", "id": "s6_sub", "label": "Subheading", "default": "This is how the couple in your music video is built to look like you" },
-    { "type": "text", "id": "s6_button", "label": "Upload button", "default": "Add a photo" },
-    { "type": "text", "id": "s6_tips", "label": "Tips", "default": "One clear photo of you both, faces visible, no sunglasses or hats." },
-    { "type": "text", "id": "s6_consent", "label": "Consent line", "default": "We both agree to our photo being used to create the music video. It is deleted once your video is delivered." },
+    { "type": "paragraph", "content": "This screen is required: the faces in the music video are built from these photos. One or two files — a photo of the two of you together, or one of each of you. They are resized in the visitor's browser and posted to the API URL above." },
+    { "type": "text", "id": "s6_heading", "label": "Heading", "default": "Now show us the two of you" },
+    { "type": "text", "id": "s6_sub", "label": "Subheading", "default": "One photo of you together — or one of each of you. This is how your own faces end up in your music video." },
+    { "type": "text", "id": "s6_button", "label": "Upload button", "default": "Add your photo" },
+    { "type": "text", "id": "s6_hint", "label": "Small line inside the box", "default": "JPG or PNG — up to 2 photos" },
+    { "type": "text", "id": "s6_one", "label": "Label once 1 photo is added", "default": "1 photo added — tap to change" },
+    { "type": "text", "id": "s6_two", "label": "Label once 2 photos are added", "default": "2 photos added — tap to change" },
+    { "type": "text", "id": "s6_tips", "label": "Tips", "default": "Faces clear and facing the camera, no sunglasses, no hats. A good photo is the whole difference." },
+    { "type": "text", "id": "s6_consent", "label": "Consent line", "default": "We both agree to our photos being used to create our music video." },
 
     { "type": "header", "content": "7 — Contact" },
     { "type": "text", "id": "s7_heading", "label": "Heading", "default": "Almost there" },
@@ -391,7 +409,10 @@
     { "type": "text", "id": "back_label", "label": "Back", "default": "Back" },
     { "type": "text", "id": "err_required", "label": "Error — missing field", "default": "Please fill this in before continuing." },
     { "type": "text", "id": "err_email", "label": "Error — bad email", "default": "That email address does not look right." },
-    { "type": "text", "id": "err_send", "label": "Error — send failed", "default": "We could not send that. Check your connection and try again." }
+    { "type": "text", "id": "err_send", "label": "Error — send failed", "default": "We could not send that. Check your connection and try again." },
+    { "type": "text", "id": "err_photo", "label": "Error — no photo", "default": "Add at least one photo to continue." },
+    { "type": "text", "id": "err_consent", "label": "Error — consent not ticked", "default": "Please tick the box so we can use your photo." },
+    { "type": "text", "id": "err_photo_max", "label": "Notice — more than two photos", "default": "Two photos is the maximum — we kept the first two." }
   ],
   "presets": [ { "name": "CraftStory Duo Flow" } ]
 }
@@ -450,14 +471,24 @@
 .cs-flow-editnote{max-width:34em;margin:18px auto 0;padding:11px 14px;border-radius:var(--cs-r);
   background:rgba(244,201,93,.18);border:1px solid rgba(244,201,93,.55);
   color:var(--cs-ink2);font-size:.86rem;line-height:1.45;text-align:left}
-.cs-flow-up{display:block;cursor:pointer;margin-bottom:16px}
-.cs-flow-up input{position:absolute;opacity:0;width:0;height:0}
-.cs-flow-up-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+.cs-flow-up{display:block;cursor:pointer;margin-bottom:14px}
+/* Pas opacity:0 sur 0x0 : le champ ne prend plus le focus et le clavier perd
+   l'etape. Un pixel garde, decoupe a zero, reste focalisable. */
+.cs-flow-up input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.cs-flow-up-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
   padding:clamp(28px,6vw,44px);border:2px dashed var(--cs-line);border-radius:var(--cs-r-lg);
-  background:var(--cs-card);color:var(--cs-ink2);transition:border-color .15s ease}
+  background:var(--cs-card);color:var(--cs-ink2);transition:border-color .15s ease,box-shadow .15s ease}
 .cs-flow-up:hover .cs-flow-up-box{border-color:var(--cs-coral)}
+.cs-flow-up:has(input:focus-visible) .cs-flow-up-box{border-color:var(--cs-coral);
+  box-shadow:0 0 0 3px rgba(236,91,60,.16)}
 .cs-flow-up-box svg{width:30px;height:30px}
-.cs-flow-up-prev{width:100%;border-radius:var(--cs-r-lg);margin-top:11px}
+.cs-flow-up-box i{font-style:normal;font-size:.82rem;color:var(--cs-ink3)}
+/* Une photo : elle prend toute la largeur. Deux : cote a cote, meme hauteur. */
+.cs-duo-flow .cs-flow-up-grid{display:grid;grid-template-columns:1fr;gap:9px;margin:0 0 14px}
+.cs-duo-flow .cs-flow-up-grid[data-n="2"]{grid-template-columns:1fr 1fr}
+.cs-flow-up-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;
+  border-radius:var(--cs-r-lg);border:1px solid var(--cs-line)}
 .cs-flow-check{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;line-height:1.45;color:var(--cs-ink2);cursor:pointer}
 .cs-flow-check input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0;accent-color:var(--cs-coral);cursor:pointer}
 .cs-flow-err{margin:0 0 14px;padding:11px 14px;border-radius:var(--cs-r);background:rgba(236,91,60,.1);
@@ -515,6 +546,12 @@
 .cs-flow-mk-note strong{display:block;margin-top:10px;font-size:1.02rem;font-weight:800;
   letter-spacing:.04em;line-height:1.25;text-transform:uppercase;color:var(--cs-coral-deep)}
 .cs-flow-mk-note p + strong{padding-top:10px;border-top:1px solid rgba(236,91,60,.24)}
+/* Leur photo dans le cadre, quand aucun clip n'est charge */
+.cs-flow-mk-mine{background:var(--cs-night)}
+.cs-flow-mk-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  opacity:.72;filter:saturate(.92)}
+.cs-flow-mk-mine::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 50% 40%,transparent 30%,rgba(28,21,51,.55) 100%)}
 /* Le cadre vide */
 .cs-flow-mk-empty{display:grid;place-items:center;background:var(--cs-paper2);
   border:2px dashed var(--cs-line);box-shadow:none}
@@ -542,6 +579,34 @@
 {% javascript %}
 (function () {
   var STORE = 'csDuoFlow';
+  // Les photos sont gardees a part : elles pesent, et la page d'apres n'a pas
+  // besoin de les relire pour composer ses titres.
+  var PHSTORE = 'csDuoPhotos';
+  var MAXPH = 2;
+  var PHMAX = 1280;
+
+  // Reduite dans le navigateur, puis en dataURL. Deux raisons, dans cet ordre :
+  //   - c'est exactement ce que le worker des enfants recoit deja (un dataURL
+  //     dans du JSON), donc rien a ecrire de son cote ;
+  //   - un telephone sort des fichiers de 4 Mo. 1280 px suffisent au modele,
+  //     et l'envoi passe sur un reseau de gare.
+  function shrink(file, cb) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      var k = Math.min(1, PHMAX / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * k));
+      c.height = Math.max(1, Math.round(img.height * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      var out = '';
+      try { out = c.toDataURL('image/jpeg', 0.82); } catch (e) {}
+      cb(out);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); cb(''); };
+    img.src = url;
+  }
 
   function setup(root) {
     if (root.dataset.csFlowReady) return;
@@ -570,6 +635,14 @@
     };
     var last = steps.length - 1;
     var i = 0;
+
+    // Relues au chargement : un retour en arriere, un rechargement ou le
+    // retour du POST natif ne doivent pas redemander un fichier deja donne.
+    var shots = [];
+    try {
+      var kept = JSON.parse(window.sessionStorage.getItem(PHSTORE) || '[]');
+      if (kept && kept.length) shots = kept.slice(0, MAXPH);
+    } catch (e) {}
 
     function fill(el, map) {
       if (!el) return;
@@ -616,7 +689,9 @@
       for (var r = 0; r < reqs.length; r++) {
         var f = reqs[r];
         if (f.type === 'checkbox' ? !f.checked : !f.value.trim()) {
-          return fail(f, CFG.errRequired);
+          // Un message par champ quand il y en a un : « remplis ce champ » ne
+          // veut rien dire devant une case a cocher ou un depot de photo.
+          return fail(f, f.getAttribute('data-req-msg') || CFG.errRequired);
         }
         if (f.hasAttribute('data-email') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.value.trim())) {
           return fail(f, CFG.errEmail);
@@ -670,8 +745,19 @@
     // Tout est mis de cote, pas seulement le prenom : la page d'apres compose
     // ses titres avec le genre, la relation et l'occasion. Ca reste dans
     // l'onglet du visiteur, rien ne part ailleurs, et ca meurt avec l'onglet.
+    // Gardees des le depot, pas seulement a l'envoi : un rechargement au
+    // milieu du tunnel ne doit pas redemander un fichier deja donne.
+    // Le quota peut refuser deux photos ; ce n'est pas bloquant, elles partent
+    // quand meme avec l'envoi. On n'annule rien pour ca.
+    function keepShots() {
+      try {
+        if (shots.length) window.sessionStorage.setItem(PHSTORE, JSON.stringify(shots));
+      } catch (e) {}
+    }
+
     function stash(data) {
       try { window.sessionStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {}
+      keepShots();
     }
 
     function sendNative(data) {
@@ -679,12 +765,22 @@
 
       var lines = [];
       for (var k in data) if (k !== 'email') lines.push(niceKey(k) + ': ' + data[k]);
+      var body = 'COUPLES SONG REQUEST\n\n' + lines.join('\n');
+      // Le formulaire de contact de Shopify ne sait pas porter de fichier. On
+      // ne fait pas semblant : le message dit combien de photos ont ete
+      // deposees, ou elles sont restees, et quoi remplir pour les recevoir.
+      if (shots.length) {
+        body += '\n\nPhotos: ' + shots.length + ' added by the visitor, but a Shopify'
+          + ' contact form cannot carry files, so they stayed in their browser.'
+          + ' Fill in the API URL of the flow section to receive them.';
+      }
+
       var fields = {
         form_type: 'contact',
         utf8: '✓',
         'contact[email]': data.email || '',
         'contact[name]': (data.your_name || '') + ' & ' + (data.their_name || ''),
-        'contact[body]': 'COUPLES SONG REQUEST\n\n' + lines.join('\n')
+        'contact[body]': body
       };
 
       var f = document.createElement('form');
@@ -702,18 +798,18 @@
       f.submit();
     }
 
+    // Un seul POST, un seul JSON : les reponses et les photos deja reduites en
+    // dataURL. Pas de multipart — le worker des enfants lit deja ce format-la.
     function sendApi(url, data) {
-      var photo = form.querySelector('[data-cs-photo]');
-      if (photo && photo.files && photo.files[0]) {
-        var fd = new FormData();
-        for (var k in data) fd.append(k, data[k]);
-        fd.append('photo', photo.files[0]);
-        return fetch(url, { method: 'POST', body: fd });
-      }
+      var out = {};
+      for (var k in data) out[k] = data[k];
+      if (shots[0]) out.photo = shots[0];
+      if (shots[1]) out.photo2 = shots[1];
+      out.photo_count = shots.length;
       return fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(out)
       });
     }
 
@@ -738,6 +834,21 @@
           v.src = src;
           if (v.muted) { v.play(); }
         }
+      }
+
+      // Aucun clip charge, mais leur photo est la : elle prend le cadre. C'est
+      // leur attente, pas un rectangle vide, et ca leur prouve d'un coup d'oeil
+      // que la photo est bien partie avec le reste.
+      var slot = mk.querySelector('.cs-flow-mk-empty');
+      if (slot && shots[0]) {
+        slot.classList.remove('cs-flow-mk-empty');
+        slot.classList.add('cs-flow-mk-mine');
+        slot.textContent = '';
+        var ph = document.createElement('img');
+        ph.className = 'cs-flow-mk-ph';
+        ph.alt = '';
+        ph.src = shots[0];
+        slot.appendChild(ph);
       }
 
       var mins = parseFloat(root.getAttribute('data-mk-min') || '5') || 5;
@@ -902,16 +1013,63 @@
       syncMore();
     }
 
-    var photo = form.querySelector('[data-cs-photo]');
-    if (photo) {
-      photo.addEventListener('change', function () {
-        var f = photo.files && photo.files[0];
-        if (!f) return;
-        var label = form.querySelector('[data-cs-photo-label]');
-        if (label) label.textContent = f.name;
-        var prev = form.querySelector('[data-cs-photo-prev]');
-        if (prev) { prev.src = URL.createObjectURL(f); prev.hidden = false; }
+    var photoEl = form.querySelector('[data-cs-photo]');
+    var prevBox = form.querySelector('[data-cs-photo-prev]');
+    var labelEl = form.querySelector('[data-cs-photo-label]');
+    var baseLabel = labelEl ? labelEl.textContent : '';
+
+    function paintShots() {
+      if (prevBox) {
+        prevBox.innerHTML = '';
+        for (var n = 0; n < shots.length; n++) {
+          var im = document.createElement('img');
+          im.src = shots[n];
+          im.alt = '';
+          prevBox.appendChild(im);
+        }
+        prevBox.setAttribute('data-n', String(shots.length));
+        prevBox.hidden = !shots.length;
+      }
+      if (labelEl) {
+        labelEl.textContent = shots.length > 1 ? (D.phTwo || baseLabel)
+          : shots.length ? (D.phOne || baseLabel) : baseLabel;
+      }
+      // Le champ fichier perd son obligation des qu'une photo est gardee. Il
+      // faut ce detour : apres un rechargement il est toujours vide, alors que
+      // la photo, elle, est encore la. Sans ca l'ecran redemanderait un
+      // fichier deja fourni.
+      if (photoEl) {
+        if (shots.length) photoEl.removeAttribute('data-req');
+        else photoEl.setAttribute('data-req', '');
+      }
+    }
+
+    if (photoEl) {
+      photoEl.addEventListener('change', function () {
+        var picked = photoEl.files ? Array.prototype.slice.call(photoEl.files) : [];
+        if (!picked.length) return;
+        var over = picked.length > MAXPH;
+        picked = picked.slice(0, MAXPH);
+
+        // On repart de la selection en cours a chaque fois : un champ fichier
+        // remplace son contenu, les vignettes doivent dire la meme chose.
+        var got = [];
+        var left = picked.length;
+        picked.forEach(function (f, n) {
+          shrink(f, function (url) {
+            if (url) got[n] = url;
+            if (--left) return;
+            var keep = [];
+            for (var g = 0; g < got.length; g++) if (got[g]) keep.push(got[g]);
+            shots = keep;
+            keepShots();
+            paintShots();
+            if (over && D.phMax) { err.textContent = D.phMax; err.hidden = false; }
+            else { err.hidden = true; }
+          });
+        });
       });
+      paintShots();
     }
 
     // Shopify renvoie sur la page avec ?contact_posted=true quand le message
