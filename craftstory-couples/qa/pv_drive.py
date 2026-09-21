@@ -86,8 +86,6 @@ with sync_playwright() as pw:
           "Unlock Marie's full music video")
     check("option a cocher", p.eval_on_selector(".cs-pvo-addon b", "e=>e.textContent"),
           "Keep Marie's lyrics forever")
-    check("etiquette de lecture", p.eval_on_selector(".cs-pvs-tap", "e=>e.textContent"),
-          "Tap to play preview")
 
     print("\n--- LE REGLAGE DE VERROU, QUAND ON L'ALLUME ---")
     lk = page(150000, URL_LOCKED)   # la moitie de bar_minutes, cinq par defaut
@@ -108,14 +106,13 @@ with sync_playwright() as pw:
         check(name + " apparait", lk2.is_visible(sel), True)
     check("encart pret visible", lk2.is_visible("[data-cs-ready]"), True)
 
-    print("\n--- L'APERCU EN MP4 ---")
-    p.click(".cs-pvs-cover")
-    p.wait_for_timeout(600)
-    check("le voile disparait a la lecture", p.is_hidden(".cs-pvs-cover"), True)
-    check("duree lue depuis le fichier", p.inner_text("[data-cs-dur]"), "0:08")
-    p.evaluate("document.querySelector('[data-cs-prev]').pause()")
-    p.wait_for_timeout(200)
-    check("le voile revient en pause", p.is_visible(".cs-pvs-cover"), True)
+    # L'apercu n'est plus un fichier lu de bout en bout mais un MONTAGE de six
+    # plans cales sur la chanson. Il a son propre banc d'essai, qa/take_drive.py,
+    # parce qu'il demande de vrais medias et un deplacement dans la piste : ici
+    # on verifie seulement qu'une page sans plan montre son cadre vide plutot
+    # qu'un bouton qui fait semblant.
+    check("sans plan charge, un cadre vide", p.is_visible(".cs-pvs-prev-empty"), True)
+    check("et pas de lecteur", p.eval_on_selector_all("[data-cs-take]", "e=>e.length"), 0)
 
     print("\n--- LE REBOURS DU TARIF ---")
     big = p.inner_text("[data-cs-big]")

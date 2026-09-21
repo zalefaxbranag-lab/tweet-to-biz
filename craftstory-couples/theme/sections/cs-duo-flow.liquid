@@ -813,6 +813,16 @@
       });
     }
 
+    // Le corps de la reponse, sans jamais faire echouer l'envoi pour ca. Un
+    // 204, un corps vide ou du texte au lieu du JSON ne doivent pas afficher
+    // « nous n'avons pas pu envoyer » a quelqu'un dont l'histoire est partie.
+    function body(r) {
+      try {
+        if (!r || typeof r.json !== 'function') return Promise.resolve(null);
+        return r.json().catch(function () { return null; });
+      } catch (e) { return Promise.resolve(null); }
+    }
+
     // L'attente prend la place du dernier champ, sur la meme page : c'est la
     // suite immediate du clic, pas un accuse de reception. Aucun changement de
     // page ici — le seul saut viendra du bouton, une fois la barre pleine.
@@ -954,6 +964,13 @@
       stash(data);
       sendApi(url, data).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
+        return body(r);
+      }).then(function (out) {
+        // La table de montage, si la generation a deja repondu : la page
+        // d'apres la joue telle quelle. Rien d'autre a transporter.
+        if (out && out.beats && out.beats.length) {
+          try { window.sessionStorage.setItem('csDuoTake', JSON.stringify(out)); } catch (e) {}
+        }
         finish(who);
       }).catch(function () {
         wait.hidden = true;

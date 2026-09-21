@@ -26,8 +26,7 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else (
 # Ce que le schema laisse vide mais qu'il faut pour voir la page tourner.
 OVERRIDES = {
     "cs-duo-flow": {"mk_video_url": "/clip.webm", "mk_caption": "OUR WRITERS ARE"},
-    "cs-duo-pv-song": {"video_url": "/clip.webm", "prev_url": "/clip.webm",
-                       "video_caption": "OUR WRITERS ARE"},
+    "cs-duo-pv-song": {"video_url": "/clip.webm", "video_caption": "OUR WRITERS ARE"},
     "cs-duo-reviews": {"rating_score": "4.9", "rating_label": "Excellent",
                        "rating_count": "Based on 63 reviews",
                        "rating_bars": "5 stars|87\n4 stars|9\n3 stars|3\n2 stars|1\n1 star|0"},
@@ -35,6 +34,19 @@ OVERRIDES = {
 FACE_IMAGE = {"face": {"image": "x"}}
 REVIEW_TEXT = {"quote": "REVIEW SLOT — their own words go here.", "name": "Name",
                "verified": True}
+
+
+# Les six temps du montage. L'arc est le meme pour tout le monde — rencontre,
+# quotidien, bascule, epreuve, promesse, aujourd'hui — et ce sont leurs mots qui
+# remplissent les trous. C'est ce qui rend l'histoire lisible sans le son.
+BEATS = [
+    ("Before {name}, the days all looked the same", "in"),
+    ("Then one evening that was supposed to be nothing", "out"),
+    ("{you} and {name} — and nothing was ordinary again", "left"),
+    ("Through the year that tried to break us", "in"),
+    ("Still here. Still choosing you.", "right"),
+    ("{name}, this one is yours.", "in"),
+]
 
 
 def load_template(name):
@@ -102,6 +114,28 @@ def main():
     data["sections"][0]["settings"]["api_url"] = "/fake-api"
     json.dump(data, io.open(api, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     render(api, "flow-api.html")
+
+    # Le montage, avec six vrais plans et une chanson : c'est le seul moyen de
+    # verifier qu'une coupe tombe au bon instant. Le gabarit deploye n'a pas
+    # encore de blocs Beat, donc on les injecte ici.
+    mock = os.path.join(OUT, "preview.json")
+    take = os.path.join(OUT, "preview-take.json")
+    data = json.load(io.open(mock, encoding="utf-8"))
+    for sec in data["sections"]:
+        if sec["type"] != "cs-duo-pv-song":
+            continue
+        sec["settings"]["take_audio"] = "/take/song.webm"
+        sec["settings"]["take_seconds"] = 30
+        sec["settings"]["take_cut"] = 360
+        sec["settings"]["take_clock"] = True
+        beats = []
+        for n, (line, drift) in enumerate(BEATS):
+            beats.append({"type": "beat", "settings": {
+                "clip_url": "/take/shot%d.webm" % (n + 1),
+                "seconds": 5, "line": line, "drift": drift}})
+        sec["blocks"] = beats + sec["blocks"]
+    json.dump(data, io.open(take, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(take, "preview-take.html")
 
     # Une variante avec le verrou allume. Le reglage existe toujours meme s'il
     # est eteint par defaut, donc il doit rester teste.

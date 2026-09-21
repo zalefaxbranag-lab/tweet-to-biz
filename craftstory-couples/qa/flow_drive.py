@@ -69,9 +69,16 @@ HTMLFormElement.prototype.submit = function () {
   }
   window.__submits.push({ action: this.getAttribute('action'), fields: out });
 };
+// La generation repond une table de montage : c'est ce que le tunnel doit
+// mettre de cote pour la page d'apres.
+window.__take = { song: '/take/song.webm', seconds: 30, beats: [
+  { at: 0, dur: 5, clip: '/take/shot1.webm', line: 'Line one', drift: 'in' },
+  { at: 5, dur: 5, clip: '/take/shot2.webm', line: 'Line two', drift: 'out' }
+] };
 window.fetch = function (u, o) {
   window.__posts.push({ url: u, body: (o && o.body) || null });
-  return Promise.resolve({ ok: true, status: 200 });
+  return Promise.resolve({ ok: true, status: 200,
+    json: function () { return Promise.resolve(window.__take); } });
 };
 """
 
@@ -322,6 +329,13 @@ with sync_playwright() as pw:
     check("les reponses voyagent avec", sent.get("their_name"), "Marie")
     check("le consentement aussi", sent.get("consent"), "Yes")
     check("pas de champ fichier dans le JSON", "photos" in sent, False)
+
+    print("\n--- LA TABLE DE MONTAGE RENDUE PAR L'API ---")
+    kept = ap.evaluate("JSON.parse(sessionStorage.getItem('csDuoTake')||'null')")
+    check("elle est mise de cote", bool(kept), True)
+    check("avec ses deux plans", len(kept["beats"]), 2)
+    check("et sa chanson", kept["song"], "/take/song.webm")
+    check("l'ecran d'attente s'affiche quand meme", ap.is_visible("[data-cs-mk]"), True)
 
     print("\n--- LEUR PHOTO PREND LA PLACE DU CADRE VIDE ---")
     check("plus de cadre vide", ap.eval_on_selector_all(".cs-flow-mk-empty", "e=>e.length"), 0)

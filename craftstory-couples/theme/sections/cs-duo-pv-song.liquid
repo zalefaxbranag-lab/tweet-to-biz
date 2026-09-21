@@ -119,29 +119,117 @@
           <p class="cs-pvs-songsub" data-cs-tpl>{{ section.settings.song_sub }}</p>
         {%- endif -%}
 
-        <div class="cs-pvs-player">
-          {%- if section.settings.prev_video != blank or section.settings.prev_url != blank -%}
-            {%- if section.settings.prev_video != blank -%}
-              {%- assign psrc = section.settings.prev_video.sources | where: 'format', 'mp4' | first -%}
-              {%- assign pv = psrc.url -%}
-            {%- else -%}
-              {%- assign pv = section.settings.prev_url -%}
+        {%- comment -%}
+          LES TRENTE SECONDES.
+
+          Ce n'est pas un fichier lu de bout en bout : c'est un MONTAGE. Une
+          piste audio fait l'horloge, et des plans de cinq a six secondes se
+          relaient dessus, chacun a son instant, chacun avec la parole qui
+          passe a ce moment-la. Les coupes tombent sur la chanson parce que
+          c'est la chanson qui donne l'heure — pas un minuteur a cote.
+
+          On ne fabrique aucun JSON en Liquid : chaque plan est un div qui
+          porte son fichier, sa duree et sa parole en data-. Le script lit le
+          DOM, et le jour ou la generation repond, elle remplace ces divs par
+          les siens. Meme chemin de code des deux cotes.
+        {%- endcomment -%}
+        {%- assign shots = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'beat' -%}
+            {%- if block.settings.clip != blank or block.settings.clip_url != blank -%}
+              {%- assign shots = shots | plus: 1 -%}
             {%- endif -%}
-            <div class="cs-pvs-prev" style="aspect-ratio:{{ section.settings.prev_ratio }}">
-              <video class="cs-pvs-pv" data-cs-prev playsinline preload="metadata"
-                     src="{{ pv }}"
-                     {% if section.settings.prev_poster != blank %}poster="{{ section.settings.prev_poster | image_url: width: 900 }}"{% endif %}></video>
+          {%- endif -%}
+        {%- endfor -%}
+
+        <div class="cs-pvs-player">
+          {%- if shots > 0 -%}
+            <div class="cs-pvs-take" data-cs-take
+                 style="aspect-ratio:{{ section.settings.prev_ratio }}"
+                 data-audio="{{ section.settings.take_audio | escape }}"
+                 data-seconds="{{ section.settings.take_seconds }}"
+                 data-cut="{{ section.settings.take_cut }}">
+
+              <div class="cs-pvs-shots" data-cs-shots>
+                {%- assign sn = 0 -%}
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'beat' -%}
+                    {%- if block.settings.clip != blank -%}
+                      {%- assign csrc = block.settings.clip.sources | where: 'format', 'mp4' | first -%}
+                      {%- assign cu = csrc.url -%}
+                    {%- else -%}
+                      {%- assign cu = block.settings.clip_url -%}
+                    {%- endif -%}
+                    {%- if cu != blank -%}
+                      {%- assign sn = sn | plus: 1 -%}
+                      <div class="cs-pvs-shot" data-cs-shot
+                           data-n="{{ sn }}"
+                           data-clip="{{ cu }}"
+                           data-dur="{{ block.settings.seconds }}"
+                           data-drift="{{ block.settings.drift }}"
+                           data-line="{{ block.settings.line | escape }}"
+                           {% if block.settings.poster != blank %}data-poster="{{ block.settings.poster | image_url: width: 1000 }}"{% endif %}></div>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+
+              {%- comment -%}
+                La parole du plan en cours. Elle est la pour qu'on comprenne
+                l'histoire SANS le son : c'est la moitie du travail.
+              {%- endcomment -%}
+              <p class="cs-pvs-lyric" data-cs-lyric aria-live="polite"></p>
+
+              {%- if section.settings.take_clock -%}
+                <span class="cs-pvs-cd" data-cs-cd aria-hidden="true">0:30</span>
+              {%- endif -%}
+
               <button type="button" class="cs-pvs-cover" data-cs-tap>
                 <span class="cs-pvs-btn" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </span>
                 <span class="cs-pvs-tap">{{ section.settings.play_hint | default: 'Tap to play preview' }}</span>
               </button>
+
+              {%- comment -%}
+                La fin des trente secondes est le moment ou ils achetent. On ne
+                laisse pas un cadre noir : la derniere image reste, et la
+                proposition arrive dessus.
+              {%- endcomment -%}
+              <div class="cs-pvs-end" data-cs-end hidden>
+                {%- if section.settings.end_heading != blank -%}
+                  <p class="cs-pvs-end-h" data-cs-tpl>{{ section.settings.end_heading }}</p>
+                {%- endif -%}
+                {%- if section.settings.end_sub != blank -%}
+                  <p class="cs-pvs-end-s" data-cs-tpl>{{ section.settings.end_sub }}</p>
+                {%- endif -%}
+                <div class="cs-pvs-end-btns">
+                  {%- if section.settings.end_cta != blank -%}
+                    <a class="cs-btn cs-btn-primary cs-pvs-end-go"
+                       href="{{ section.settings.end_cta_url | default: '#cs-duo-offer' }}" data-cs-tpl>{{ section.settings.end_cta }}</a>
+                  {%- endif -%}
+                  <button type="button" class="cs-pvs-again" data-cs-again>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 109-9"/><path d="M3 4v8h8"/></svg>
+                    <span>{{ section.settings.again_label | default: 'Watch it again' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <audio data-cs-audio preload="auto" playsinline></audio>
+            </div>
+
+            {%- comment -%}
+              La barre des trente secondes, avec un repere par coupe : on VOIT
+              que le montage est decoupe sur la chanson.
+            {%- endcomment -%}
+            <div class="cs-pvs-tl" data-cs-tl>
+              <i data-cs-tlfill></i>
+              <span class="cs-pvs-tl-marks" data-cs-marks aria-hidden="true"></span>
             </div>
           {%- else -%}
             {%- comment -%}
-              Pas encore de fichier : un cadre vide, pas un bouton qui fait
-              semblant de lire quelque chose.
+              Aucun plan charge : un cadre vide, pas un bouton qui fait semblant
+              de lire quelque chose.
             {%- endcomment -%}
             <div class="cs-pvs-prev cs-pvs-prev-empty" style="aspect-ratio:{{ section.settings.prev_ratio }}">
               <span>{{ section.settings.prev_empty | default: 'Your preview appears here.' }}</span>
@@ -264,9 +352,18 @@
     { "type": "header", "content": "The preview" },
     { "type": "text", "id": "song_title", "label": "Title", "default": "{name}'s Unique Music Video" },
     { "type": "text", "id": "song_sub", "label": "Subheading", "default": "{genre} melody, written for {name} ({rel})" },
-    { "type": "video", "id": "prev_video", "label": "Preview clip (upload MP4)", "info": "Twenty to thirty seconds is plenty." },
-    { "type": "video_url", "id": "prev_url", "label": "Or a preview URL", "accept": ["youtube", "vimeo"] },
-    { "type": "image_picker", "id": "prev_poster", "label": "Preview cover" },
+
+    { "type": "paragraph", "content": "The preview is a CUT, not one long file. Add a Beat block per shot — five or six seconds each, six shots for thirty seconds — and the song below is what keeps time. Each beat carries the line that plays over it, so the story reads even with the sound off." },
+    { "type": "text", "id": "take_audio", "label": "Song file URL", "info": "Upload the song under Content › Files, then paste its URL here. It is the clock: every cut lands on it." },
+    { "type": "range", "id": "take_seconds", "label": "How long the preview runs", "min": 10, "max": 60, "step": 1, "default": 30, "unit": "s" },
+    { "type": "range", "id": "take_cut", "label": "Cross-fade between shots", "min": 0, "max": 800, "step": 20, "default": 360, "unit": "ms", "info": "Zero cuts hard. Around 350 reads as one continuous video." },
+    { "type": "checkbox", "id": "take_clock", "label": "Show the seconds left on the preview", "default": true },
+    { "type": "text", "id": "end_heading", "label": "End card — heading", "default": "That was thirty seconds of {name}'s music video." },
+    { "type": "text", "id": "end_sub", "label": "End card — second line", "default": "The full one runs two and a half minutes." },
+    { "type": "text", "id": "end_cta", "label": "End card — button", "default": "Get the full music video" },
+    { "type": "text", "id": "end_cta_url", "label": "End card — where it goes", "default": "#cs-duo-offer" },
+    { "type": "text", "id": "again_label", "label": "Replay label", "default": "Watch it again" },
+
     { "type": "select", "id": "prev_ratio", "label": "Preview shape", "default": "16/9",
       "options": [
         { "value": "16/9", "label": "Wide (16:9)" },
@@ -276,7 +373,7 @@
       ] },
     { "type": "text", "id": "play_hint", "label": "Play label", "default": "Tap to play preview" },
     { "type": "text", "id": "prev_empty", "label": "Text while there is no file", "default": "Your preview appears here." },
-    { "type": "text", "id": "preview_length", "label": "Preview length", "default": "0:30" },
+    { "type": "text", "id": "preview_length", "label": "Preview length", "default": "0:30", "info": "Only shown before there are any Beat blocks — once there are, the real length of the cut is used." },
     { "type": "text", "id": "preview_note", "label": "Line under the preview", "default": "Play it with headphones if you have them." },
 
     { "type": "header", "content": "Proof" },
@@ -300,6 +397,26 @@
   ],
   "blocks": [
     {
+      "type": "beat",
+      "name": "Beat",
+      "settings": [
+        { "type": "paragraph", "content": "One shot. Upload its clip, say how long it holds, and write the line of the song that plays over it." },
+        { "type": "video", "id": "clip", "label": "Clip (upload MP4)" },
+        { "type": "text", "id": "clip_url", "label": "Or a clip URL", "info": "A Shopify Files URL, or whatever the generator returns." },
+        { "type": "image_picker", "id": "poster", "label": "First frame" },
+        { "type": "range", "id": "seconds", "label": "How long it holds", "min": 2, "max": 12, "step": 1, "default": 5, "unit": "s" },
+        { "type": "text", "id": "line", "label": "The line that plays over it", "info": "Write {name} {you} {rel} {occasion} and it is replaced by their own answers." },
+        { "type": "select", "id": "drift", "label": "Slow drift", "default": "in",
+          "options": [
+            { "value": "in", "label": "Push in" },
+            { "value": "out", "label": "Pull out" },
+            { "value": "left", "label": "Drift left" },
+            { "value": "right", "label": "Drift right" },
+            { "value": "none", "label": "None" }
+          ] }
+      ]
+    },
+    {
       "type": "face",
       "name": "Face",
       "settings": [ { "type": "image_picker", "id": "image", "label": "Photo" } ]
@@ -318,6 +435,8 @@
   ],
   "presets": [
     { "name": "CraftStory Duo Preview", "blocks": [
+      { "type": "beat" }, { "type": "beat" }, { "type": "beat" },
+      { "type": "beat" }, { "type": "beat" }, { "type": "beat" },
       { "type": "face" }, { "type": "face" }, { "type": "face" }, { "type": "face" }, { "type": "face" },
       { "type": "row" }, { "type": "row" }, { "type": "row" }
     ] }
@@ -398,6 +517,84 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 .cs-pvs-stage-empty span{display:flex;flex-direction:column;align-items:center;gap:9px;
   padding:0 20px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
 .cs-pvs-stage-empty svg{width:34px;height:34px}
+
+/* ------------------------------------------------------- LES TRENTE SECONDES
+   Les plans sont empiles au meme endroit. Un seul porte .on, et c'est
+   l'opacite qui fait la coupe : aucun reflow, aucun scintillement. */
+.cs-pvs-take{position:relative;border-radius:var(--cs-r);overflow:hidden;background:#000;
+  aspect-ratio:16/9;isolation:isolate}
+.cs-pvs-shots{position:absolute;inset:0}
+.cs-pvs-shot{position:absolute;inset:0;opacity:0;transition:opacity var(--cs-cut,360ms) linear;
+  will-change:opacity}
+.cs-pvs-shot.on{opacity:1}
+.cs-pvs-shot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  transform-origin:center}
+/* La derive lente : elle colle les coupes entre elles et enleve tout effet de
+   carte postale quand un plan finit sur une image presque fixe. */
+.cs-pvs-shot.on video{animation:cs-pvs-drift var(--cs-dur,5s) linear both}
+.cs-pvs-shot[data-drift=out].on video{animation-name:cs-pvs-drift-out}
+.cs-pvs-shot[data-drift=left].on video{animation-name:cs-pvs-drift-left}
+.cs-pvs-shot[data-drift=right].on video{animation-name:cs-pvs-drift-right}
+.cs-pvs-shot[data-drift=none].on video{animation:none}
+@keyframes cs-pvs-drift{from{transform:scale(1.005)}to{transform:scale(1.045)}}
+@keyframes cs-pvs-drift-out{from{transform:scale(1.045)}to{transform:scale(1.005)}}
+@keyframes cs-pvs-drift-left{from{transform:scale(1.05) translateX(1.1%)}to{transform:scale(1.05) translateX(-1.1%)}}
+@keyframes cs-pvs-drift-right{from{transform:scale(1.05) translateX(-1.1%)}to{transform:scale(1.05) translateX(1.1%)}}
+
+/* La parole du plan. Elle arrive par le bas, mot a mot dans le temps du plan,
+   et elle est lisible sur n'importe quelle image grace au voile du bas. */
+.cs-pvs-take::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;
+  background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.28) 45%,transparent);
+  pointer-events:none;opacity:0;transition:opacity .3s ease;z-index:1}
+.cs-pvs-take.cs-on::after{opacity:1}
+.cs-duo-pvs .cs-pvs-lyric{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;
+  padding:0 clamp(14px,4vw,24px) clamp(14px,4vw,22px);
+  font-family:var(--cs-serif);font-size:clamp(1.12rem,4.4vw,1.6rem);line-height:1.25;
+  font-weight:600;color:#fff;text-align:center;text-wrap:balance;
+  text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none}
+.cs-pvs-lyric span{display:inline-block;opacity:0;transform:translateY(.5em);
+  animation:cs-pvs-word .42s cubic-bezier(.2,.7,.3,1) both}
+@keyframes cs-pvs-word{to{opacity:1;transform:none}}
+
+/* Le rebours, en haut a droite du cadre */
+.cs-pvs-cd{position:absolute;top:10px;right:11px;z-index:3;padding:4px 9px;border-radius:var(--cs-pill);
+  background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;opacity:0;transition:opacity .25s ease}
+.cs-pvs-take.cs-on .cs-pvs-cd{opacity:1}
+
+/* La carte de fin, posee sur la derniere image plutot que sur du noir */
+.cs-pvs-end{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:9px;padding:clamp(16px,5vw,28px);
+  text-align:center;background:rgba(28,21,51,.72);backdrop-filter:blur(3px);
+  animation:cs-pvs-end-in .34s ease both}
+@keyframes cs-pvs-end-in{from{opacity:0}to{opacity:1}}
+.cs-duo-pvs .cs-pvs-end-h{margin:0;font-family:var(--cs-serif);font-size:clamp(1.06rem,4vw,1.36rem);
+  line-height:1.24;font-weight:700;color:#fff;text-wrap:balance}
+.cs-duo-pvs .cs-pvs-end-s{margin:0;font-size:.9rem;line-height:1.45;color:rgba(255,255,255,.82)}
+.cs-pvs-end-btns{display:flex;flex-direction:column;align-items:center;gap:9px;margin-top:6px;width:100%}
+.cs-pvs-end-go{width:100%;max-width:19em}
+.cs-pvs-again{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:0;cursor:pointer;
+  border-radius:var(--cs-pill);background:rgba(255,255,255,.16);color:#fff;
+  font:inherit;font-size:.86rem;font-weight:650;transition:background .16s ease}
+.cs-pvs-again:hover{background:rgba(255,255,255,.28)}
+.cs-pvs-again svg{width:15px;height:15px}
+
+/* La frise des trente secondes : un repere par coupe, pour qu'on VOIE le
+   decoupage. */
+.cs-pvs-tl{position:relative;height:6px;margin-top:10px;border-radius:99px;
+  background:var(--cs-paper2);overflow:hidden}
+.cs-pvs-tl i{position:absolute;inset:0 auto 0 0;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--cs-coral),var(--cs-coral-deep))}
+.cs-pvs-tl-marks{position:absolute;inset:0;pointer-events:none}
+.cs-pvs-tl-marks b{position:absolute;top:0;bottom:0;width:2px;background:var(--cs-card);opacity:.9}
+
+@media(prefers-reduced-motion:reduce){
+  .cs-pvs-shot{transition:none}
+  .cs-pvs-shot.on video{animation:none}
+  .cs-pvs-lyric span{animation:none;opacity:1;transform:none}
+  .cs-pvs-end{animation:none}
+}
+
 .cs-pvs-prev-empty{display:grid;place-items:center;background:var(--cs-paper2);border:1px dashed var(--cs-line)}
 .cs-pvs-prev-empty span{padding:0 18px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
 .cs-pvs-time{color:var(--cs-ink3);font-size:.84rem;font-variant-numeric:tabular-nums;margin:11px 0 0}
@@ -480,26 +677,35 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
     return out;
   }
 
+  // Un gabarit, une reponse. Mis en commun parce que les paroles des plans en
+  // ont besoin exactement comme les titres : « Still choosing you, {name} »
+  // doit devenir « Still choosing you, Marie », et ne rien laisser derriere
+  // quand la reponse manque.
+  function fillTpl(tpl, map) {
+    var out = tpl, missing = false;
+    for (var k in map) {
+      if (out.indexOf('{' + k + '}') < 0) continue;
+      if (map[k]) { out = out.split('{' + k + '}').join(map[k]); } else { missing = true; }
+    }
+    // Une reponse manquante : on retire le gabarit et ce qui l'entoure
+    // plutot que de laisser « ('s song » ou une parenthese vide.
+    if (missing) {
+      out = out.replace(/\s*\([^()]*\{\w+\}[^()]*\)/g, '')
+               .replace(/\{\w+\}'s\s*/g, '')
+               .replace(/\{\w+\}\s*/g, '')
+               .replace(/\s*,\s*,/g, ',')
+               .replace(/\s{2,}/g, ' ')
+               .replace(/^[\s,·]+|[\s,·]+$/g, '');
+    }
+    return out;
+  }
+
   function personalise(root, map) {
     var els = root.querySelectorAll('[data-cs-tpl]');
     for (var i = 0; i < els.length; i++) {
       var tpl = els[i].getAttribute('data-cs-orig') || els[i].textContent;
       els[i].setAttribute('data-cs-orig', tpl);
-      var out = tpl, missing = false;
-      for (var k in map) {
-        if (out.indexOf('{' + k + '}') < 0) continue;
-        if (map[k]) { out = out.split('{' + k + '}').join(map[k]); } else { missing = true; }
-      }
-      // Une reponse manquante : on retire le gabarit et ce qui l'entoure
-      // plutot que de laisser « ('s song » ou une parenthese vide.
-      if (missing) {
-        out = out.replace(/\s*\([^()]*\{\w+\}[^()]*\)/g, '')
-                 .replace(/\{\w+\}'s\s*/g, '')
-                 .replace(/\{\w+\}\s*/g, '')
-                 .replace(/\s*,\s*,/g, ',')
-                 .replace(/\s{2,}/g, ' ')
-                 .replace(/^[\s,·]+|[\s,·]+$/g, '');
-      }
+      var out = fillTpl(tpl, map);
       els[i].textContent = out;
       if (!out) els[i].hidden = true;
     }
@@ -616,33 +822,298 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
     }
   }
 
-  function preview(root) {
-    var v = root.querySelector('[data-cs-prev]');
-    var cover = root.querySelector('[data-cs-tap]');
-    var cur = root.querySelector('[data-cs-cur]');
-    var dur = root.querySelector('[data-cs-dur]');
-    if (!v) return;
+  // ========================================================================
+  // LES TRENTE SECONDES
+  //
+  // Un montage, pas un fichier. La chanson donne l'heure et les plans se
+  // relaient dessus : a chaque instant de coupe, le plan suivant passe devant
+  // et sa parole s'inscrit. C'est la chanson qui est la source de temps, pas
+  // un minuteur a cote — sinon les deux derivent et la coupe tombe a cote du
+  // temps fort, ce qui se voit tout de suite.
+  //
+  // La duree annoncee est un PLAFOND. Le montage dure la somme de ses plans,
+  // rognee a ce plafond : jamais une image figee au bout pour tenir trente
+  // secondes, jamais un depassement.
+  // ========================================================================
+  // La table de montage livree par la generation, si elle est arrivee. Elle
+  // remplace celle de l'editeur en ecrivant LES MEMES divs avec LES MEMES
+  // data- : un seul chemin de code, donc ce que le marchand voit dans
+  // l'editeur est exactement ce que le client verra.
+  function delivered() {
+    try {
+      if (window.CS_DUO_TAKE && window.CS_DUO_TAKE.beats) return window.CS_DUO_TAKE;
+      var kept = window.sessionStorage.getItem('csDuoTake');
+      var got = kept ? JSON.parse(kept) : null;
+      return (got && got.beats && got.beats.length) ? got : null;
+    } catch (e) { return null; }
+  }
 
-    function clock(s) { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + two(s % 60); }
+  function take(root, map) {
+    var stage = root.querySelector('[data-cs-take]');
+    if (!stage) return;
 
-    if (cover) {
-      cover.addEventListener('click', function () { v.play(); });
-      v.addEventListener('play', function () { cover.hidden = true; });
-      v.addEventListener('pause', function () { cover.hidden = false; });
-      v.addEventListener('ended', function () { cover.hidden = false; });
+    var live = delivered();
+    if (live) {
+      var host = stage.querySelector('[data-cs-shots]');
+      host.textContent = '';
+      if (live.song) stage.setAttribute('data-audio', live.song);
+      if (live.seconds) stage.setAttribute('data-seconds', String(live.seconds));
+      for (var d = 0; d < live.beats.length; d++) {
+        var lb = live.beats[d];
+        var el = document.createElement('div');
+        el.className = 'cs-pvs-shot';
+        el.setAttribute('data-cs-shot', '');
+        el.setAttribute('data-n', String(d + 1));
+        el.setAttribute('data-clip', lb.clip || '');
+        el.setAttribute('data-dur', String(lb.dur || 5));
+        el.setAttribute('data-drift', lb.drift || 'in');
+        el.setAttribute('data-line', lb.line || '');
+        if (lb.poster) el.setAttribute('data-poster', lb.poster);
+        host.appendChild(el);
+      }
+      stage.setAttribute('data-cs-live', '1');
     }
-    v.addEventListener('timeupdate', function () { if (cur) cur.textContent = clock(v.currentTime); });
-    v.addEventListener('loadedmetadata', function () {
-      if (dur && isFinite(v.duration)) dur.textContent = clock(v.duration);
+
+    var raw = stage.querySelectorAll('[data-cs-shot]');
+    if (!raw.length) return;
+
+    var cover = stage.querySelector('[data-cs-tap]');
+    var lyric = stage.querySelector('[data-cs-lyric]');
+    var cd = stage.querySelector('[data-cs-cd]');
+    var end = stage.querySelector('[data-cs-end]');
+    var again = stage.querySelector('[data-cs-again]');
+    var audioEl = stage.querySelector('[data-cs-audio]');
+    var fill = root.querySelector('[data-cs-tlfill]');
+    var marks = root.querySelector('[data-cs-marks]');
+    var curEl = root.querySelector('[data-cs-cur]');
+    var durEl = root.querySelector('[data-cs-dur]');
+
+    var cut = parseFloat(stage.getAttribute('data-cut'));
+    if (isNaN(cut)) cut = 360;
+    stage.style.setProperty('--cs-cut', cut + 'ms');
+    var cap = parseFloat(stage.getAttribute('data-seconds')) || 30;
+
+    var beats = [];
+    var at = 0;
+    for (var i = 0; i < raw.length; i++) {
+      if (at >= cap - 0.1) break;
+      var d = parseFloat(raw[i].getAttribute('data-dur')) || 5;
+      if (at + d > cap) d = cap - at;
+      beats.push({ el: raw[i], at: at, dur: d, line: raw[i].getAttribute('data-line') || '' });
+      at += d;
+      // Les plans qui ne rentrent pas ne sont pas laisses dans le DOM a
+      // charger pour rien.
+      raw[i].dataset.csIn = '1';
+    }
+    var total = at;
+    for (var z = 0; z < raw.length; z++) {
+      if (!raw[z].dataset.csIn) raw[z].parentNode.removeChild(raw[z]);
+    }
+    if (!beats.length) return;
+
+    // Les plans sont muets : le son vient de la piste, une fois, sinon deux
+    // sources se battent et le montage sonne faux.
+    for (var n = 0; n < beats.length; n++) {
+      var b = beats[n];
+      var src = b.el.getAttribute('data-clip');
+      var ps = b.el.getAttribute('data-poster');
+      var v;
+      if (src) {
+        v = document.createElement('video');
+        v.muted = true;
+        v.defaultMuted = true;
+        v.setAttribute('muted', '');
+        v.setAttribute('playsinline', '');
+        v.playsInline = true;
+        v.preload = n < 2 ? 'auto' : 'none';
+        if (ps) v.poster = ps;
+        v.src = src;
+      } else {
+        // Un clip manquant tombe sur son image plutot que sur cinq secondes
+        // de noir au milieu du montage. On lui donne les memes methodes que
+        // la video pour que l'ordonnanceur n'ait pas a savoir la difference.
+        v = document.createElement('img');
+        v.alt = '';
+        v.src = ps || '';
+        v.muted = true;
+        v.paused = true;
+        v.currentTime = 0;
+        v.play = function () { return null; };
+        v.pause = function () {};
+        v.load = function () {};
+        v.preload = 'auto';
+      }
+      b.el.appendChild(v);
+      b.v = v;
+      b.el.style.setProperty('--cs-dur', b.dur + 's');
+      b.line = fillTpl(b.line, map);
+      if (n > 0 && marks) {
+        var mk = document.createElement('b');
+        mk.style.left = (b.at / total * 100) + '%';
+        marks.appendChild(mk);
+      }
+    }
+
+    var asrc = (stage.getAttribute('data-audio') || '').trim();
+    if (audioEl && asrc) { audioEl.src = asrc; } else { audioEl = null; }
+
+    // L'horloge. La chanson quand elle est la ; sinon celle de la page, pour
+    // que le montage reste visible avant que le son existe.
+    var clk = audioEl ? {
+      t: function () { return audioEl.currentTime; },
+      go: function () { var p = audioEl.play(); if (p && p.catch) p.catch(function () {}); },
+      hold: function () { audioEl.pause(); },
+      zero: function () { try { audioEl.currentTime = 0; } catch (e) {} }
+    } : (function () {
+      var t0 = 0, acc = 0, on = false;
+      var c = {
+        t: function () { return on ? acc + (Date.now() - t0) / 1000 : acc; },
+        go: function () { t0 = Date.now(); on = true; },
+        hold: function () { acc = c.t(); on = false; },
+        zero: function () { acc = 0; t0 = Date.now(); }
+      };
+      return c;
+    })();
+
+    var cur = -1, playing = false, raf = 0;
+
+    function mmssShort(sec) {
+      sec = Math.max(0, Math.round(sec || 0));
+      return Math.floor(sec / 60) + ':' + two(sec % 60);
+    }
+    if (durEl) durEl.textContent = mmssShort(total);
+
+    // Mot a mot, dans le temps du plan : une phrase qui apparait d'un bloc ne
+    // se lit pas, elle se subit.
+    function say(text) {
+      if (!lyric) return;
+      lyric.textContent = '';
+      if (!text) return;
+      var words = text.split(/\s+/);
+      var step = Math.min(0.1, 1.1 / Math.max(1, words.length));
+      for (var w = 0; w < words.length; w++) {
+        var sp = document.createElement('span');
+        sp.textContent = words[w];
+        sp.style.animationDelay = (w * step).toFixed(3) + 's';
+        lyric.appendChild(sp);
+        if (w < words.length - 1) lyric.appendChild(document.createTextNode(' '));
+      }
+    }
+
+    function enter(n) {
+      if (n === cur || !beats[n]) return;
+      if (cur > -1 && beats[cur]) {
+        beats[cur].el.classList.remove('on');
+        beats[cur].v.pause();
+      }
+      cur = n;
+      var b = beats[n];
+      b.el.classList.add('on');
+      try { b.v.currentTime = 0; } catch (e) {}
+      var p = b.v.play();
+      if (p && p.catch) p.catch(function () {});
+      say(b.line);
+      // Les deux suivants sont mis en route d'avance : une coupe qui attend un
+      // telechargement se voit immediatement.
+      for (var k = n + 1; k <= n + 2 && k < beats.length; k++) {
+        if (beats[k].v.preload !== 'auto') { beats[k].v.preload = 'auto'; beats[k].v.load(); }
+      }
+    }
+
+    function frame() {
+      if (!playing) return;
+      var t = clk.t();
+      if (t >= total - 0.02) { finish(); return; }
+      var n = beats.length - 1;
+      for (var i = 0; i < beats.length; i++) {
+        if (t < beats[i].at + beats[i].dur) { n = i; break; }
+      }
+      if (n !== cur) enter(n);
+      if (fill) fill.style.width = (t / total * 100) + '%';
+      if (cd) cd.textContent = mmssShort(total - t);
+      if (curEl) curEl.textContent = mmssShort(t);
+      raf = window.requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (playing) return;
+      playing = true;
+      if (cover) cover.hidden = true;
+      if (end) end.hidden = true;
+      stage.classList.add('cs-on');
+      stage.classList.remove('cs-hold');
+      clk.go();
+      // Reprendre, ce n'est pas seulement relancer la chanson : le plan en
+      // cours a ete mis en pause avec elle, et enter() ne le relance pas
+      // puisque son numero n'a pas change. Sans ces deux lignes, un appui pour
+      // reprendre remettait le son en marche devant une image figee.
+      if (cur < 0) { enter(0); } else if (beats[cur]) {
+        var p = beats[cur].v.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+      raf = window.requestAnimationFrame(frame);
+    }
+
+    function hold() {
+      if (!playing) return;
+      playing = false;
+      window.cancelAnimationFrame(raf);
+      clk.hold();
+      if (beats[cur]) beats[cur].v.pause();
+      stage.classList.add('cs-hold');
+    }
+
+    function finish() {
+      playing = false;
+      window.cancelAnimationFrame(raf);
+      clk.hold();
+      if (beats[cur]) beats[cur].v.pause();
+      stage.classList.remove('cs-hold');
+      if (fill) fill.style.width = '100%';
+      if (cd) cd.textContent = '0:00';
+      if (curEl) curEl.textContent = mmssShort(total);
+      if (lyric) lyric.textContent = '';
+      // La derniere image reste : la proposition arrive dessus, pas sur du noir.
+      if (end) end.hidden = false;
+    }
+
+    function replay() {
+      clk.zero();
+      for (var i = 0; i < beats.length; i++) {
+        beats[i].el.classList.remove('on');
+        beats[i].v.pause();
+        try { beats[i].v.currentTime = 0; } catch (e) {}
+      }
+      cur = -1;
+      if (fill) fill.style.width = '0%';
+      playing = false;
+      start();
+    }
+
+    if (cover) cover.addEventListener('click', start);
+    if (again) again.addEventListener('click', replay);
+
+    // Un appui sur l'image met en pause et reprend. On ne touche pas aux clics
+    // de la carte de fin : son bouton doit partir vers l'offre.
+    stage.addEventListener('click', function (e) {
+      if (e.target.closest('[data-cs-end]') || e.target.closest('[data-cs-tap]')) return;
+      if (playing) { hold(); } else if (end && !end.hidden) { replay(); } else { start(); }
+    });
+
+    // Onglet quitte : on met en pause. Sans ca l'horloge de la chanson
+    // continue, les images non, et on revient sur un montage decale.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) hold();
     });
   }
 
   function setup(root) {
     if (root.dataset.csPvsReady) return;
     root.dataset.csPvsReady = '1';
-    personalise(root, answers());
+    var map = answers();
+    personalise(root, map);
     sound(root);
-    preview(root);
+    take(root, map);
     unlock(root);
     deal(root);
   }
