@@ -1,5 +1,13 @@
 # La preview couples : le chemin retenu
 
+> **Mis a jour le 22/09/2026.** Le proprietaire a simplifie : la preview est
+> maintenant **six images fixes de cinq secondes** (leurs visages, un leger
+> zoom) sur **la chanson complete coupee a trente secondes** — plus de modele
+> video dans la preview. Le modele video (Kling) servira a la video payee,
+> en partant de ces images comme premieres images. Ce qui suit decrit la
+> version precedente ; la version en place est dans
+> `docs/14-page-unique-et-paiement.md` et `api-couples/README.md`.
+
 ## Ce qu'on livre
 
 **Les trente premieres secondes de leur vraie video** : la chanson ecrite
