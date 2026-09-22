@@ -112,7 +112,7 @@ with sync_playwright() as pw:
     # on verifie seulement qu'une page sans plan montre son cadre vide plutot
     # qu'un bouton qui fait semblant.
     check("sans plan charge, un cadre vide", p.is_visible(".cs-pvs-prev-empty"), True)
-    check("et pas de lecteur", p.eval_on_selector_all("[data-cs-take]", "e=>e.length"), 0)
+    check("et le lecteur reste cache", p.is_hidden("[data-cs-take]"), True)
 
     print("\n--- LE REBOURS DU TARIF ---")
     big = p.inner_text("[data-cs-big]")

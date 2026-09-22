@@ -228,7 +228,8 @@ with sync_playwright() as pw:
 
     print("\n--- A MI-PARCOURS, PUIS A 100 % ---")
     mid = ctx.new_page()
-    mid.add_init_script("try{localStorage.setItem('csDuoMakeAt', String(Date.now()+150000));}catch(e){}\n" + STASH)
+    # La barre fait trois minutes : la moitie, c'est 90 secondes restantes.
+    mid.add_init_script("try{localStorage.setItem('csDuoMakeAt', String(Date.now()+90000));}catch(e){}\n" + STASH)
     mid.goto(BASE + "flow.html?contact_posted=true")
     mid.wait_for_timeout(700)
     pct = int(mid.inner_text("[data-cs-mk-pct]").rstrip("%"))
@@ -243,6 +244,14 @@ with sync_playwright() as pw:
     full.goto(BASE + "flow.html?contact_posted=true")
     full.wait_for_timeout(900)
     check("barre pleine", full.inner_text("[data-cs-mk-pct]"), "100%")
+    # La barre est pleine, mais la video d'attente joue encore : rien ne
+    # s'ouvre tant qu'elle n'est pas allee au bout.
+    playing = full.evaluate("(()=>{const v=document.querySelector('.cs-flow-mk-v');return !!v&&!v.paused&&!v.ended})()")
+    check("la video d'attente joue encore", playing, True)
+    check("donc pas encore de bouton", full.is_hidden("[data-cs-mk-go]"), True)
+    full.evaluate("(()=>{const v=document.querySelector('.cs-flow-mk-v');v.currentTime=Math.max(0,v.duration-0.15)})()")
+    full.wait_for_timeout(1400)
+    check("la video est allee au bout", full.evaluate("document.querySelector('.cs-flow-mk-v').loop"), True)
     check("le bouton apparait", full.is_visible("[data-cs-mk-go]"), True)
     check("l'encart cede la place", full.is_hidden("[data-cs-mk-note]"), True)
     check("libelle du bouton", full.inner_text("[data-cs-mk-go]").strip(), "Your music video preview")
@@ -319,9 +328,14 @@ with sync_playwright() as pw:
         ap.click("[data-cs-next]")
         ap.wait_for_timeout(220)
     posts = ap.evaluate("window.__posts")
-    check("un seul envoi", len(posts), 1)
-    check("vers l'endpoint du reglage", posts[0]["url"], "/fake-api")
-    check("aucun envoi natif", ap.evaluate("window.__submits.length"), 0)
+    api_posts = [x for x in posts if str(x["url"]).startswith("/fake-api")]
+    lead = [x for x in posts if str(x["url"]) == "/contact"]
+    check("un seul envoi a l'API", len(api_posts), 1)
+    check("vers l'endpoint du reglage", api_posts[0]["url"], "/fake-api")
+    check("aucun envoi natif qui quitterait la page", ap.evaluate("window.__submits.length"), 0)
+    check("le prospect part aussi, par fetch", len(lead), 1)
+    check("on n'a pas quitte la page", ap.url.endswith("flow-api.html"), True)
+    posts = api_posts
     sent = __import__("json").loads(posts[0]["body"])
     check("deux photos comptees", sent.get("photo_count"), 2)
     check("la premiere en dataURL", str(sent.get("photo", ""))[:15], "data:image/jpeg")

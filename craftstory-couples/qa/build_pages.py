@@ -77,7 +77,7 @@ def mock_from(template, out_json):
                 bs.update(REVIEW_TEXT)
                 bs["date"] = "%d weeks ago" % (i + 1)
             blocks.append({"type": b["type"], "settings": bs})
-        out["sections"].append({"type": kind, "settings": settings, "blocks": blocks})
+        out["sections"].append({"type": kind, "key": key, "settings": settings, "blocks": blocks})
     json.dump(out, io.open(out_json, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     return out_json
 
@@ -89,15 +89,33 @@ def render(mock, html):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for template, html in (("page.couples-start.json", "flow.html"),
+    for template, html in (("page.couples-start.json", "onepage.html"),
                            ("page.couples-preview.json", "preview.html")):
         mock = os.path.join(OUT, html.replace(".html", ".json"))
         mock_from(template, mock)
         render(mock, html)
 
+    # LA PAGE UNIQUE, telle que deployee : le tunnel, puis toute la page preview
+    # dessous. Seule l'adresse de l'API change : le vrai Supabase n'est pas
+    # joignable d'ici, et les tests bouchonnent fetch de toute facon.
+    one = os.path.join(OUT, "onepage.json")
+    data = json.load(io.open(one, encoding="utf-8"))
+    data["sections"][0]["settings"]["api_url"] = "/fake-api/start"
+    json.dump(data, io.open(one, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(one, "onepage.html")
+
+    # LE TUNNEL SEUL, sans API et sans rien dessous : l'ancien chemin (le
+    # formulaire natif, puis le bouton vers la page d'apres). Il existe
+    # toujours — c'est le repli quand l'API n'est pas renseignee.
+    flow = os.path.join(OUT, "flow.json")
+    data = json.load(io.open(one, encoding="utf-8"))
+    data["sections"] = [data["sections"][0]]
+    data["sections"][0]["settings"].pop("api_url", None)
+    json.dump(data, io.open(flow, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(flow, "flow.html")
+
     # Une variante du tunnel SANS clip : c'est le seul moyen de voir le cadre
     # vide, celui que le marchand a devant lui avant d'avoir charge son MP4.
-    flow = os.path.join(OUT, "flow.json")
     bare = os.path.join(OUT, "flow-bare.json")
     data = json.load(io.open(flow, encoding="utf-8"))
     for k in ("mk_video_url", "mk_caption"):
@@ -105,8 +123,9 @@ def main():
     json.dump(data, io.open(bare, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     render(bare, "flow-bare.html")
 
-    # Une variante avec api_url rempli ET sans clip : c'est la seule qui montre
-    # la branche JSON du tunnel, et leur photo qui prend la place du cadre vide.
+    # Une variante avec api_url rempli ET sans clip ET rien dessous : la
+    # branche JSON du tunnel, leur photo qui prend la place du cadre vide, et
+    # le bouton de l'ancienne page quand il n'y a rien a ouvrir dessous.
     api = os.path.join(OUT, "flow-api.json")
     data = json.load(io.open(flow, encoding="utf-8"))
     for k in ("mk_video_url", "mk_caption"):
@@ -114,6 +133,13 @@ def main():
     data["sections"][0]["settings"]["api_url"] = "/fake-api"
     json.dump(data, io.open(api, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     render(api, "flow-api.html")
+
+    # La page unique vue DANS L'EDITEUR : pas de verrou, tout est visible.
+    ed = os.path.join(OUT, "onepage-editor.json")
+    data = json.load(io.open(one, encoding="utf-8"))
+    data["design_mode"] = True
+    json.dump(data, io.open(ed, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    render(ed, "onepage-editor.html")
 
     # Le montage, avec six vrais plans et une chanson : c'est le seul moyen de
     # verifier qu'une coupe tombe au bon instant. Le gabarit deploye n'a pas

@@ -1,14 +1,11 @@
 /*
- * Le tunnel couples. Deux sections, aucun reglage ecrit ici.
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
  *
- * Ce n'est pas un oubli : Shopify reserialise ce fichier a chaque ecriture et
- * EFFACE tout reglage dont la valeur vaut le defaut du schema. Ecrire les
- * valeurs voulues ici ne servait donc a rien — elles disparaissaient — et ca
- * faisait croire a un push rate a chaque verification par MD5.
- *
- * Les valeurs vivent dans le schema de cs-duo-flow : les titres de l'attente,
- * le clip, la duree de la barre, les etapes, le bouton et la page qu'il ouvre.
- * On n'ecrit ici que ce qui s'ECARTE du schema.
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
  */
 {
   "sections": {
@@ -18,8 +15,343 @@
     },
     "flow": {
       "type": "cs-duo-flow",
-      "settings": {}
+      "settings": {
+        "api_url": "https://iopuyhggzsncconzmgjj.supabase.co/functions/v1/couples/start",
+        "next_page": "/pages/couples-preview"
+      }
+    },
+    "song": {
+      "type": "cs-duo-pv-song",
+      "blocks": {
+        "f1": {
+          "type": "face",
+          "settings": {}
+        },
+        "f2": {
+          "type": "face",
+          "settings": {}
+        },
+        "f3": {
+          "type": "face",
+          "settings": {}
+        },
+        "f4": {
+          "type": "face",
+          "settings": {}
+        },
+        "f5": {
+          "type": "face",
+          "settings": {}
+        },
+        "r1": {
+          "type": "row",
+          "settings": {
+            "icon": "💐",
+            "label": "Flowers",
+            "value": "Wilt in a week"
+          }
+        },
+        "r2": {
+          "type": "row",
+          "settings": {
+            "icon": "💎",
+            "label": "Jewellery",
+            "value": "Sits in a drawer"
+          }
+        },
+        "r3": {
+          "type": "row",
+          "settings": {
+            "icon": "🎬",
+            "label": "{name}'s music video",
+            "value": "Gets replayed",
+            "strong": true
+          }
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+        "f5",
+        "r1",
+        "r2",
+        "r3"
+      ],
+      "settings": {
+        "lock": false,
+        "bar_minutes": 5,
+        "wait_heading": "Your words are becoming a music video.",
+        "wait_sub": "Watch this while we make it.",
+        "video_ratio": "4/3",
+        "notice": "⚡ Your free preview appears here at the end of the video.",
+        "ready_notice": "✓ It's ready. Your preview is waiting below.",
+        "song_title": "{name}'s Unique Music Video",
+        "song_sub": "{genre} melody, written for {name} ({rel})",
+        "prev_ratio": "16/9",
+        "play_hint": "Tap to play preview",
+        "prev_empty": "Your 30-second preview appears here.",
+        "preview_length": "0:30",
+        "preview_note": "Play it with headphones if you have them.",
+        "proof_line": "12,000+ couples have given this gift",
+        "deal_title": "🎁 Preview-unlocked rate — 25% off",
+        "deal_note": "Only for couples who watched their preview. It ends with the timer below.",
+        "deal_chip": "SAVE $40",
+        "show_timer": true,
+        "timer_minutes": 1,
+        "timer_title": "Your spot is held",
+        "timer_note": "When it ends the rate goes back to the regular one. You can still order.",
+        "timer_over": "This rate has ended. You can still order at the regular rate.",
+        "show_wait": false
+      }
+    },
+    "offer": {
+      "type": "cs-duo-pv-offer",
+      "blocks": {
+        "s1": {
+          "type": "speed",
+          "settings": {
+            "label": "30-minute delivery",
+            "note": "Ready while you are still on your phone",
+            "price": "$119",
+            "was": "$159",
+            "badge": "MOST POPULAR",
+            "value": "30min",
+            "variant": "58564120510795"
+          }
+        },
+        "s2": {
+          "type": "speed",
+          "settings": {
+            "label": "48-hour delivery",
+            "note": "Standard",
+            "price": "$79",
+            "value": "48h",
+            "variant": "58564120543563"
+          }
+        },
+        "a1": {
+          "type": "addon",
+          "settings": {
+            "label": "Keep {name}'s lyrics forever",
+            "note": "A printable PDF with their name and the cover art. Save it, print it, frame it.",
+            "price": "+$19",
+            "value": "1",
+            "variant": "58564120936779"
+          }
+        },
+        "n1": {
+          "type": "step",
+          "settings": {
+            "title": "Unlock now",
+            "body": "One payment. Production starts the moment you click."
+          }
+        },
+        "n2": {
+          "type": "step",
+          "settings": {
+            "title": "Your music video is delivered",
+            "body": "In your inbox, within the time you picked. The song and the video, yours to keep."
+          }
+        },
+        "n3": {
+          "type": "step",
+          "settings": {
+            "title": "Play it for them",
+            "body": "A car, a first dance, a kitchen on a Tuesday. Headphones if you have them."
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "a1",
+        "n1",
+        "n2",
+        "n3"
+      ],
+      "settings": {
+        "speed_heading": "Choose your delivery speed",
+        "cta_label": "Unlock {name}'s full music video",
+        "cta_link": "/pages/couples",
+        "cta_note": "Limited · Yours forever · Secure payment",
+        "sticky": true,
+        "guar_title": "30-day money-back guarantee",
+        "guar_body": "Not happy with your music video? Full refund. No questions asked, no awkward email.",
+        "next_heading": "What happens next",
+        "next_sub": "Simple. No guesswork."
+      }
+    },
+    "reviews": {
+      "type": "cs-duo-reviews",
+      "blocks": {
+        "v1": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        },
+        "v2": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        },
+        "v3": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        },
+        "v4": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        },
+        "v5": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        },
+        "v6": {
+          "type": "review",
+          "settings": {
+            "stars": "★★★★★",
+            "date": "",
+            "verified": false,
+            "name": "",
+            "meta": "",
+            "quote": ""
+          }
+        }
+      },
+      "block_order": [
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6"
+      ],
+      "settings": {
+        "layout": "list",
+        "eyebrow": "",
+        "heading": "Loved by 12,000+ couples",
+        "proof_line": "Real stories, real reactions",
+        "verified_label": "Verified purchase",
+        "cta_label": "",
+        "cta_link": "#"
+      }
+    },
+    "faq": {
+      "type": "cs-duo-faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "q": "What if I don't like the full music video?",
+            "a": "<p>Tell us within 30 days and you get a full refund. No questions asked.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "q": "Is my payment secure?",
+            "a": "<p>Yes. Payment is handled by Shopify's own checkout. We never see your card details.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "q": "How quickly do I get it after paying?",
+            "a": "<p>Within the time you picked above — thirty minutes, or forty-eight hours.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "q": "How do I show it to them?",
+            "a": "<p>You get a private link plus the files. Play it from your phone, send the link, or put the video on a TV.</p>"
+          }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "q": "Can we play it at our wedding?",
+            "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car.</p>"
+          }
+        },
+        "q6": {
+          "type": "qa",
+          "settings": {
+            "q": "What happens if I don't unlock it right now?",
+            "a": "<p>Nothing is lost. Your answers are kept and you can come back — at the regular rate.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6"
+      ],
+      "settings": {
+        "heading": "Questions",
+        "sub": "Everything you're wondering, answered.",
+        "align": "center",
+        "bg": "paper",
+        "cta_label": "",
+        "cta_link": "#"
+      }
+    },
+    "help": {
+      "type": "cs-duo-help",
+      "settings": {
+        "heading": "Still Have Questions?",
+        "intro": "Our friendly team is here to help. Email us anytime at",
+        "email": "Sarah@craftstory.co",
+        "tail": "— we typically respond within a few hours.",
+        "bg": "paper2"
+      }
     }
   },
-  "order": ["head", "flow"]
+  "order": [
+    "head",
+    "flow",
+    "song",
+    "offer",
+    "reviews",
+    "faq",
+    "help"
+  ]
 }

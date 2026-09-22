@@ -31,7 +31,12 @@
      data-stages="{{ section.settings.stages | newline_to_br | replace: '<br />', '|' | escape }}">
   <div class="cs-wrap">
 
-    {%- comment -%} L'attente. Toujours visible, verrouillee ou pas. {%- endcomment -%}
+    {%- comment -%}
+      L'attente. Eteinte quand cette section est posee SOUS le tunnel : le
+      tunnel a deja la sienne, avec sa video et sa barre, et en montrer une
+      seconde ferait croire qu'il faut attendre deux fois.
+    {%- endcomment -%}
+    {%- if section.settings.show_wait -%}
     <div class="cs-pvs-top">
       {%- if section.settings.logo != blank -%}
         <img class="cs-pvs-logo" src="{{ section.settings.logo | image_url: width: 600 }}"
@@ -106,6 +111,7 @@
         <p class="cs-pvs-ready" data-cs-ready data-cs-tpl hidden>{{ section.settings.ready_notice }}</p>
       {%- endif -%}
     </div>
+    {%- endif -%}
 
     {%- comment -%} Tout ce qui suit est masque tant que la barre n'est pas pleine. {%- endcomment -%}
     <div class="cs-pvs-after" data-cs-after>
@@ -142,9 +148,14 @@
           {%- endif -%}
         {%- endfor -%}
 
+        {%- comment -%}
+          Le cadre de montage est toujours pose, meme sans aucun plan : la
+          preview generee arrive PENDANT que la page est deja ouverte, et c'est
+          dans ce cadre-la qu'elle se monte. Sans plan, il est cache et le
+          cadre vide s'affiche a sa place.
+        {%- endcomment -%}
         <div class="cs-pvs-player">
-          {%- if shots > 0 -%}
-            <div class="cs-pvs-take" data-cs-take
+            <div class="cs-pvs-take" data-cs-take{% if shots == 0 %} hidden{% endif %}
                  style="aspect-ratio:{{ section.settings.prev_ratio }}"
                  data-audio="{{ section.settings.take_audio | escape }}"
                  data-seconds="{{ section.settings.take_seconds }}"
@@ -222,19 +233,19 @@
               La barre des trente secondes, avec un repere par coupe : on VOIT
               que le montage est decoupe sur la chanson.
             {%- endcomment -%}
-            <div class="cs-pvs-tl" data-cs-tl>
+            <div class="cs-pvs-tl" data-cs-tl{% if shots == 0 %} hidden{% endif %}>
               <i data-cs-tlfill></i>
               <span class="cs-pvs-tl-marks" data-cs-marks aria-hidden="true"></span>
             </div>
-          {%- else -%}
             {%- comment -%}
-              Aucun plan charge : un cadre vide, pas un bouton qui fait semblant
-              de lire quelque chose.
+              Aucun plan : un cadre vide, pas un bouton qui fait semblant de lire
+              quelque chose. data-late : ce qu'il dit si la generation a echoue.
             {%- endcomment -%}
-            <div class="cs-pvs-prev cs-pvs-prev-empty" style="aspect-ratio:{{ section.settings.prev_ratio }}">
-              <span>{{ section.settings.prev_empty | default: 'Your preview appears here.' }}</span>
+            <div class="cs-pvs-prev cs-pvs-prev-empty" data-cs-empty{% if shots > 0 %} hidden{% endif %}
+                 data-late="{{ section.settings.prev_late | escape }}"
+                 style="aspect-ratio:{{ section.settings.prev_ratio }}">
+              <span data-cs-empty-text>{{ section.settings.prev_empty | default: 'Your preview appears here.' }}</span>
             </div>
-          {%- endif -%}
           <p class="cs-pvs-time"><span data-cs-cur>0:00</span> / <span data-cs-dur>{{ section.settings.preview_length | default: '0:00' }}</span></p>
           {%- if section.settings.preview_note != blank -%}
             <p class="cs-pvs-note">{{ section.settings.preview_note }}</p>
@@ -318,6 +329,7 @@
     { "type": "paragraph", "content": "Structure and forms only: nothing is wired to a generator or to a payment, so most fields start empty on purpose." },
 
     { "type": "header", "content": "The wait, and the unlock" },
+    { "type": "checkbox", "id": "show_wait", "label": "Show the waiting block at the top", "default": true, "info": "Turn it off when this section sits under the order flow on the same page: the flow already has its own wait." },
     { "type": "checkbox", "id": "lock", "label": "Hide the rest of the page until the bar is full", "default": false, "info": "Off by default: the wait now happens on the flow page, and people only reach this one by tapping its button. Turn it on only if you make this page the landing point instead. Never applied inside the theme editor." },
     { "type": "range", "id": "bar_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 5, "unit": "min" },
     { "type": "paragraph", "content": "The deadline is set once per visitor and kept in their browser: reloading does not restart it, and once the page is unlocked it stays unlocked." },
@@ -373,6 +385,7 @@
       ] },
     { "type": "text", "id": "play_hint", "label": "Play label", "default": "Tap to play preview" },
     { "type": "text", "id": "prev_empty", "label": "Text while there is no file", "default": "Your preview appears here." },
+    { "type": "text", "id": "prev_late", "label": "Text if the preview could not be made", "default": "Your preview is taking longer than usual. We have your details and will email it to you." },
     { "type": "text", "id": "preview_length", "label": "Preview length", "default": "0:30", "info": "Only shown before there are any Beat blocks — once there are, the real length of the cut is used." },
     { "type": "text", "id": "preview_note", "label": "Line under the preview", "default": "Play it with headphones if you have them." },
 
@@ -527,8 +540,8 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 .cs-pvs-shot{position:absolute;inset:0;opacity:0;transition:opacity var(--cs-cut,360ms) linear;
   will-change:opacity}
 .cs-pvs-shot.on{opacity:1}
-.cs-pvs-shot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-  transform-origin:center}
+.cs-pvs-shot video,.cs-pvs-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  display:block;transform-origin:center}
 /* La derive lente : elle colle les coupes entre elles et enleve tout effet de
    carte postale quand un plan finit sur une image presque fixe. */
 .cs-pvs-shot.on video{animation:cs-pvs-drift var(--cs-dur,5s) linear both}
@@ -536,6 +549,17 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 .cs-pvs-shot[data-drift=left].on video{animation-name:cs-pvs-drift-left}
 .cs-pvs-shot[data-drift=right].on video{animation-name:cs-pvs-drift-right}
 .cs-pvs-shot[data-drift=none].on video{animation:none}
+/* Une image fixe : un leger zoom, un peu plus marque qu'une video qui bouge
+   deja, pour qu'elle vive pendant ses cinq secondes sans jamais sauter. */
+.cs-pvs-shot.on img{animation:cs-pvs-zin var(--cs-dur,5s) linear both;will-change:transform}
+.cs-pvs-shot[data-drift=out].on img{animation-name:cs-pvs-zout}
+.cs-pvs-shot[data-drift=left].on img{animation-name:cs-pvs-drift-left}
+.cs-pvs-shot[data-drift=right].on img{animation-name:cs-pvs-drift-right}
+.cs-pvs-shot[data-drift=none].on img{animation:none}
+@keyframes cs-pvs-zin{from{transform:scale(1)}to{transform:scale(1.07)}}
+@keyframes cs-pvs-zout{from{transform:scale(1.07)}to{transform:scale(1)}}
+/* Suspendu : l'image s'arrete ou elle est, au lieu de repartir a la reprise. */
+.cs-pvs-take.cs-hold .cs-pvs-shot.on video,.cs-pvs-take.cs-hold .cs-pvs-shot.on img{animation-play-state:paused}
 @keyframes cs-pvs-drift{from{transform:scale(1.005)}to{transform:scale(1.045)}}
 @keyframes cs-pvs-drift-out{from{transform:scale(1.045)}to{transform:scale(1.005)}}
 @keyframes cs-pvs-drift-left{from{transform:scale(1.05) translateX(1.1%)}to{transform:scale(1.05) translateX(-1.1%)}}
@@ -546,7 +570,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 .cs-pvs-take::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;
   background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.28) 45%,transparent);
   pointer-events:none;opacity:0;transition:opacity .3s ease;z-index:1}
-.cs-pvs-take.cs-on::after{opacity:1}
+.cs-pvs-take.cs-said::after{opacity:1}
 .cs-duo-pvs .cs-pvs-lyric{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;
   padding:0 clamp(14px,4vw,24px) clamp(14px,4vw,22px);
   font-family:var(--cs-serif);font-size:clamp(1.12rem,4.4vw,1.6rem);line-height:1.25;
@@ -590,7 +614,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
 
 @media(prefers-reduced-motion:reduce){
   .cs-pvs-shot{transition:none}
-  .cs-pvs-shot.on video{animation:none}
+  .cs-pvs-shot.on video,.cs-pvs-shot.on img{animation:none}
   .cs-pvs-lyric span{animation:none;opacity:1;transform:none}
   .cs-pvs-end{animation:none}
 }
@@ -851,141 +875,46 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
   function take(root, map) {
     var stage = root.querySelector('[data-cs-take]');
     if (!stage) return;
-
-    var live = delivered();
-    if (live) {
-      var host = stage.querySelector('[data-cs-shots]');
-      host.textContent = '';
-      if (live.song) stage.setAttribute('data-audio', live.song);
-      if (live.seconds) stage.setAttribute('data-seconds', String(live.seconds));
-      for (var d = 0; d < live.beats.length; d++) {
-        var lb = live.beats[d];
-        var el = document.createElement('div');
-        el.className = 'cs-pvs-shot';
-        el.setAttribute('data-cs-shot', '');
-        el.setAttribute('data-n', String(d + 1));
-        el.setAttribute('data-clip', lb.clip || '');
-        el.setAttribute('data-dur', String(lb.dur || 5));
-        el.setAttribute('data-drift', lb.drift || 'in');
-        el.setAttribute('data-line', lb.line || '');
-        if (lb.poster) el.setAttribute('data-poster', lb.poster);
-        host.appendChild(el);
-      }
-      stage.setAttribute('data-cs-live', '1');
-    }
-
-    var raw = stage.querySelectorAll('[data-cs-shot]');
-    if (!raw.length) return;
-
+    var host = stage.querySelector('[data-cs-shots]');
     var cover = stage.querySelector('[data-cs-tap]');
     var lyric = stage.querySelector('[data-cs-lyric]');
     var cd = stage.querySelector('[data-cs-cd]');
     var end = stage.querySelector('[data-cs-end]');
     var again = stage.querySelector('[data-cs-again]');
     var audioEl = stage.querySelector('[data-cs-audio]');
+    var tl = root.querySelector('[data-cs-tl]');
     var fill = root.querySelector('[data-cs-tlfill]');
     var marks = root.querySelector('[data-cs-marks]');
+    var empty = root.querySelector('[data-cs-empty]');
+    var emptyText = root.querySelector('[data-cs-empty-text]');
     var curEl = root.querySelector('[data-cs-cur]');
     var durEl = root.querySelector('[data-cs-dur]');
 
     var cut = parseFloat(stage.getAttribute('data-cut'));
     if (isNaN(cut)) cut = 360;
     stage.style.setProperty('--cs-cut', cut + 'ms');
-    var cap = parseFloat(stage.getAttribute('data-seconds')) || 30;
 
+    // L'etat du montage en cours. load() le reconstruit en entier : une fois a
+    // l'ouverture de la page, puis a nouveau quand la preview generee arrive
+    // alors que la page est deja la.
     var beats = [];
-    var at = 0;
-    for (var i = 0; i < raw.length; i++) {
-      if (at >= cap - 0.1) break;
-      var d = parseFloat(raw[i].getAttribute('data-dur')) || 5;
-      if (at + d > cap) d = cap - at;
-      beats.push({ el: raw[i], at: at, dur: d, line: raw[i].getAttribute('data-line') || '' });
-      at += d;
-      // Les plans qui ne rentrent pas ne sont pas laisses dans le DOM a
-      // charger pour rien.
-      raw[i].dataset.csIn = '1';
-    }
-    var total = at;
-    for (var z = 0; z < raw.length; z++) {
-      if (!raw[z].dataset.csIn) raw[z].parentNode.removeChild(raw[z]);
-    }
-    if (!beats.length) return;
-
-    // Les plans sont muets : le son vient de la piste, une fois, sinon deux
-    // sources se battent et le montage sonne faux.
-    for (var n = 0; n < beats.length; n++) {
-      var b = beats[n];
-      var src = b.el.getAttribute('data-clip');
-      var ps = b.el.getAttribute('data-poster');
-      var v;
-      if (src) {
-        v = document.createElement('video');
-        v.muted = true;
-        v.defaultMuted = true;
-        v.setAttribute('muted', '');
-        v.setAttribute('playsinline', '');
-        v.playsInline = true;
-        v.preload = n < 2 ? 'auto' : 'none';
-        if (ps) v.poster = ps;
-        v.src = src;
-      } else {
-        // Un clip manquant tombe sur son image plutot que sur cinq secondes
-        // de noir au milieu du montage. On lui donne les memes methodes que
-        // la video pour que l'ordonnanceur n'ait pas a savoir la difference.
-        v = document.createElement('img');
-        v.alt = '';
-        v.src = ps || '';
-        v.muted = true;
-        v.paused = true;
-        v.currentTime = 0;
-        v.play = function () { return null; };
-        v.pause = function () {};
-        v.load = function () {};
-        v.preload = 'auto';
-      }
-      b.el.appendChild(v);
-      b.v = v;
-      b.el.style.setProperty('--cs-dur', b.dur + 's');
-      b.line = fillTpl(b.line, map);
-      if (n > 0 && marks) {
-        var mk = document.createElement('b');
-        mk.style.left = (b.at / total * 100) + '%';
-        marks.appendChild(mk);
-      }
-    }
-
-    var asrc = (stage.getAttribute('data-audio') || '').trim();
-    if (audioEl && asrc) { audioEl.src = asrc; } else { audioEl = null; }
-
-    // L'horloge. La chanson quand elle est la ; sinon celle de la page, pour
-    // que le montage reste visible avant que le son existe.
-    var clk = audioEl ? {
-      t: function () { return audioEl.currentTime; },
-      go: function () { var p = audioEl.play(); if (p && p.catch) p.catch(function () {}); },
-      hold: function () { audioEl.pause(); },
-      zero: function () { try { audioEl.currentTime = 0; } catch (e) {} }
-    } : (function () {
-      var t0 = 0, acc = 0, on = false;
-      var c = {
-        t: function () { return on ? acc + (Date.now() - t0) / 1000 : acc; },
-        go: function () { t0 = Date.now(); on = true; },
-        hold: function () { acc = c.t(); on = false; },
-        zero: function () { acc = 0; t0 = Date.now(); }
-      };
-      return c;
-    })();
-
-    var cur = -1, playing = false, raf = 0;
+    var total = 0;
+    var from = 0;          // ou la chanson commence : sur la voix, pas sur l'intro
+    var cur = -1;
+    var playing = false;
+    var raf = 0;
+    var clk = null;
 
     function mmssShort(sec) {
       sec = Math.max(0, Math.round(sec || 0));
       return Math.floor(sec / 60) + ':' + two(sec % 60);
     }
-    if (durEl) durEl.textContent = mmssShort(total);
 
     // Mot a mot, dans le temps du plan : une phrase qui apparait d'un bloc ne
-    // se lit pas, elle se subit.
+    // se lit pas, elle se subit. Sans parole, pas de voile : il ne sert qu'a
+    // la lire, et il assombrirait leurs visages pour rien.
     function say(text) {
+      stage.classList.toggle('cs-said', !!text);
       if (!lyric) return;
       lyric.textContent = '';
       if (!text) return;
@@ -1000,6 +929,175 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       }
     }
 
+    // L'horloge. La chanson quand elle est la ; sinon celle de la page, pour
+    // que le montage reste visible avant que le son existe. Le temps est
+    // compte a partir de `from` : la preview demarre sur le premier mot
+    // chante, et c'est la qu'elle compte zero.
+    function makeClock() {
+      if (audioEl && audioEl.getAttribute('src')) {
+        return {
+          t: function () { return Math.max(0, audioEl.currentTime - from); },
+          go: function () {
+            if (audioEl.currentTime < from - 0.25) { try { audioEl.currentTime = from; } catch (e) {} }
+            var p = audioEl.play();
+            if (p && p.catch) p.catch(function () {});
+          },
+          hold: function () { audioEl.pause(); },
+          zero: function () { try { audioEl.currentTime = from; } catch (e) {} }
+        };
+      }
+      var t0 = 0, acc = 0, on = false;
+      var c = {
+        t: function () { return on ? acc + (Date.now() - t0) / 1000 : acc; },
+        go: function () { t0 = Date.now(); on = true; },
+        hold: function () { acc = c.t(); on = false; },
+        zero: function () { acc = 0; t0 = Date.now(); }
+      };
+      return c;
+    }
+
+    function stopAll() {
+      playing = false;
+      window.cancelAnimationFrame(raf);
+      if (clk) clk.hold();
+      for (var i = 0; i < beats.length; i++) beats[i].v.pause();
+    }
+
+    function showEmpty(late) {
+      stage.hidden = true;
+      if (tl) tl.hidden = true;
+      if (empty) {
+        empty.hidden = false;
+        var msg = late ? (empty.getAttribute('data-late') || '') : '';
+        if (msg && emptyText) emptyText.textContent = msg;
+      }
+    }
+
+    function load(live) {
+      stopAll();
+
+      // La generation a echoue pour de bon : on le dit, a la place du cadre.
+      if (live && live.failed && !(live.beats && live.beats.length)) {
+        showEmpty(true);
+        return;
+      }
+
+      if (live && live.beats && live.beats.length) {
+        host.textContent = '';
+        stage.setAttribute('data-audio', live.song || '');
+        if (live.seconds) stage.setAttribute('data-seconds', String(live.seconds));
+        stage.setAttribute('data-start', String(Number(live.songStart) || 0));
+        for (var d = 0; d < live.beats.length; d++) {
+          var lb = live.beats[d];
+          var el = document.createElement('div');
+          el.className = 'cs-pvs-shot';
+          el.setAttribute('data-cs-shot', '');
+          el.setAttribute('data-n', String(d + 1));
+          el.setAttribute('data-clip', lb.clip || '');
+          el.setAttribute('data-dur', String(lb.dur || 5));
+          el.setAttribute('data-drift', lb.drift || 'in');
+          el.setAttribute('data-line', lb.line || '');
+          if (lb.poster) el.setAttribute('data-poster', lb.poster);
+          host.appendChild(el);
+        }
+        stage.setAttribute('data-cs-live', '1');
+      }
+
+      var raw = host.querySelectorAll('[data-cs-shot]');
+      var cap = parseFloat(stage.getAttribute('data-seconds')) || 30;
+      from = Math.max(0, parseFloat(stage.getAttribute('data-start')) || 0);
+
+      // La duree annoncee est un PLAFOND : le montage dure la somme de ses
+      // plans, rognee a ce plafond. Jamais une image figee au bout pour tenir
+      // trente secondes, jamais un depassement.
+      beats = [];
+      var at = 0;
+      for (var i = 0; i < raw.length; i++) {
+        raw[i].classList.remove('on');
+        // Un rechargement de la table repart de rien : on retire ce qu'un
+        // premier montage avait pose dans ce plan.
+        while (raw[i].firstChild) raw[i].removeChild(raw[i].firstChild);
+        if (at >= cap - 0.1) { raw[i].setAttribute('data-cs-out', '1'); continue; }
+        var dd = parseFloat(raw[i].getAttribute('data-dur')) || 5;
+        if (at + dd > cap) dd = cap - at;
+        beats.push({ el: raw[i], at: at, dur: dd, line: raw[i].getAttribute('data-line') || '' });
+        at += dd;
+      }
+      total = at;
+      for (var z = raw.length - 1; z >= 0; z--) {
+        if (raw[z].getAttribute('data-cs-out')) raw[z].parentNode.removeChild(raw[z]);
+      }
+      if (!beats.length) { showEmpty(false); return; }
+
+      stage.hidden = false;
+      if (tl) tl.hidden = false;
+      if (empty) empty.hidden = true;
+
+      // Les plans sont muets : le son vient de la piste, une fois, sinon deux
+      // sources se battent et le montage sonne faux.
+      if (marks) marks.textContent = '';
+      for (var n = 0; n < beats.length; n++) {
+        var b = beats[n];
+        var src = b.el.getAttribute('data-clip');
+        var ps = b.el.getAttribute('data-poster');
+        var v;
+        if (src) {
+          v = document.createElement('video');
+          v.muted = true;
+          v.defaultMuted = true;
+          v.setAttribute('muted', '');
+          v.setAttribute('playsinline', '');
+          v.playsInline = true;
+          v.preload = n < 2 ? 'auto' : 'none';
+          if (ps) v.poster = ps;
+          v.src = src;
+        } else {
+          // Une image fixe : le leger zoom la fait vivre pendant ses cinq
+          // secondes. On lui donne les memes methodes qu'une video pour que
+          // l'ordonnanceur n'ait pas a savoir la difference.
+          v = document.createElement('img');
+          v.alt = '';
+          v.decoding = 'async';
+          v.src = ps || '';
+          v.paused = true;
+          v.play = function () { return null; };
+          v.pause = function () {};
+          v.load = function () {};
+          v.preload = 'auto';
+        }
+        b.el.appendChild(v);
+        b.v = v;
+        b.el.style.setProperty('--cs-dur', b.dur + 's');
+        b.line = fillTpl(b.line, map);
+        if (n > 0 && marks) {
+          var mk = document.createElement('b');
+          mk.style.left = (b.at / total * 100) + '%';
+          marks.appendChild(mk);
+        }
+      }
+
+      var asrc = (stage.getAttribute('data-audio') || '').trim();
+      if (audioEl) {
+        if (asrc) {
+          if (audioEl.getAttribute('src') !== asrc) audioEl.setAttribute('src', asrc);
+          try { audioEl.currentTime = from; } catch (e) {}
+        } else {
+          audioEl.removeAttribute('src');
+        }
+      }
+      clk = makeClock();
+
+      cur = -1;
+      stage.classList.remove('cs-on', 'cs-hold', 'cs-said');
+      if (cover) cover.hidden = false;
+      if (end) end.hidden = true;
+      if (lyric) lyric.textContent = '';
+      if (fill) fill.style.width = '0%';
+      if (cd) cd.textContent = mmssShort(total);
+      if (curEl) curEl.textContent = '0:00';
+      if (durEl) durEl.textContent = mmssShort(total);
+    }
+
     function enter(n) {
       if (n === cur || !beats[n]) return;
       if (cur > -1 && beats[cur]) {
@@ -1009,7 +1107,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       cur = n;
       var b = beats[n];
       b.el.classList.add('on');
-      try { b.v.currentTime = 0; } catch (e) {}
+      if (b.v.tagName === 'VIDEO') { try { b.v.currentTime = 0; } catch (e) {} }
       var p = b.v.play();
       if (p && p.catch) p.catch(function () {});
       say(b.line);
@@ -1036,7 +1134,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
     }
 
     function start() {
-      if (playing) return;
+      if (playing || !beats.length) return;
       playing = true;
       if (cover) cover.hidden = true;
       if (end) end.hidden = true;
@@ -1045,7 +1143,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       clk.go();
       // Reprendre, ce n'est pas seulement relancer la chanson : le plan en
       // cours a ete mis en pause avec elle, et enter() ne le relance pas
-      // puisque son numero n'a pas change. Sans ces deux lignes, un appui pour
+      // puisque son numero n'a pas change. Sans ces lignes, un appui pour
       // reprendre remettait le son en marche devant une image figee.
       if (cur < 0) { enter(0); } else if (beats[cur]) {
         var p = beats[cur].v.play();
@@ -1072,7 +1170,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       if (fill) fill.style.width = '100%';
       if (cd) cd.textContent = '0:00';
       if (curEl) curEl.textContent = mmssShort(total);
-      if (lyric) lyric.textContent = '';
+      say('');
       // La derniere image reste : la proposition arrive dessus, pas sur du noir.
       if (end) end.hidden = false;
     }
@@ -1082,7 +1180,7 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
       for (var i = 0; i < beats.length; i++) {
         beats[i].el.classList.remove('on');
         beats[i].v.pause();
-        try { beats[i].v.currentTime = 0; } catch (e) {}
+        if (beats[i].v.tagName === 'VIDEO') { try { beats[i].v.currentTime = 0; } catch (e) {} }
       }
       cur = -1;
       if (fill) fill.style.width = '0%';
@@ -1105,6 +1203,14 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) hold();
     });
+
+    // La preview generee arrive pendant l'attente, sur la meme page : on la
+    // monte tout de suite, avant meme que la section soit visible.
+    document.addEventListener('cs:duo:take', function (e) {
+      load((e && e.detail) || delivered());
+    });
+
+    load(delivered());
   }
 
   function setup(root) {
@@ -1115,7 +1221,18 @@ html[data-cs-lock="1"] .cs-duo-help{display:none !important}
     sound(root);
     take(root, map);
     unlock(root);
-    deal(root);
+    // Posee sous le tunnel, la section reste cachee jusqu'a l'ouverture. Le
+    // rebours du tarif ne part qu'a ce moment-la — sinon il est deja fini
+    // quand on arrive dessus — et les titres sont recomposes avec les
+    // reponses, qui n'existaient peut-etre pas encore au chargement.
+    if (document.documentElement.getAttribute('data-cs-duo-gate') === 'closed') {
+      document.addEventListener('cs:duo:open', function () {
+        personalise(root, answers());
+        deal(root);
+      }, { once: true });
+    } else {
+      deal(root);
+    }
   }
 
   function init(scope) {

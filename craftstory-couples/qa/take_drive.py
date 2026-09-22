@@ -249,7 +249,7 @@ with sync_playwright() as pw:
     p2.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
     p2.goto(BASE + "/preview.html")
     p2.wait_for_timeout(400)
-    check("pas de table de montage", p2.eval_on_selector_all("[data-cs-take]", "e=>e.length"), 0)
+    check("le cadre de montage est pose, mais cache", p2.is_hidden("[data-cs-take]"), True)
     check("un cadre vide a la place", p2.is_visible(".cs-pvs-prev-empty"), True)
     check("et il dit quoi faire", p2.inner_text(".cs-pvs-prev-empty"),
           "Your 30-second preview appears here.")

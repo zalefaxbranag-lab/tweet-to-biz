@@ -25,6 +25,23 @@
   assign lang = section.settings.lang_options | newline_to_br | split: '<br />'
 
 -%}
+{%- comment -%}
+  LE VERROU DE LA PAGE UNIQUE.
+
+  Tout ce qui est pose SOUS le tunnel dans ce gabarit (la preview, l'offre,
+  les avis, les questions) reste cache tant que l'attente n'est pas finie.
+  Le selecteur « ~ .shopify-section » vise les sections qui SUIVENT celle-ci,
+  et elles seules : rien a regler dans les autres sections, et une page sans
+  rien dessous n'est pas touchee.
+
+  Le verrou est pose ici, dans le HTML, pas par le script : sinon le bas de la
+  page s'affiche une fraction de seconde avant d'etre cache. Jamais dans
+  l'editeur de theme, ou le marchand doit tout voir pour tout regler.
+{%- endcomment -%}
+{%- unless request.design_mode -%}
+  <style>html[data-cs-duo-gate="closed"] #shopify-section-{{ section.id }} ~ .shopify-section{display:none !important}</style>
+  <script>document.documentElement.setAttribute('data-cs-duo-gate', 'closed');</script>
+{%- endunless -%}
 <div class="cs cs-duo-flow" id="cs-duo-flow"
      data-cs-flow
      data-api="{{ section.settings.api_url | escape }}"
@@ -35,6 +52,8 @@
      {%- endcomment -%}
      data-next-page="{{ section.settings.next_page | escape }}"
      data-mk-min="{{ section.settings.mk_minutes }}"
+     data-mk-after="{{ section.settings.mk_after_video | default: 'Your preview is ready — it appears right after the video.' | escape }}"
+     data-mk-done="{{ section.settings.mk_done | default: 'Your preview is ready' | escape }}"
      data-mk-stages="{{ section.settings.mk_stages | newline_to_br | replace: '<br />', '|' | escape }}"
      data-next="{{ section.settings.next_label | default: 'Next' | escape }}"
      data-last="{{ section.settings.last_label | default: 'Create our song' | escape }}"
@@ -288,6 +307,14 @@
           {%- if section.settings.mk_stay != blank -%}<strong>{{ section.settings.mk_stay }}</strong>{%- endif -%}
         </div>
       {%- endif -%}
+      {%- comment -%}
+        Prend la place de l'encart quand tout s'ouvre dessous : on ne change pas
+        de page, donc il faut dire ou regarder.
+      {%- endcomment -%}
+      <p class="cs-flow-mk-ready" data-cs-mk-ready hidden>
+        <span>{{ section.settings.mk_ready | default: '✓ Your preview is ready — scroll down' }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </p>
 
       {%- comment -%} Le bouton n'existe qu'a 100 %. {%- endcomment -%}
       <a class="cs-btn cs-btn-primary cs-btn-lg cs-flow-mk-go" data-cs-mk-go href="#" hidden>
@@ -310,7 +337,7 @@
   "settings": [
     { "type": "paragraph", "content": "The seven-screen order flow. One page load, then every screen swaps instantly. Answers go to your shop email through Shopify's own contact form — no app, no worker. Fill in the API URL below when the generation service exists and the flow posts there instead." },
     { "type": "header", "content": "Where the answers go" },
-    { "type": "text", "id": "api_url", "label": "API URL", "info": "Leave empty to use Shopify's contact form (your shop email). Fill it to POST the answers as JSON instead — this is the hook for the song and video generation, and the only way the photos reach you: a Shopify contact form cannot carry a file." },
+    { "type": "text", "id": "api_url", "label": "API URL", "info": "The preview generator's start address (…/functions/v1/couples/start). When it is set, the wait appears at once, the preview is made in the background, the answers still reach your shop email, and the page opens below when everything is ready. Leave empty to only send the answers by email." },
 
     { "type": "header", "content": "1 — Who it's for" },
     { "type": "text", "id": "s1_heading", "label": "Heading", "default": "Let's start with the basics" },
@@ -396,11 +423,14 @@
     { "type": "text", "id": "mk_sound", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "mk_caption", "label": "Caption over the clip" },
     { "type": "text", "id": "mk_empty", "label": "Text while there is no clip", "default": "Your video goes here — upload an MP4 in the sidebar.", "info": "Shown in an empty frame, so the block is visible before you add a file." },
-    { "type": "range", "id": "mk_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 5, "unit": "min" },
+    { "type": "range", "id": "mk_minutes", "label": "How long the bar takes", "min": 1, "max": 10, "step": 1, "default": 3, "unit": "min", "info": "The page opens below when the bar is full, the clip has played to its end and the preview is ready. The bar waits at 99% if the preview needs a little longer." },
     { "type": "textarea", "id": "mk_stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
     { "type": "text", "id": "mk_notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears here at the end of the video." },
     { "type": "text", "id": "mk_stay", "label": "Warning under it, in capitals", "default": "DON'T LEAVE THIS PAGE!" },
-    { "type": "text", "id": "mk_cta", "label": "Button once the bar is full", "default": "Your music video preview" },
+    { "type": "text", "id": "mk_cta", "label": "Button once the bar is full", "default": "Your music video preview", "info": "Only used when nothing is placed below this section: then the button opens the page set below instead." },
+    { "type": "text", "id": "mk_ready", "label": "Line once everything opens below", "default": "✓ Your preview is ready — scroll down" },
+    { "type": "text", "id": "mk_after_video", "label": "Line while the clip finishes", "default": "Your preview is ready — it appears right after the video." },
+    { "type": "text", "id": "mk_done", "label": "Bar label once everything is open", "default": "Your preview is ready" },
     { "type": "text", "id": "next_page", "label": "Page that button opens", "default": "/pages/couples-preview" },
 
     { "type": "header", "content": "Buttons" },
@@ -558,11 +588,19 @@
 .cs-flow-mk-empty span{display:flex;flex-direction:column;align-items:center;gap:9px;
   padding:0 20px;text-align:center;color:var(--cs-ink3);font-size:.88rem;line-height:1.45}
 .cs-flow-mk-empty svg{width:34px;height:34px}
+/* Quand tout s'ouvre dessous : on ne change pas de page, donc on dit ou regarder. */
+.cs-duo-flow .cs-flow-mk-ready{display:flex;align-items:center;justify-content:center;gap:9px;
+  margin:20px 0 0;padding:14px 16px;border-radius:var(--cs-r-lg);background:rgba(236,91,60,.1);
+  border:1px solid rgba(236,91,60,.34);color:var(--cs-coral-deep);font-size:1rem;font-weight:800;
+  line-height:1.3;text-align:center;animation:cs-flow-in .3s ease both}
+.cs-flow-mk-ready svg{width:20px;height:20px;flex:0 0 20px;animation:cs-flow-nudge 1.4s ease-in-out infinite}
+@keyframes cs-flow-nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 .cs-flow-mk-go{width:100%;margin-top:20px;white-space:nowrap;animation:cs-flow-in .3s ease both}
 .cs-flow-mk-go svg{width:19px;height:19px;transition:transform .18s ease}
 .cs-flow-mk-go:hover svg{transform:translateX(3px)}
 @media(prefers-reduced-motion:reduce){
-  .cs-flow-step,.cs-flow-wait,.cs-flow-mk,.cs-flow-mk-go{animation:none}}
+  .cs-flow-step,.cs-flow-wait,.cs-flow-mk,.cs-flow-mk-go,.cs-duo-flow .cs-flow-mk-ready,
+  .cs-flow-mk-ready svg{animation:none}}
 
 /* ATTENTION, piege du theme : cs-head pose .cs p{margin:0}, de specificite
    0,1,1. Une classe seule sur un paragraphe vaut 0,1,0 et PERD, quel que soit
@@ -760,28 +798,49 @@
       keepShots();
     }
 
-    function sendNative(data) {
-      stash(data);
-
+    // Le message qui arrive dans la boite mail de la boutique. Le meme dans
+    // les deux chemins, a une ligne pres : ou sont passees les photos.
+    function leadFields(data, viaApi) {
       var lines = [];
       for (var k in data) if (k !== 'email') lines.push(niceKey(k) + ': ' + data[k]);
       var body = 'COUPLES SONG REQUEST\n\n' + lines.join('\n');
       // Le formulaire de contact de Shopify ne sait pas porter de fichier. On
-      // ne fait pas semblant : le message dit combien de photos ont ete
-      // deposees, ou elles sont restees, et quoi remplir pour les recevoir.
-      if (shots.length) {
+      // ne fait pas semblant : le message dit ou sont les photos.
+      if (shots.length && viaApi) {
+        body += '\n\nPhotos: ' + shots.length + ' sent to the preview generator. If they buy,'
+          + ' the song, the six scenes and the photo links are attached to their order.';
+      } else if (shots.length) {
         body += '\n\nPhotos: ' + shots.length + ' added by the visitor, but a Shopify'
           + ' contact form cannot carry files, so they stayed in their browser.'
           + ' Fill in the API URL of the flow section to receive them.';
       }
-
-      var fields = {
+      return {
         form_type: 'contact',
         utf8: '✓',
         'contact[email]': data.email || '',
         'contact[name]': (data.your_name || '') + ' & ' + (data.their_name || ''),
         'contact[body]': body
       };
+    }
+
+    // Avec la generation branchee, le message part SANS quitter la page : un
+    // rechargement ici couperait l'attente et la video. C'est le meme envoi
+    // que le formulaire natif, par fetch ; et on sait s'il est passe, parce
+    // que Shopify ne renvoie sur ?contact_posted=true qu'en cas de reussite.
+    function sendLead(data) {
+      var q = new URLSearchParams();
+      var fields = leadFields(data, true);
+      for (var key in fields) q.append(key, fields[key]);
+      return fetch('/contact', { method: 'POST', body: q, credentials: 'same-origin' })
+        .then(function (r) {
+          root.setAttribute('data-lead', String(r.url || '').indexOf('contact_posted=true') > -1 ? 'sent' : 'held');
+        })
+        .catch(function () { root.setAttribute('data-lead', 'failed'); });
+    }
+
+    function sendNative(data) {
+      stash(data);
+      var fields = leadFields(data, false);
 
       var f = document.createElement('form');
       f.method = 'post';
@@ -823,10 +882,114 @@
       } catch (e) { return Promise.resolve(null); }
     }
 
-    // L'attente prend la place du dernier champ, sur la meme page : c'est la
-    // suite immediate du clic, pas un accuse de reception. Aucun changement de
-    // page ici — le seul saut viendra du bouton, une fois la barre pleine.
+    // ----------------------------------------------------------------------
+    // L'ATTENTE, ET CE QUI S'OUVRE DESSOUS
+    //
+    // L'attente prend la place du dernier champ, sur la meme page, au clic :
+    // c'est la suite immediate du formulaire, pas un accuse de reception.
+    //
+    // Trois conditions, et les trois doivent etre vraies pour que tout ce qui
+    // est pose sous le tunnel s'ouvre — la preview, l'offre, les avis :
+    //   bar      la barre a fait ses trois minutes ;
+    //   video    le clip d'attente est alle au bout. Un clip que le telephone
+    //            refuse de lancer (economie d'energie, lecture automatique
+    //            bloquee) ne bloque jamais personne ;
+    //   preview  la generation a rendu sa chanson et ses six images — ou a
+    //            echoue pour de bon, et on ouvre quand meme, avec un message.
+    //
+    // Aucun changement de page. Sans section dessous, on retombe sur l'ancien
+    // bouton qui ouvre la page d'apres.
+    // ----------------------------------------------------------------------
     var MKEND = 'csDuoMakeAt';
+    var JOB = 'csDuoJob';
+    var TAKE = 'csDuoTake';
+    var OPENED = 'csDuoOpen';
+    var gate = { bar: false, video: false, preview: false, failed: false, open: false };
+    var onCheck = null;
+
+    function below() {
+      var box = root.closest('.shopify-section');
+      if (!box) return false;
+      for (var s2 = box.nextElementSibling; s2; s2 = s2.nextElementSibling) {
+        if (s2.classList && s2.classList.contains('shopify-section')) return true;
+      }
+      return false;
+    }
+
+    function readJob() {
+      try { return JSON.parse(window.sessionStorage.getItem(JOB) || 'null'); } catch (e) { return null; }
+    }
+    function saveJob(j) {
+      try { window.sessionStorage.setItem(JOB, JSON.stringify(j)); } catch (e) {}
+    }
+    function haveTake() {
+      try {
+        var t = JSON.parse(window.sessionStorage.getItem(TAKE) || 'null');
+        return !!(t && t.beats && t.beats.length);
+      } catch (e) { return false; }
+    }
+
+    // La preview est la (ou ne viendra pas). La section du dessous ecoute
+    // l'evenement et monte ses six images tout de suite, avant meme d'etre
+    // visible : quand la page s'ouvre, tout est deja pret a jouer.
+    function previewDone(take, failed) {
+      if (take) {
+        try { window.sessionStorage.setItem(TAKE, JSON.stringify(take)); } catch (e) {}
+      }
+      if (failed) gate.failed = true;
+      try {
+        document.dispatchEvent(new CustomEvent('cs:duo:take', { detail: take || { failed: true } }));
+      } catch (e) {}
+      gate.preview = true;
+      if (onCheck) onCheck();
+    }
+
+    function statusFrom(url) {
+      return String(url || '').replace(/\/start\/?(\?.*)?$/, '/status');
+    }
+
+    var pollErrors = 0;
+    var pollStart = 0;
+    function poll() {
+      var j = readJob();
+      if (!j || !j.job) { previewDone(null, true); return; }
+      if (!pollStart) pollStart = Date.now();
+      // Au-dela de dix minutes on n'attend plus : l'API a rendu son verdict
+      // bien avant.
+      if (Date.now() - pollStart > 600000) { previewDone(null, true); return; }
+      fetch(j.status || statusFrom(root.getAttribute('data-api')), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job: j.job })
+      }).then(function (r) { return body(r); }).then(function (out) {
+        if (!out) throw new Error('empty');
+        pollErrors = 0;
+        if (out.job && out.job !== j.job) { j.job = out.job; saveJob(j); }
+        if (out.ready && out.beats && out.beats.length) { previewDone(out, false); return; }
+        if (out.failed) { previewDone(null, true); return; }
+        setTimeout(poll, 5000);
+      }).catch(function () {
+        // Un reseau qui tousse ne tue pas la preview : on insiste, plus
+        // lentement, avant d'abandonner.
+        pollErrors += 1;
+        if (pollErrors > 12) { previewDone(null, true); return; }
+        setTimeout(poll, 8000);
+      });
+    }
+
+    function startJob(url, data) {
+      sendApi(url, data).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return body(r);
+      }).then(function (out) {
+        if (out && out.beats && out.beats.length) { previewDone(out, false); return; }
+        if (!out || !out.job) throw new Error('no job');
+        saveJob({ job: out.job, status: out.status || statusFrom(url) });
+        setTimeout(poll, 5000);
+      }).catch(function () {
+        previewDone(null, true);
+      });
+    }
 
     function finish(who) {
       form.hidden = true;
@@ -842,7 +1005,7 @@
         var src = v.getAttribute('data-cs-mk-src');
         if (src) {
           v.src = src;
-          if (v.muted) { v.play(); }
+          if (v.muted) { var pp = v.play(); if (pp && pp.catch) pp.catch(function () {}); }
         }
       }
 
@@ -861,13 +1024,15 @@
         slot.appendChild(ph);
       }
 
-      var mins = parseFloat(root.getAttribute('data-mk-min') || '5') || 5;
+      var mins = parseFloat(root.getAttribute('data-mk-min') || '3') || 3;
       var fillBar = mk.querySelector('[data-cs-mk-fill]');
       var pctEl = mk.querySelector('[data-cs-mk-pct]');
       var stageEl = mk.querySelector('[data-cs-mk-stage]');
       var clockEl = mk.querySelector('[data-cs-mk-clock]');
       var noteEl = mk.querySelector('[data-cs-mk-note]');
+      var readyEl = mk.querySelector('[data-cs-mk-ready]');
       var go = mk.querySelector('[data-cs-mk-go]');
+      var afterVideo = D.mkAfter || '';
 
       var stages = [];
       var raw = (root.getAttribute('data-mk-stages') || '').split('|');
@@ -884,6 +1049,26 @@
         }
       } catch (e) { end = Date.now() + mins * 60000; }
 
+      // Le clip : fini, ou impossible a lire.
+      var hasClip = !!(v && v.getAttribute('data-cs-mk-src'));
+      if (!hasClip) gate.video = true;
+      if (hasClip) {
+        v.addEventListener('ended', function () {
+          gate.video = true;
+          // Vu en entier : il repart en boucle, sans le son, pour que l'ecran
+          // ne se fige pas si la preview tarde encore un peu.
+          v.muted = true;
+          v.loop = true;
+          var p2 = v.play();
+          if (p2 && p2.catch) p2.catch(function () {});
+          check();
+        });
+        v.addEventListener('error', function () { gate.video = true; check(); });
+      }
+      function videoStuck() {
+        return hasClip && v.paused && !v.ended && v.currentTime < 0.5;
+      }
+
       function ready() {
         if (!go) return;
         var base = (root.getAttribute('data-next-page') || '').trim();
@@ -895,11 +1080,27 @@
         if (noteEl) noteEl.hidden = true;
       }
 
+      function open() {
+        if (gate.open) return;
+        gate.open = true;
+        try { window.sessionStorage.setItem(OPENED, '1'); } catch (e) {}
+        if (!below()) { ready(); return; }
+        document.documentElement.setAttribute('data-cs-duo-gate', 'open');
+        if (noteEl) noteEl.hidden = true;
+        if (readyEl) readyEl.hidden = false;
+        paint();
+        try { document.dispatchEvent(new CustomEvent('cs:duo:open')); } catch (e) {}
+      }
+
       function paint() {
         var left = Math.max(0, (end - Date.now()) / 1000);
+        if (left <= 0) gate.bar = true;
         var p = Math.max(0, Math.min(100, (1 - left / (mins * 60)) * 100));
+        // Elle ne dit pas 100 % tant que la preview n'est pas la : elle attend
+        // a 99, sur la derniere etape.
+        if (!gate.preview) p = Math.min(p, 99);
         if (fillBar) fillBar.style.width = p + '%';
-        if (pctEl) pctEl.textContent = Math.round(p) + '%';
+        if (pctEl) pctEl.textContent = Math.floor(p) + '%';
         if (clockEl) {
           // Arrondir les secondes AVANT de decouper : arrondir le reste donnait
           // « 04:60 » quand il restait 4 min 59,7 s.
@@ -907,38 +1108,57 @@
           clockEl.textContent = ('0' + Math.floor(whole / 60)).slice(-2) + ':'
             + ('0' + (whole % 60)).slice(-2);
         }
-        if (stageEl && stages.length) {
-          var k = Math.min(stages.length - 1, Math.floor(p / (100 / stages.length)));
-          if (stageEl.textContent !== stages[k]) stageEl.textContent = stages[k];
+        if (stageEl) {
+          var label = '';
+          if (gate.open && D.mkDone) {
+            label = D.mkDone;
+          } else if (gate.bar && gate.preview && !gate.video && !videoStuck() && afterVideo) {
+            label = afterVideo;
+          } else if (stages.length) {
+            label = stages[Math.min(stages.length - 1, Math.floor(p / (100 / stages.length)))];
+          }
+          if (label && stageEl.textContent !== label) stageEl.textContent = label;
         }
-        if (left > 0) return;
-        clearInterval(tick);
-        ready();
       }
 
-      paint();
-      var tick = setInterval(paint, 500);
+      function check() {
+        paint();
+        if (gate.bar && gate.preview && (gate.video || videoStuck())) open();
+      }
+      onCheck = check;
+
+      check();
+      var tick = setInterval(function () {
+        check();
+        if (gate.open) clearInterval(tick);
+      }, 500);
 
       var snd = mk.querySelector('[data-cs-mk-sound]');
       if (snd && v) {
         snd.addEventListener('click', function (e) {
           e.stopPropagation();
           v.muted = false;
-          v.play();
+          var p3 = v.play();
+          if (p3 && p3.catch) p3.catch(function () {});
           snd.hidden = true;
         });
         mk.querySelector('.cs-flow-mk-stage').addEventListener('click', function () {
-          if (v.paused) { v.play(); } else { v.pause(); }
+          if (v.paused) { var p4 = v.play(); if (p4 && p4.catch) p4.catch(function () {}); } else { v.pause(); }
         });
       }
     }
 
     function submit() {
       var data = answers();
-      form.hidden = true;
-      root.querySelector('.cs-flow-top').hidden = true;
-      wait.hidden = false;
       var who = { name: data.their_name, email: data.email };
+      // Une nouvelle demande repart de zero : nouvelle echeance, et plus rien
+      // d'une demande precedente faite dans cet onglet.
+      try {
+        window.localStorage.removeItem(MKEND);
+        window.sessionStorage.removeItem(JOB);
+        window.sessionStorage.removeItem(TAKE);
+        window.sessionStorage.removeItem(OPENED);
+      } catch (e) {}
 
       // Dans l'editeur de theme, Shopify bloque les envois de formulaire. Sans
       // ce cas, tester le tunnel depuis l'editeur finit TOUJOURS sur une
@@ -947,6 +1167,7 @@
       // peut le voir tant que ses pages ne sont pas publiees.
       if (window.Shopify && window.Shopify.designMode) {
         stash(data);
+        gate.preview = true;
         finish(who);
         var note = root.querySelector('[data-cs-editnote]');
         if (note) {
@@ -959,26 +1180,20 @@
       }
 
       var url = (root.getAttribute('data-api') || '').trim();
-      if (!url) { sendNative(data); return; }
+      if (!url) {
+        form.hidden = true;
+        root.querySelector('.cs-flow-top').hidden = true;
+        wait.hidden = false;
+        sendNative(data);
+        return;
+      }
 
+      // Avec la generation branchee : l'attente s'affiche TOUT DE SUITE, au
+      // clic. La preview et l'e-mail partent derriere, sans quitter la page.
       stash(data);
-      sendApi(url, data).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return body(r);
-      }).then(function (out) {
-        // La table de montage, si la generation a deja repondu : la page
-        // d'apres la joue telle quelle. Rien d'autre a transporter.
-        if (out && out.beats && out.beats.length) {
-          try { window.sessionStorage.setItem('csDuoTake', JSON.stringify(out)); } catch (e) {}
-        }
-        finish(who);
-      }).catch(function () {
-        wait.hidden = true;
-        form.hidden = false;
-        root.querySelector('.cs-flow-top').hidden = false;
-        err.textContent = CFG.errSend;
-        err.hidden = false;
-      });
+      finish(who);
+      startJob(url, data);
+      sendLead(data);
     }
 
     next.addEventListener('click', function () {
@@ -1097,7 +1312,12 @@
     try {
       posted = new URLSearchParams(window.location.search).get('contact_posted') === 'true';
     } catch (e) {}
-    if (posted) {
+    // Un rechargement pendant l'attente, ou apres l'ouverture, ne ramene pas au
+    // formulaire : on reprend exactement ou on en etait.
+    var job = readJob();
+    var opened = false;
+    try { opened = window.sessionStorage.getItem(OPENED) === '1'; } catch (e) {}
+    if (posted || job || opened || haveTake()) {
       // On ne l'efface pas : la page d'attente en a besoin pour ses titres.
       // Elle meurt avec l'onglet, ce qui suffit.
       var who = { name: '', email: '' };
@@ -1105,6 +1325,18 @@
         var raw = JSON.parse(window.sessionStorage.getItem(STORE) || '{}');
         who = { name: raw.their_name || '', email: raw.email || '' };
       } catch (e) {}
+      if (opened) { gate.bar = true; gate.video = true; }
+      if (haveTake()) {
+        gate.preview = true;
+      } else if (job) {
+        poll();
+      } else if ((root.getAttribute('data-api') || '').trim()) {
+        gate.preview = true;
+        gate.failed = true;
+      } else {
+        // Pas de generation branchee : rien a attendre d'elle.
+        gate.preview = true;
+      }
       finish(who);
       return;
     }

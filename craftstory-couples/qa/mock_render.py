@@ -390,13 +390,19 @@ def build(mock_path, out_path):
             bs.update(b.get("settings", {}))
             blocks.append(Drop(type=b["type"], settings=Drop(bs), shopify_attributes=""))
 
+        # Comme Shopify : chaque section dans son enveloppe, avec l'identifiant
+        # « template--…__cle ». Le verrou de la page unique s'appuie dessus
+        # (« #shopify-section-X ~ .shopify-section ») : sans enveloppe, on
+        # testerait un verrou qui ne verrouille rien.
+        sid = "template--mock__" + entry.get("key", t)
         scope = {
-            "section": Drop(settings=Drop(settings), blocks=blocks, id="mock-" + t),
-            "request": Drop(design_mode=False),
+            "section": Drop(settings=Drop(settings), blocks=blocks, id=sid),
+            "request": Drop(design_mode=bool(mock.get("design_mode"))),
         }
         tree = parse(re.sub(r"\{%-?\s*(schema|stylesheet|javascript)\s*-?%\}.*?\{%-?\s*end\1\s*-?%\}",
                             "", src, flags=re.S))
-        body.append(render(tree, scope, warn))
+        body.append('<div id="shopify-section-' + sid + '" class="shopify-section">'
+                    + render(tree, scope, warn) + '</div>')
 
     if warn:
         print("BALISES IGNOREES:", sorted(warn), file=sys.stderr)
@@ -407,8 +413,8 @@ def build(mock_path, out_path):
     doc = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
            "<title>mock</title><style>*{box-sizing:border-box}body{margin:0}\n"
-           + "\n".join(css) + "</style></head><body class=\"cs\">\n"
-           + "\n".join(body) + "\n<script>" + "\n".join(js) + "</script></body></html>")
+           + "\n".join(css) + "</style></head><body class=\"cs\">\n<main id=\"MainContent\">"
+           + "\n".join(body) + "</main>\n<script>" + "\n".join(js) + "</script></body></html>")
     io.open(out_path, "w", encoding="utf-8").write(doc)
     print("ecrit", out_path, len(doc), "octets")
 

@@ -80,7 +80,21 @@ def still(path):
     return path
 
 
+def scene(n, rgb):
+    """Une « scene » fixe, comme celles que la generation rend : 16:9, le
+    numero en gros, pour verifier sur une capture laquelle est a l'ecran."""
+    im = Image.new("RGB", (960, 540), rgb)
+    d = ImageDraw.Draw(im)
+    d.rectangle([380, 170, 580, 370], fill=(0, 0, 0))
+    d.text((470, 260), "S%d" % n, fill=(255, 255, 255))
+    path = D + "scene%d.png" % n
+    im.save(path)
+    return path
+
+
 if __name__ == "__main__":
+    for n in range(1, 7):
+        print("  " + scene(n, TINT[n - 1]))
     for n in range(1, 7):
         print("  " + clip(n, TINT[n - 1]))
     print("  " + still(D + "still.png"))
