@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "head": {
+      "type": "cs-head",
+      "settings": {}
+    },
+    "video": {
+      "type": "cs-duo-video",
+      "settings": {}
+    }
+  },
+  "order": [
+    "head",
+    "video"
+  ]
+}

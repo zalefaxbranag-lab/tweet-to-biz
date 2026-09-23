@@ -22,6 +22,7 @@ export const API = 'https://api.kie.ai/api/v1';
 export const UPLOAD = 'https://kieai.redpandaai.co/api/file-base64-upload';
 export const IMAGE_MODEL = 'nano-banana-pro';
 export const SONG_MODEL = 'V5';
+export const VIDEO_MODEL = 'kling-2.6/image-to-video';
 
 // Les etats de la chanson qui ne reviendront jamais.
 const SONG_DEAD = ['CREATE_TASK_FAILED', 'GENERATE_AUDIO_FAILED', 'CALLBACK_EXCEPTION',
@@ -67,6 +68,20 @@ export function kie(env, fetchImpl) {
       return r.ok ? (d.taskId || d.recordId || '') : '';
     },
 
+    // Le plan anime : l'image du plan devient la premiere image d'un clip Kling.
+    async createVideo(prompt, imageUrl, seconds) {
+      const r = await call(API + '/jobs/createTask', {
+        method: 'POST', headers: H,
+        body: JSON.stringify({
+          model: VIDEO_MODEL,
+          input: { prompt: prompt, image_urls: [imageUrl], sound: false, duration: seconds === '10' ? '10' : '5' }
+        })
+      });
+      const d = (r.body && r.body.data) || {};
+      return r.ok ? (d.taskId || d.recordId || '') : '';
+    },
+
+    // Meme route de suivi pour les images et les clips : resultUrls[0].
     async imageInfo(taskId) {
       if (!taskId) return { state: 'failed' };
       const r = await call(API + '/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: H });

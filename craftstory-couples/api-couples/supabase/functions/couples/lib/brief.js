@@ -220,9 +220,95 @@ export function scenes(a, photoCount) {
     return {
       k: s.k,
       prompt: lead + (s.scene || s.safe) + '.' + KEEP + ' ' + LOOK,
-      safe: lead + s.safe + '.' + KEEP + ' ' + LOOK
+      safe: lead + s.safe + '.' + KEEP + ' ' + LOOK,
+      motion: motion(s.safe)
     };
   });
+}
+
+/* LA VIDEO COMPLETE : les plans qui suivent les six de la preview.
+ *
+ * Une bibliotheque de moments de couple, dans un ordre qui raconte une vie a
+ * deux, puis le moment de l'occasion vers la fin, puis le final. Le point de
+ * depart dans la bibliotheque depend de leurs prenoms : deux couples n'ont pas
+ * le meme film, et le meme couple retrouve toujours le sien.
+ */
+const LIFE = [
+  'a spontaneous road trip: laughing together in a vintage convertible on a coastal road, wind in their hair',
+  'cooking dinner together in a warm kitchen, one offering the other a taste from a wooden spoon, laughing',
+  'sharing one umbrella on a rainy city street at night, neon reflections on the wet pavement',
+  'a picnic on a blanket in a meadow of wildflowers, sharing strawberries in the late afternoon sun',
+  'dancing barefoot in the living room to a record player, cozy lamps, candid joy',
+  'walking through a snowy park in winter coats, snowflakes falling, holding gloved hands',
+  'watching the city lights from a rooftop at blue hour, wrapped in the same blanket',
+  'riding bicycles side by side along a tree-lined path in autumn, golden leaves falling',
+  'at a lively night market under strings of lanterns, sharing street food and laughing',
+  'on a small wooden rowing boat on a calm lake at sunrise, soft mist over the water',
+  'lying on a blanket beside a campfire, looking up at a sky full of stars',
+  'in a cozy bookstore, one reading a passage aloud while the other smiles',
+  'on a ferris wheel at a fair at dusk, the town glowing below them',
+  'reaching a mountain viewpoint on a hike and hugging, a vast green valley behind them',
+  'a slow dance in the kitchen late at night, foreheads touching, soft warm light',
+  'inside a pillow fort with fairy lights on a rainy afternoon, laughing',
+  'walking along a wooden pier at golden hour, the sea sparkling behind them',
+  'painting the walls of their new home together, a little paint on their cheeks, laughing',
+  'sitting on the steps of an old European street eating gelato in warm evening light',
+  'running hand in hand through a summer rain shower, soaked and laughing',
+  'a slow Sunday morning in bed with coffee, sunlight through linen curtains',
+  'looking out of a train window at the countryside, one resting their head on the other\'s shoulder',
+  'under a tree in full blossom in spring, petals drifting down around them',
+  'on a balcony strung with fairy lights, sharing a toast with two glasses',
+  'walking along a cliff path above the ocean, sharing one scarf in the wind',
+  'at a farmers market carrying a basket of flowers and fresh bread',
+  'on the sofa under a blanket, one dozing on the other\'s shoulder, a gentle smile',
+  'dancing in an empty street under a warm streetlight at midnight',
+  'at the edge of the sea at sunset, jeans rolled up, splashing each other',
+  'feeding ducks by a pond in an old park, sharing a laugh on a bench'
+];
+
+const FINALE = [
+  'an embrace in a golden wheat field at sunset, warm lens flare',
+  'forever: smiling cheek to cheek in golden sunset light, the most beautiful portrait of all'
+];
+
+function seedOf(a) {
+  const s = String((a && a.their_name) || '') + '|' + String((a && a.your_name) || '');
+  let h = 7;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+export function fullScenes(a, count, photoCount) {
+  const n = Math.max(0, count | 0);
+  const lead = who(photoCount);
+  const moment = MOMENT[occasionKey(a)] || MOMENT.default;
+  const love = clip(a && a.qualities, 110);
+  const them = name(a && a.their_name);
+  const list = [];
+  const start = seedOf(a) % LIFE.length;
+  for (let i = 0; i < n; i++) list.push(LIFE[(start + i) % LIFE.length]);
+  // Ce qu'ils aiment chez l'autre revient au milieu, s'ils l'ont ecrit.
+  if (love && n >= 10) list[Math.floor(n / 2)] = 'a tender candid moment that shows what makes ' + (them || 'them') + ' special — ' + love;
+  // L'occasion vers les trois quarts, le final a la fin.
+  if (n >= 4) list[Math.floor(n * 0.75)] = moment;
+  if (n >= 2) list[n - 2] = FINALE[0];
+  if (n >= 1) list[n - 1] = FINALE[1];
+  return list.map(function (scene, i) {
+    const safe = /special —/.test(scene) ? LIFE[(start + i) % LIFE.length] : scene;
+    return {
+      prompt: lead + scene + '.' + KEEP + ' ' + LOOK,
+      safe: lead + safe + '.' + KEEP + ' ' + LOOK,
+      motion: motion(scene)
+    };
+  });
+}
+
+// Le mouvement du plan anime : doux, vivant, jamais de visage qui se deforme.
+export function motion(scene) {
+  const what = String(scene || '').split(':').pop().split(' — ')[0].trim();
+  return 'Cinematic, slow and gentle camera movement. The two people in the image move naturally and tenderly'
+    + (what ? ' (' + what.slice(0, 160) + ')' : '')
+    + '. Keep both faces exactly as in the image, realistic skin and eyes, no morphing, no text, no extra people.';
 }
 
 // Le peu de reponses que le jeton doit porter pour relancer une scene ou la

@@ -19,7 +19,8 @@
   id="cs-duo-offer" : la carte de fin de la preview y envoie (« Get the full
   music video »). Sans cette ancre, son bouton ne menait nulle part.
 {%- endcomment -%}
-<div class="cs cs-duo-pvo" id="cs-duo-offer" data-cs-pvo data-base="{{ section.settings.cta_link | escape }}">
+<div class="cs cs-duo-pvo" id="cs-duo-offer" data-cs-pvo data-base="{{ section.settings.cta_link | escape }}"
+  data-video-page="{{ shop.url }}{{ section.settings.video_page | default: '/pages/your-video' | escape }}">
   <div class="cs-wrap">
 
     {%- comment -%} 1. la vitesse de livraison {%- endcomment -%}
@@ -162,6 +163,7 @@
     { "type": "text", "id": "cta_label", "label": "Button", "default": "Unlock {name}'s full music video" },
     { "type": "text", "id": "cta_link", "label": "Button link", "default": "/pages/couples", "info": "Only used when the speeds have no variant ID. The speed and add-on are added to it." },
     { "type": "text", "id": "err_cart", "label": "Message if checkout cannot open", "default": "We couldn't open checkout. Please try again." },
+    { "type": "text", "id": "video_page", "label": "Page where buyers watch their video", "default": "/pages/your-video", "info": "Each order gets a private link to this page (\"Your video\" in the order and in the confirmation email). The page must use the couples-video template." },
     { "type": "text", "id": "cta_note", "label": "Line under the button" },
     { "type": "checkbox", "id": "sticky", "label": "Repeat the button in a bar at the bottom", "default": true },
 
@@ -394,7 +396,34 @@
       }
       if (t.photos && t.photos.length) put('_Photos', t.photos.join(' '), 1200);
       if (t.title) put('_Song title', t.title);
+      // L'adresse privee de leur video : visible, pour qu'elle soit dans leur
+      // e-mail de confirmation et sur la page de leur commande.
+      if (view) {
+        out['Your video'] = videoPage + (videoPage.indexOf('?') > -1 ? '&' : '?') + 'v=' + view;
+        out['_View'] = view;
+      }
       return out;
+    }
+
+    // Avant le panier : le dossier de la preview est range chez nous, et une
+    // cle privee revient. Rien n'est genere a ce moment-la. Si l'API ne repond
+    // pas, le checkout s'ouvre quand meme, sans le lien.
+    var videoPage = root.getAttribute('data-video-page') || '';
+    var view = '';
+    function register() {
+      var j = kept('csDuoJob');
+      if (!j.job || !j.status || !videoPage) return Promise.resolve('');
+      var url = String(j.status).replace(/\/status$/, '/order');
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job: j.job }),
+        signal: ctl ? ctl.signal : undefined
+      }).then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (d) { clearTimeout(timer); return /^[a-f0-9]{24}$/.test((d && d.view) || '') ? d.view : ''; })
+        .catch(function () { clearTimeout(timer); return ''; });
     }
 
     function checkout(e) {
@@ -408,16 +437,19 @@
       if (errEl) errEl.hidden = true;
       for (var g = 0; g < gos.length; g++) gos[g].setAttribute('aria-busy', 'true');
 
-      var items = [{ id: Number(vid), quantity: 1, properties: properties() }];
       var aid = (addon && addon.checked) ? (addon.getAttribute('data-variant') || '').replace(/\D+/g, '') : '';
-      if (aid) items.push({ id: Number(aid), quantity: 1 });
-
       var base = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
-      fetch(base + 'cart/add.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ items: items })
+
+      register().then(function (v) {
+        view = v || view;
+        var items = [{ id: Number(vid), quantity: 1, properties: properties() }];
+        if (aid) items.push({ id: Number(aid), quantity: 1 });
+        return fetch(base + 'cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ items: items })
+        });
       }).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         window.location.href = base + 'checkout';

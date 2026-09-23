@@ -1,0 +1,341 @@
+{%- liquid
+  comment
+    LA PAGE DU CLIENT : sa video complete.
+
+    Le lien arrive dans sa commande (« Your video », dans l'e-mail de
+    confirmation et sur la page de commande) : /pages/your-video?v=<cle>. La
+    page demande a l'API ou en est la video, et se met a jour toute seule :
+
+      awaiting  le paiement n'est pas encore verifie
+      making    la video se fabrique (avancement plan par plan)
+      ready     le lecteur : la chanson entiere, un clip anime tous les cinq
+                secondes environ, cale sur la musique ; la chanson se telecharge
+      failed    un souci : l'equipe reprend la main
+
+    Le lecteur est le meme principe que la preview : la chanson est
+    l'horloge, et chaque plan s'allume quand la musique arrive a lui.
+  endcomment
+-%}
+<div class="cs cs-duo-vid" data-cs-vid data-api="{{ section.settings.api_url | escape }}"
+  data-support="{{ section.settings.support_email | escape }}">
+  <div class="cs-wrap">
+    <p class="cs-vid-kicker">{{ section.settings.kicker }}</p>
+    <h1 class="cs-vid-h" data-cs-vid-title>{{ section.settings.heading }}</h1>
+
+    <div class="cs-vid-stage" data-cs-vid-stage hidden>
+      <div class="cs-vid-layers" data-cs-vid-layers></div>
+      <button type="button" class="cs-vid-play" data-cs-vid-play aria-label="{{ section.settings.play_label | escape }}">
+        <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+      <div class="cs-vid-bar">
+        <button type="button" class="cs-vid-btn" data-cs-vid-toggle aria-label="{{ section.settings.play_label | escape }}">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path data-cs-vid-icon d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+        <input type="range" class="cs-vid-seek" data-cs-vid-seek min="0" max="100" step="0.1" value="0" aria-label="Seek">
+        <span class="cs-vid-time" data-cs-vid-time>0:00</span>
+        <button type="button" class="cs-vid-btn" data-cs-vid-full aria-label="Full screen">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="cs-vid-state" data-cs-vid-state>
+      <p class="cs-vid-msg" data-cs-vid-msg>{{ section.settings.loading }}</p>
+      <div class="cs-vid-prog" data-cs-vid-prog hidden><span data-cs-vid-fill></span></div>
+    </div>
+
+    <div class="cs-vid-after" data-cs-vid-after hidden>
+      <a class="cs-vid-dl" data-cs-vid-dl href="#" download>{{ section.settings.download_label }}</a>
+      <p class="cs-vid-note">{{ section.settings.keep_note }}</p>
+    </div>
+
+    <template data-cs-vid-text
+      data-none="{{ section.settings.msg_none | escape }}"
+      data-unknown="{{ section.settings.msg_unknown | escape }}"
+      data-awaiting="{{ section.settings.msg_awaiting | escape }}"
+      data-making="{{ section.settings.msg_making | escape }}"
+      data-failed="{{ section.settings.msg_failed | escape }}"
+      data-offline="{{ section.settings.msg_offline | escape }}"></template>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Couples: your video",
+  "tag": "section",
+  "class": "cs-section-duo-video",
+  "settings": [
+    { "type": "paragraph", "content": "The buyer's private page. Their order carries the link (\"Your video\"): this page shows their full music video once it is paid and ready, and updates by itself while it is being made." },
+    { "type": "text", "id": "api_url", "label": "API address", "default": "https://iopuyhggzsncconzmgjj.supabase.co/functions/v1/couples" },
+    { "type": "text", "id": "kicker", "label": "Small title", "default": "YOUR MUSIC VIDEO" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Made just for the two of you" },
+    { "type": "text", "id": "play_label", "label": "Play button label", "default": "Play your music video" },
+    { "type": "text", "id": "download_label", "label": "Download button", "default": "Download your song (MP3)" },
+    { "type": "text", "id": "keep_note", "label": "Note under the player", "default": "Keep this page: it is your private link. Bookmark it or keep the email it came in." },
+    { "type": "text", "id": "loading", "label": "While loading", "default": "Loading your video…" },
+    { "type": "text", "id": "msg_none", "label": "Link without a key", "default": "This link is incomplete. Please open the \"Your video\" link from your order confirmation email." },
+    { "type": "text", "id": "msg_unknown", "label": "Unknown key", "default": "We can't find this video. Please open the \"Your video\" link from your order confirmation email." },
+    { "type": "text", "id": "msg_awaiting", "label": "Payment not yet confirmed", "default": "Thank you! We're confirming your payment. Your music video starts being made right after — this page updates by itself." },
+    { "type": "text", "id": "msg_making", "label": "Being made", "default": "Your music video is being made, scene by scene. It's usually ready within the hour — this page updates by itself." },
+    { "type": "text", "id": "msg_failed", "label": "Something went wrong", "default": "Something went wrong while making your video. Our team is on it and will email you within 24 hours." },
+    { "type": "text", "id": "msg_offline", "label": "Cannot reach the server", "default": "We can't reach your video right now. We'll keep trying…" },
+    { "type": "text", "id": "support_email", "label": "Support email (shown if something goes wrong)" }
+  ],
+  "presets": [{ "name": "Couples: your video" }]
+}
+{% endschema %}
+
+{% stylesheet %}
+.cs-duo-vid{background:var(--cs-paper,#fbf7f2);padding:clamp(24px,5vw,48px) 0 clamp(40px,8vw,72px);min-height:70vh}
+.cs-duo-vid .cs-wrap{max-width:960px;margin:0 auto;padding:0 16px}
+.cs-vid-kicker{text-align:center;letter-spacing:.14em;font-size:.78rem;font-weight:700;color:var(--cs-coral,#ec5b3c);margin:0 0 6px}
+.cs-vid-h{text-align:center;font-family:var(--cs-serif,Georgia,serif);font-weight:600;font-size:clamp(1.5rem,5vw,2.3rem);line-height:1.12;color:var(--cs-ink,#1d1a17);margin:0 0 20px}
+.cs-vid-stage{position:relative;aspect-ratio:16/9;width:100%;border-radius:18px;overflow:hidden;background:#0d0b0a;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.cs-vid-stage:fullscreen{border-radius:0}
+.cs-vid-layers{position:absolute;inset:0}
+.cs-vid-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease}
+.cs-vid-layer.is-on{opacity:1}
+@keyframes cs-vid-zin{from{transform:scale(1)}to{transform:scale(1.07)}}
+@keyframes cs-vid-zout{from{transform:scale(1.07)}to{transform:scale(1)}}
+.cs-vid-layer.zin{animation:cs-vid-zin var(--d,5s) linear forwards}
+.cs-vid-layer.zout{animation:cs-vid-zout var(--d,5s) linear forwards}
+.cs-vid-stage.is-paused .cs-vid-layer{animation-play-state:paused}
+.cs-vid-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;border:0;
+  background:rgba(255,255,255,.92);color:var(--cs-coral,#ec5b3c);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:3}
+.cs-vid-play[hidden]{display:none}
+.cs-vid-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:10px 12px;z-index:2;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;opacity:0;transition:opacity .25s}
+.cs-vid-stage:hover .cs-vid-bar,.cs-vid-stage.is-paused .cs-vid-bar,.cs-vid-stage:focus-within .cs-vid-bar{opacity:1}
+.cs-vid-btn{background:none;border:0;color:#fff;cursor:pointer;padding:4px;display:flex}
+.cs-vid-seek{flex:1;accent-color:var(--cs-coral,#ec5b3c);min-width:0}
+.cs-vid-time{font-variant-numeric:tabular-nums;font-size:.85rem;min-width:3.2em;text-align:right}
+.cs-vid-state{text-align:center;margin:18px auto 0;max-width:560px}
+.cs-vid-msg{color:var(--cs-ink2,#4a433c);font-size:1.02rem;line-height:1.5;margin:0 0 14px}
+.cs-vid-prog{height:10px;border-radius:99px;background:var(--cs-line,#e8e0d6);overflow:hidden}
+.cs-vid-prog span{display:block;height:100%;width:0;background:var(--cs-coral,#ec5b3c);transition:width .6s ease}
+.cs-vid-after{text-align:center;margin-top:22px}
+.cs-vid-dl{display:inline-block;padding:14px 22px;border-radius:999px;background:var(--cs-coral,#ec5b3c);color:#fff;font-weight:700;text-decoration:none}
+.cs-vid-note{color:var(--cs-ink3,#7b7168);font-size:.88rem;margin:12px 0 0}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  function start(root) {
+    if (root.__csVid) return;
+    root.__csVid = true;
+
+    var api = (root.getAttribute('data-api') || '').replace(/\/+$/, '');
+    var text = root.querySelector('[data-cs-vid-text]');
+    var T = function (k) { return (text && text.getAttribute('data-' + k)) || ''; };
+    var msg = root.querySelector('[data-cs-vid-msg]');
+    var prog = root.querySelector('[data-cs-vid-prog]');
+    var fill = root.querySelector('[data-cs-vid-fill]');
+    var stage = root.querySelector('[data-cs-vid-stage]');
+    var layers = root.querySelector('[data-cs-vid-layers]');
+    var playBig = root.querySelector('[data-cs-vid-play]');
+    var toggle = root.querySelector('[data-cs-vid-toggle]');
+    var icon = root.querySelector('[data-cs-vid-icon]');
+    var seek = root.querySelector('[data-cs-vid-seek]');
+    var timeEl = root.querySelector('[data-cs-vid-time]');
+    var full = root.querySelector('[data-cs-vid-full]');
+    var after = root.querySelector('[data-cs-vid-after]');
+    var dl = root.querySelector('[data-cs-vid-dl]');
+    var stateBox = root.querySelector('[data-cs-vid-state]');
+
+    var view = '';
+    try { view = (new URLSearchParams(window.location.search).get('v') || '').toLowerCase(); } catch (e) { view = ''; }
+    if (!/^[a-f0-9]{24}$/.test(view)) { msg.textContent = T('none'); return; }
+
+    var fails = 0;
+    function ask() {
+      fetch(api + '/video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ view: view })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (d) { d.__status = r.status; return d; });
+      }).then(function (d) {
+        fails = 0;
+        if (d.state === 'ready') return show(d);
+        if (d.state === 'awaiting') { msg.textContent = T('awaiting'); prog.hidden = true; return later(60000); }
+        if (d.state === 'making') {
+          msg.textContent = T('making');
+          prog.hidden = false;
+          var pct = d.of ? Math.max(4, Math.round(100 * d.done / d.of)) : 4;
+          fill.style.width = pct + '%';
+          return later(20000);
+        }
+        if (d.state === 'failed') {
+          var s = root.getAttribute('data-support');
+          msg.textContent = T('failed') + (s ? ' ' + s : '');
+          prog.hidden = true;
+          return;
+        }
+        if (d.__status === 404) { msg.textContent = T('unknown'); return; }
+        throw new Error('bad');
+      }).catch(function () {
+        fails++;
+        msg.textContent = T('offline');
+        later(Math.min(60000, 5000 * fails));
+      });
+    }
+    function later(ms) { setTimeout(ask, ms); }
+    ask();
+
+    // ------------------------------------------------------------ le lecteur
+    var take = null, audio = null, shown = -1, raf = 0;
+    var els = [];   // un calque par plan, cree a la demande
+
+    function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+
+    function layer(n) {
+      if (els[n]) return els[n];
+      var b = take.beats[n];
+      var el;
+      if (b.clip) {
+        el = document.createElement('video');
+        el.muted = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
+        el.poster = b.poster || '';
+        el.src = b.clip;
+        // Un clip qui ne charge pas : l'image du plan prend sa place.
+        el.addEventListener('error', function () {
+          var img = still(b);
+          if (el.parentNode) el.parentNode.replaceChild(img, el);
+          els[n] = img;
+          if (shown === n) on(n, true);
+        });
+      } else {
+        el = still(b);
+      }
+      el.className = 'cs-vid-layer';
+      layers.appendChild(el);
+      els[n] = el;
+      return el;
+    }
+    function still(b) {
+      var img = document.createElement('img');
+      img.alt = '';
+      img.decoding = 'async';
+      img.src = b.poster || '';
+      img.className = 'cs-vid-layer';
+      return img;
+    }
+
+    function at(t) {
+      var bs = take.beats;
+      for (var i = bs.length - 1; i >= 0; i--) if (t >= bs[i].at) return i;
+      return 0;
+    }
+
+    function on(n, force) {
+      if (n === shown && !force) return;
+      var b = take.beats[n];
+      var el = layer(n);
+      if (n + 1 < take.beats.length) layer(n + 1);   // le plan suivant se charge d'avance
+      for (var i = 0; i < els.length; i++) {
+        if (!els[i] || i === n) continue;
+        els[i].classList.remove('is-on');
+        if (els[i].tagName === 'VIDEO' && !els[i].paused) els[i].pause();
+      }
+      el.classList.add('is-on');
+      if (el.tagName === 'VIDEO') {
+        try { el.currentTime = Math.max(0, audio.currentTime - b.at); } catch (e) {}
+        if (!audio.paused) { var p = el.play(); if (p && p.catch) p.catch(function () {}); }
+        el.classList.remove('zin', 'zout');
+      } else {
+        el.classList.remove('zin', 'zout');
+        void el.offsetWidth;
+        el.style.setProperty('--d', b.dur + 's');
+        el.classList.add(b.drift === 'out' ? 'zout' : 'zin');
+      }
+      // Les calques loin derriere sont liberes : une video de trois minutes
+      // ne garde pas quarante clips en memoire.
+      for (var j = 0; j < els.length; j++) {
+        if (els[j] && (j < n - 1 || j > n + 2)) {
+          if (els[j].tagName === 'VIDEO') { els[j].removeAttribute('src'); els[j].load(); }
+          if (els[j].parentNode) els[j].parentNode.removeChild(els[j]);
+          els[j] = null;
+        }
+      }
+      shown = n;
+    }
+
+    function loop() {
+      var t = audio.currentTime;
+      on(at(t));
+      if (!seeking) seek.value = String(t);
+      timeEl.textContent = fmt(t);
+      raf = window.requestAnimationFrame(loop);
+    }
+
+    function paint(paused) {
+      stage.classList.toggle('is-paused', paused);
+      icon.setAttribute('d', paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zM14 5h4v14h-4z');
+      playBig.hidden = !paused;
+    }
+
+    function play() {
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { paint(true); });
+    }
+    function pause() { audio.pause(); }
+
+    var seeking = false;
+    function show(d) {
+      take = d;
+      stateBox.hidden = true;
+      stage.hidden = false;
+      after.hidden = false;
+      audio = new Audio();
+      audio.preload = 'auto';
+      audio.src = d.song;
+      if (dl) dl.href = d.song;
+      seek.max = String(d.duration || 180);
+      audio.addEventListener('loadedmetadata', function () { if (audio.duration && isFinite(audio.duration)) seek.max = String(audio.duration); });
+      audio.addEventListener('play', function () {
+        paint(false);
+        var v = els[shown];
+        if (v && v.tagName === 'VIDEO') { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+        if (!raf) raf = window.requestAnimationFrame(loop);
+      });
+      audio.addEventListener('pause', function () {
+        paint(true);
+        var v = els[shown];
+        if (v && v.tagName === 'VIDEO') v.pause();
+      });
+      audio.addEventListener('ended', function () {
+        paint(true);
+        window.cancelAnimationFrame(raf); raf = 0;
+      });
+      on(0, true);
+      paint(true);
+    }
+
+    playBig.addEventListener('click', function () { if (audio) play(); });
+    toggle.addEventListener('click', function () { if (audio) (audio.paused ? play() : pause()); });
+    layers.addEventListener('click', function () { if (audio) (audio.paused ? play() : pause()); });
+    seek.addEventListener('input', function () {
+      if (!audio) return;
+      seeking = true;
+      audio.currentTime = Number(seek.value) || 0;
+      on(at(audio.currentTime), true);
+      timeEl.textContent = fmt(audio.currentTime);
+    });
+    seek.addEventListener('change', function () { seeking = false; });
+    full.addEventListener('click', function () {
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      if (stage.requestFullscreen) stage.requestFullscreen();
+      else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+    });
+  }
+
+  function all() {
+    var roots = document.querySelectorAll('[data-cs-vid]');
+    for (var i = 0; i < roots.length; i++) start(roots[i]);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', all);
+  else all();
+  document.addEventListener('shopify:section:load', all);
+})();
+{% endjavascript %}
