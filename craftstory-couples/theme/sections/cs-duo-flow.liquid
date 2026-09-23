@@ -24,6 +24,8 @@
         var s = window.sessionStorage, j = JSON.parse(s.getItem('csCouplesPreview') || 'null');
         back = !!(j && j.id && s.getItem('csDuoWaitJob') === j.id);
         open = back && s.getItem('csDuoOpen') === '1';
+        // Avant que la preview ne demarre : elle se devoilera seule.
+        if (back) s.setItem('csCouplesRevealed', JSON.stringify(j.id));
       } catch (e) {}
       if (!open) h.setAttribute('data-cs-duo-gate', 'closed');
       if (back) h.setAttribute('data-cs-duo-resume', '');
@@ -34,6 +36,12 @@
     html[data-cs-duo-resume] #shopify-section-{{ section.id }} .cs-flow-top,
     html[data-cs-duo-resume] #shopify-section-{{ section.id }} [data-cs-form]{display:none !important}
   </style>
+{%- else -%}
+  {%- comment -%}
+    Dans l'editeur, la preview n'a rien a suivre : sa propre regle cacherait
+    l'offre, les avis et la FAQ poses dessous. Le marchand doit les voir.
+  {%- endcomment -%}
+  <style>#shopify-section-{{ section.id }} ~ .shopify-section{display:block !important}</style>
 {%- endunless -%}
 <script src="{{ 'cs-couples-preview.js' | asset_url }}" defer="defer"></script>
 <div class="cs cs-duo-flow" id="cs-duo-flow"
@@ -404,7 +412,7 @@
     { "type": "text", "id": "mk_sound", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "mk_caption", "label": "Caption over the clip" },
     { "type": "text", "id": "mk_empty", "label": "Text while there is no clip", "default": "Your video goes here — upload an MP4 in the sidebar.", "info": "Shown in an empty frame, so the block is visible before you add a file." },
-    { "type": "range", "id": "mk_seconds", "label": "How long the bar takes", "min": 10, "max": 120, "step": 5, "default": 30, "unit": "s", "info": "If the preview has not started yet when the bar is full, it holds at 99% until it has — never more than a minute in all." },
+    { "type": "range", "id": "mk_seconds", "label": "How long the bar takes", "min": 10, "max": 60, "step": 5, "default": 30, "unit": "s", "info": "If the preview has not started yet when the bar is full, it holds at 99% until it has — never more than a minute in all." },
     { "type": "textarea", "id": "mk_stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
     { "type": "text", "id": "mk_notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears just below when the bar is full." },
     { "type": "text", "id": "mk_stay", "label": "Warning under it, in capitals", "default": "DON'T LEAVE THIS PAGE!" },
@@ -877,14 +885,24 @@
     function couple(job) {
       ss('csCouplesRevealed', JSON.stringify(job.id));
       var host = previewHost();
-      if (!host || !host.id) return;
+      if (!host || !host.id) return Promise.resolve();
+      // Dans l'adresse aussi, comme la page de l'associe la recoit : la preview
+      // la lit la, meme si l'onglet refuse de garder quoi que ce soit.
+      try { window.history.replaceState(window.history.state, '', '#preview=' + job.id + '.' + job.token); } catch (e) {}
       var id = host.id.replace(/^shopify-section-/, '');
       var old = host.querySelector('[data-couples-preview]');
+      var settled = false;
+      var done;
+      var ready = new Promise(function (r) { done = r; });
       function swap(fresh) {
+        if (settled) return;
+        settled = true;
         var cur = host.querySelector('[data-couples-preview]');
-        if (!cur || !fresh) return;
-        cur.parentNode.replaceChild(fresh, cur);
-        host.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true, detail: { sectionId: id } }));
+        if (cur && fresh) {
+          cur.parentNode.replaceChild(fresh, cur);
+          host.dispatchEvent(new CustomEvent('shopify:section:load', { bubbles: true, detail: { sectionId: id } }));
+        }
+        done();
       }
       // Si Shopify ne rend pas la section, une copie remise dans l'etat du
       // chargement fait la meme chose.
@@ -902,6 +920,8 @@
       var url = new URL(window.location.href);
       url.hash = '';
       url.searchParams.set('section_id', id);
+      // Jamais plus de quatre secondes : au-dela, la copie fait l'affaire.
+      setTimeout(function () { swap(copy()); }, 4000);
       fetch(url.toString(), { credentials: 'same-origin' })
         .then(function (r) { return r.ok ? r.text() : ''; })
         .then(function (html) {
@@ -909,6 +929,22 @@
           swap(got ? document.importNode(got, true) : copy());
         })
         .catch(function () { swap(copy()); });
+      return ready;
+    }
+
+    // L'offre, dessous, lit le prenom au chargement de la page. Sur la page
+    // unique il n'existe qu'apres le questionnaire : on la relance avec
+    // l'evenement qu'elle ecoute deja, elle relit leurs reponses.
+    function rename() {
+      var all = document.querySelectorAll('[data-cs-pvo]');
+      for (var i = 0; i < all.length; i++) {
+        var host = all[i].closest('.shopify-section');
+        if (!host) continue;
+        all[i].removeAttribute('data-cs-pvo-ready');
+        host.dispatchEvent(new CustomEvent('shopify:section:load', {
+          bubbles: true, detail: { sectionId: host.id.replace(/^shopify-section-/, '') }
+        }));
+      }
     }
 
     var watching = false;
@@ -932,12 +968,11 @@
       // quelqu'un qui abandonnera au deuxieme ecran. Une attente deja finie
       // ne la relance pas.
       var v = mk.querySelector('.cs-flow-mk-v');
-      if (v && !v.src && !done) {
+      if (v && !done) {
         var src = v.getAttribute('data-cs-mk-src');
-        if (src) {
-          v.src = src;
-          if (v.muted) { var pl = v.play(); if (pl && pl.catch) pl.catch(function () {}); }
-        }
+        if (src && !v.src) v.src = src;
+        // Un second essai (apres un refus) relance aussi le clip.
+        if (v.src && v.muted && v.paused) { var pl = v.play(); if (pl && pl.catch) pl.catch(function () {}); }
       }
 
       // Aucun clip charge, mais leur photo est la : elle prend le cadre. C'est
@@ -953,7 +988,14 @@
         ph.alt = '';
         ph.src = shots[0];
         slot.appendChild(ph);
+      } else if (slot) {
+        // Ni clip ni photo (au retour sur la page, la photo n'est plus
+        // gardee) : le cadre vide et sa consigne sont pour le marchand, pas
+        // pour un client.
+        slot.hidden = true;
       }
+      var mine = mk.querySelector('.cs-flow-mk-ph');
+      if (mine && shots[0] && mine.src !== shots[0]) mine.src = shots[0];
 
       // Leur chanson passe avant le clip d'attente.
       if (v && !watching) {
@@ -1085,6 +1127,7 @@
       next.disabled = true;
       err.hidden = true;
       stash(data);
+      rename();
 
       // Une nouvelle attente : rien de la precedente ne compte plus, et le
       // bas de la page se referme jusqu'a la fin de celle-ci.
@@ -1119,8 +1162,7 @@
         if (!submitting) return;
         clearTimeout(limit);
         ss(WAITJOB, job.id);
-        couple(job);
-        run.ready(job);
+        couple(job).then(function () { if (submitting) run.ready(job); });
       }).catch(fail);
     }
 
@@ -1244,6 +1286,8 @@
       ss(MKEND, null);
       ss(WAITJOB, null);
       ss(OPEN, null);
+      ss('csCouplesPreview', null);
+      ss('csCouplesRevealed', null);
       window.location.assign(window.location.pathname + window.location.search);
     });
 
@@ -1253,6 +1297,14 @@
     var saved = null;
     try { saved = JSON.parse(ss('csCouplesPreview') || 'null'); } catch (e) {}
     document.documentElement.removeAttribute('data-cs-duo-resume');
+    if (saved && saved.id && saved.token && ss(WAITJOB) === saved.id && ss(OPEN) === '1' && !previewHost()) {
+      // Le tunnel seul, et sa preview deja ouverte ailleurs : retour ici = un
+      // nouveau questionnaire, pas un rebond vers la page de la preview.
+      ss(MKEND, null);
+      ss(WAITJOB, null);
+      ss(OPEN, null);
+      saved = null;
+    }
     if (saved && saved.id && saved.token && ss(WAITJOB) === saved.id) {
       var st = {};
       try { st = JSON.parse(ss(STORE) || '{}') || {}; } catch (e) {}

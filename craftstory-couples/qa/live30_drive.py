@@ -223,7 +223,7 @@ with sync_playwright() as pw:
     walk(p)
     check("l'attente est a l'ecran au clic", p.is_visible("[data-cs-mk]"), True)
     check("le questionnaire a disparu", p.is_hidden("[data-cs-form]"), True)
-    check("toujours la meme page", p.url.endswith("/pages/couples-start"), True)
+    check("toujours la meme page", p.url.split("#")[0].endswith("/pages/couples-start"), True)
     check("rien dessous pendant l'attente", [shown(p, k) for k in BELOW], [False] * 5)
     check("le clip d'attente joue", p.evaluate("(()=>{const v=document.querySelector('.cs-flow-mk-v');return !!v && !!v.src && !v.paused})()"), True)
     check("la notice est la", p.inner_text("[data-cs-mk-note] p"), "⚡ Your free preview appears just below when the bar is full.")
@@ -266,6 +266,7 @@ with sync_playwright() as pw:
     check("la preview est devoilee, sans le bouton « Reveal »", view, "result")
     check("le bouton « Reveal » n'a jamais servi", p.is_hidden("[data-reveal]"), True)
     check("tout le reste de la page est la", [shown(p, k) for k in BELOW], [True] * 5)
+    check("l'offre porte son prenom", p.inner_text(sec("offer") + " .cs-pvo-cta [data-cs-tpl]"), "Unlock Marie's full music video")
     check("son titre et sa chanson sont la",
           [p.inner_text("[data-couples-preview] [data-title]"), p.get_attribute("[data-couples-preview] audio", "src")],
           ["Marie & Thomas", BASE + "/take/song.webm"])
@@ -314,6 +315,7 @@ with sync_playwright() as pw:
     p.wait_for_timeout(1200)
     run(p, 1000)
     check("des que la preview part : ouvert", [gate(p), shown(p, "song"), pct(p)], [None, True, 100])
+    check("et jamais sur son ecran vide « Your story starts here »", p.get_attribute("[data-couples-preview]", "data-view"), "loading")
     ctx.close()
 
     # ================================================================ C
@@ -335,6 +337,7 @@ with sync_playwright() as pw:
     p.wait_for_timeout(1200)
     run(p, 31000)
     check("au second essai : attente puis ouverture", [gate(p), shown(p, "song")], [None, True])
+    check("et le clip d'attente est reparti", p.evaluate("!document.querySelector('.cs-flow-mk-v').paused"), True)
     check("meme cle d'idempotence (pas de double preview)", st.posts[0]["key"] == st.posts[1]["key"], True)
     ctx.close()
 
@@ -376,6 +379,10 @@ with sync_playwright() as pw:
     check("avec la preview dans l'adresse", bool(re.search(r"#preview=[a-f0-9]{64}\.[a-f0-9]{64}$", p.url)), True)
     run(p, 40000, 2000)
     check("elle s'y devoile seule, elle aussi", p.get_attribute("[data-couples-preview]", "data-view"), "result")
+    p.go_back()
+    p.wait_for_timeout(1500)
+    check("retour arriere : le questionnaire, sans rebond vers la preview",
+          [p.url.split("#")[0], p.is_visible("[data-cs-form]")], [BASE + "/pages/flow-only", True])
     ctx.close()
 
     # ================================================================ F
@@ -386,6 +393,11 @@ with sync_playwright() as pw:
     p.wait_for_timeout(400)
     walk(p)
     check("leur photo occupe le cadre", p.evaluate("(document.querySelector('.cs-flow-mk-ph')||{}).src||''")[:15], "data:image/jpeg")
+    p.wait_for_timeout(1200)
+    p.reload()
+    p.wait_for_timeout(800)
+    check("rechargement : l'attente reprend", p.is_visible("[data-cs-mk]"), True)
+    check("et la consigne « upload an MP4 » n'apparait jamais", p.is_visible("text=Your video goes here"), False)
     ctx.close()
 
     # ================================================================ G
@@ -395,7 +407,22 @@ with sync_playwright() as pw:
     p.goto(BASE + "/pages/editor")
     p.wait_for_timeout(500)
     check("pas de verrou", gate(p), None)
-    check("toutes les sections se voient (hors regle de l'associe)", [shown(p, "song")], [True])
+    check("toutes les sections se voient, offre comprise", [shown(p, k) for k in BELOW], [True] * 5)
+    ctx.close()
+
+    # ================================================================ H
+    print("\n--- H. ONGLET QUI REFUSE DE RIEN GARDER : LA PREVIEW DEMARRE QUAND MEME ---")
+    ctx, st = context()
+    p = page(ctx)
+    p.add_init_script("Storage.prototype.setItem=function(){throw new Error('blocked')};")
+    p.goto(BASE + "/pages/couples-start")
+    p.wait_for_timeout(400)
+    freeze(p)
+    walk(p)
+    p.wait_for_timeout(1200)
+    run(p, 31000)
+    check("a 31 s : ouvert, et la preview suit sa fabrication", [gate(p), p.get_attribute("[data-couples-preview]", "data-view")], [None, "loading"])
+    check("elle lit la preview dans l'adresse", bool(re.search(r"#preview=[a-f0-9]{64}\.[a-f0-9]{64}$", p.url)), True)
     ctx.close()
 
     print("\n--- ERREURS JS ---")

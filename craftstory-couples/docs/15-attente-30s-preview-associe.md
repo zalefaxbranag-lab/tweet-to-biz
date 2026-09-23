@@ -49,13 +49,27 @@ tout le reste du thème.
   qu'il écoute déjà : elle redémarre sur la nouvelle preview.
 - Pour ne pas cliquer sur « Reveal », on pose `csCouplesRevealed` à l'avance.
   C'est la clé que son code utilise déjà pour une preview déjà vue.
+- La preview voyage aussi dans l'adresse (`#preview=…`, comme sur sa page) :
+  elle démarre même si le navigateur refuse de garder quoi que ce soit.
+- Son offre lit le prénom au chargement de la page. Sur la page unique, le
+  prénom n'existe qu'après le questionnaire : on relance l'offre au dernier
+  clic, avec le même événement. Son bouton dit alors « Unlock Marie's full
+  music video ».
 - Si sa chanson se met à jouer, le clip d'attente se met en pause.
+- Dans l'éditeur, tout se voit, offre comprise.
 
 ## Tests
 
-`qa/live30_drive.py` : 66 vérifications dans Chromium, avec son vrai JS et sa
+`qa/live30_drive.py` : 74 vérifications dans Chromium, avec son vrai JS et sa
 vraie CSS. Son studio est remplacé par un faux servi par le test : aucune
 génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabarits.
+
+## Poussé sur le brouillon
+
+Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 30s (a publier) »**
+(`208474538315`) est une copie exacte du live. Seuls les deux fichiers
+ci-dessus diffèrent, vérifié fichier par fichier : la section au MD5 près
+(`d818719f…`), le gabarit sur son contenu.
 
 ## À savoir
 
