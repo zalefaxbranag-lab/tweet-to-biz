@@ -22,7 +22,9 @@ tout le reste du thème.
    chez le studio de l'associé, avec les mêmes données qu'avant.
 3. En **2 min 30** (la durée du clip d'attente), la barre est pleine et tout s'ouvre dessous, **sans clic**. La
    page descend doucement jusqu'à la preview. Avant ça, rien n'est visible
-   dessous.
+   dessous : pendant l'attente la page s'arrête sous la barre, pied de page
+   compris, il n'y a rien vers quoi descendre. Le pied de page revient à
+   l'ouverture, tout en bas.
 4. La preview de l'associé continue sa fabrication sous ses yeux (ses étapes,
    son compteur). Quand elle est prête, elle se dévoile **seule**, sans le
    bouton « Reveal our preview ». L'offre, les avis et la FAQ apparaissent
@@ -61,16 +63,22 @@ tout le reste du thème.
 
 ## Tests
 
-`qa/live30_drive.py` : 96 vérifications dans Chromium, avec son vrai JS et sa
+`qa/live30_drive.py` : 104 vérifications dans Chromium, avec son vrai JS et sa
 vraie CSS. Son studio est remplacé par un faux servi par le test : aucune
-génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabarits.
+génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabarits,
+dans la structure du thème (en-tête et pied de page hors de `<main>`, comme
+`layout/theme.liquid`).
 
 ## Poussé sur le brouillon
 
-Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 2m30 (a publier) »**
-(`208474538315`) est une copie exacte du live. Seuls les deux fichiers
-ci-dessus diffèrent, vérifié fichier par fichier : la section au MD5 près
-(`545df140…`), le gabarit sur son contenu.
+Le brouillon **v38 « CraftStory v38 = LIVE + attente 2m30 (a publier) »**
+(`208495673675`) est une copie neuve du live (v35), faite le 23/09 à 15:16.
+Seuls les deux fichiers ci-dessus diffèrent, vérifié fichier par fichier :
+la section au MD5 près (`c0205742…`), le gabarit sur son contenu
+(`cd65bd4c…`). C'est lui qu'il faut publier.
+
+v36 (même chose, sans le pied de page masqué pendant l'attente) et v37 (v36 +
+le clip ci-dessous) sont remplacés par v38.
 
 ## La durée de la vraie génération
 

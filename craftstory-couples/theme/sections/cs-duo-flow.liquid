@@ -43,6 +43,13 @@
     {%- endcomment -%}
     html:not([data-cs-duo-gate]) #shopify-section-{{ section.id }} ~ .shopify-section:has([data-couples-preview][data-view="error"]) ~ .shopify-section,
     html:not([data-cs-duo-gate]) #shopify-section-{{ section.id }} ~ .shopify-section:has([data-couples-preview][data-view="empty"]) ~ .shopify-section{display:block !important}
+    {%- comment -%}
+      Pendant l'attente, la page s'arrete sous la barre : pas meme le pied de
+      page, rien vers quoi descendre. Il revient quand tout s'ouvre. Deux
+      regles, pas une liste : un navigateur sans :has() jetterait les deux.
+    {%- endcomment -%}
+    html[data-cs-duo-gate="closed"][data-cs-duo-resume] .shopify-section-group-footer-group{display:none !important}
+    html[data-cs-duo-gate="closed"]:has(#shopify-section-{{ section.id }} [data-cs-mk]:not([hidden])) .shopify-section-group-footer-group{display:none !important}
   </style>
 {%- else -%}
   {%- comment -%}

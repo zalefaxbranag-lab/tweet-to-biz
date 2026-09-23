@@ -416,11 +416,25 @@ def build(mock_path, out_path):
     if leftover:
         print("LIQUID NON RENDU:", leftover[:5], file=sys.stderr)
 
+    main = "<main id=\"MainContent\">" + "\n".join(body) + "</main>"
+    if mock.get("layout") == "horizon":
+        # Comme layout/theme.liquid du theme (Horizon) : l'en-tete et le pied de
+        # page sont des groupes de sections, hors de <main>, chacun dans son
+        # enveloppe « shopify-section shopify-section-group-… ».
+        main = ("<div class=\"page-wrapper\"><div id=\"header-group\">"
+                "<div id=\"shopify-section-sections--mock__header_section\" class=\"shopify-section shopify-section-group-header-group\">"
+                "<header id=\"header-component\" style=\"height:64px;background:#fff\">CraftStory</header></div></div>\n"
+                + main + "\n<footer>"
+                "<div id=\"shopify-section-sections--mock__footer_m9NzUG\" class=\"shopify-section shopify-section-group-footer-group\">"
+                "<div style=\"padding:30px 20px\"><h2>Join our email list</h2><input type=\"email\" placeholder=\"Email\"></div></div>"
+                "<div id=\"shopify-section-sections--mock__footer_utilities_jLGE8U\" class=\"shopify-section shopify-section-group-footer-group\">"
+                "<div style=\"padding:20px 20px 48px\">© CraftStory · Privacy policy</div></div>"
+                "</footer></div>")
     doc = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
            "<title>mock</title><style>*{box-sizing:border-box}body{margin:0}\n"
-           + "\n".join(css) + "</style></head><body class=\"cs\">\n<main id=\"MainContent\">"
-           + "\n".join(body) + "</main>\n<script>" + "\n".join(js) + "</script></body></html>")
+           + "\n".join(css) + "</style></head><body class=\"cs\">\n" + main
+           + "\n<script>" + "\n".join(js) + "</script></body></html>")
     io.open(out_path, "w", encoding="utf-8").write(doc)
     print("ecrit", out_path, len(doc), "octets")
 

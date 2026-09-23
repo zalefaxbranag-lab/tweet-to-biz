@@ -91,6 +91,16 @@ def shown(p, key):
     return p.is_visible(sec(key))
 
 
+FOOT = "#shopify-section-sections--mock__footer_m9NzUG"
+HEAD = "#shopify-section-sections--mock__header_section"
+
+
+def tail(p):
+    """Ce qui reste de page sous le tunnel, en pixels : 0 = rien vers quoi descendre."""
+    return p.evaluate("(()=>{const s=document.querySelector('%s');"
+                      "return Math.round(document.documentElement.scrollHeight-(s.getBoundingClientRect().bottom+window.scrollY))})()" % sec("flow"))
+
+
 def walk(p, last=True):
     for n in range(7):
         FILL[n](p)
@@ -231,6 +241,7 @@ with sync_playwright() as pw:
     check("la preview de l'associe a demarre sans rien a suivre", p.get_attribute("[data-couples-preview]", "data-view"), "empty")
     check("aucune lecture du studio avant l'envoi", len(st.gets), 0)
     check("la barre est reglee sur 2 min 30", p.get_attribute("[data-cs-flow]", "data-mk-sec"), str(SECS))
+    check("en-tete et pied de page comme sur le live", [p.is_visible(HEAD), p.is_visible(FOOT)], [True, True])
 
     print("\n--- A. LE DERNIER CLIC : L'ATTENTE, TOUT DE SUITE ---")
     walk(p)
@@ -238,6 +249,8 @@ with sync_playwright() as pw:
     check("le questionnaire a disparu", p.is_hidden("[data-cs-form]"), True)
     check("toujours la meme page", p.url.split("#")[0].endswith("/pages/couples-start"), True)
     check("rien dessous pendant l'attente", [shown(p, k) for k in BELOW], [False] * 5)
+    check("pas meme le pied de page (l'en-tete reste)", [p.is_visible(FOOT), p.is_visible(HEAD)], [False, True])
+    check("la page s'arrete sous l'attente : rien vers quoi descendre", tail(p) <= 2, True)
     check("le clip d'attente joue", p.evaluate("(()=>{const v=document.querySelector('.cs-flow-mk-v');return !!v && !!v.src && !v.paused})()"), True)
     check("la notice est la", p.inner_text("[data-cs-mk-note] p"), "⚡ Your free preview appears just below when the bar is full.")
     check("pas de ligne « c'est pret » pendant l'attente", p.is_hidden("[data-cs-mk-ready]"), True)
@@ -255,6 +268,9 @@ with sync_playwright() as pw:
     run(p, 60000)
     check("elle suit la fabrication pendant l'attente, jusqu'a « prete »", len(st.gets) >= 8, True)
     check("a 1 min : toujours ferme", [gate(p), shown(p, "song")], ["closed", False])
+    p.mouse.wheel(0, 5000)
+    p.wait_for_timeout(300)
+    check("on a beau descendre : rien sous l'attente", [tail(p) <= 2, p.is_visible(FOOT)], [True, False])
     check("la barre est a ~40 %", 36 <= pct(p) <= 42, True)
     check("meme prete, la preview reste cachee avant la fin de la barre", p.get_attribute("[data-couples-preview]", "data-view"), "result")
 
@@ -272,6 +288,7 @@ with sync_playwright() as pw:
     check("la preview est la, deja devoilee", p.get_attribute("[data-couples-preview]", "data-view"), "result")
     check("le bouton « Reveal » n'a jamais servi", p.is_hidden("[data-reveal]"), True)
     check("tout le reste de la page est la", [shown(p, k) for k in BELOW], [True] * 5)
+    check("le pied de page revient, tout en bas", p.is_visible(FOOT), True)
     check("l'offre porte son prenom", p.inner_text(sec("offer") + " .cs-pvo-cta [data-cs-tpl]"), "Unlock Marie's full music video")
     check("son titre et sa chanson sont la",
           [p.inner_text("[data-couples-preview] [data-title]"), p.get_attribute("[data-couples-preview] audio", "src")],
@@ -355,6 +372,7 @@ with sync_playwright() as pw:
     check("retour au formulaire", [p.is_visible("[data-cs-form]"), p.is_hidden("[data-cs-mk]")], [True, True])
     check("avec le message du studio", p.inner_text("[data-cs-err]"), "We could not use that photo. Please try another one.")
     check("rien ne s'ouvre dessous", [gate(p), shown(p, "song")], ["closed", False])
+    check("le pied de page revient avec le formulaire", p.is_visible(FOOT), True)
     check("le bouton se reclique", p.is_enabled("[data-cs-next]"), True)
     st.mode = "ok"
     p.click("[data-cs-next]")
@@ -421,6 +439,7 @@ with sync_playwright() as pw:
     p.reload()
     p.wait_for_timeout(800)
     check("rechargement : l'attente reprend", p.is_visible("[data-cs-mk]"), True)
+    check("toujours rien dessous, pied de page compris", [p.is_visible(FOOT)] + [shown(p, k) for k in BELOW], [False] + [False] * 5)
     check("et la consigne « upload an MP4 » n'apparait jamais", p.is_visible("text=Your video goes here"), False)
     ctx.close()
 
@@ -443,6 +462,7 @@ with sync_playwright() as pw:
     p.wait_for_timeout(500)
     check("pas de verrou", gate(p), None)
     check("toutes les sections se voient, offre comprise", [shown(p, k) for k in BELOW], [True] * 5)
+    check("et le pied de page", p.is_visible(FOOT), True)
     ctx.close()
 
     # ================================================================ H

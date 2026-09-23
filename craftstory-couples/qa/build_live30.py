@@ -34,6 +34,7 @@ def mock(template, name, edit=None):
     path = os.path.join(OUT, name + ".json")
     build_pages.mock_from(template, path)
     data = json.load(io.open(path, encoding="utf-8"))
+    data["layout"] = "horizon"   # l'en-tete et le pied de page du vrai theme
     for sec in data["sections"]:
         s = sec["settings"]
         if sec["type"] == "cs-duo-flow":
