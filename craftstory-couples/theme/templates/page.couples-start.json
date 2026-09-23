@@ -16,94 +16,15 @@
     "flow": {
       "type": "cs-duo-flow",
       "settings": {
-        "api_url": "https://iopuyhggzsncconzmgjj.supabase.co/functions/v1/couples/start",
+        "api_url": "https://craftstory-couples.nic-delgaudio.workers.dev/v1/previews",
+        "s6_consent": "We are both adults and agree to our photos being used to create our song and cartoon preview.",
         "next_page": "/pages/couples-preview"
       }
     },
     "song": {
-      "type": "cs-duo-pv-song",
-      "blocks": {
-        "f1": {
-          "type": "face",
-          "settings": {}
-        },
-        "f2": {
-          "type": "face",
-          "settings": {}
-        },
-        "f3": {
-          "type": "face",
-          "settings": {}
-        },
-        "f4": {
-          "type": "face",
-          "settings": {}
-        },
-        "f5": {
-          "type": "face",
-          "settings": {}
-        },
-        "r1": {
-          "type": "row",
-          "settings": {
-            "icon": "💐",
-            "label": "Flowers",
-            "value": "Wilt in a week"
-          }
-        },
-        "r2": {
-          "type": "row",
-          "settings": {
-            "icon": "💎",
-            "label": "Jewellery",
-            "value": "Sits in a drawer"
-          }
-        },
-        "r3": {
-          "type": "row",
-          "settings": {
-            "icon": "🎬",
-            "label": "{name}'s music video",
-            "value": "Gets replayed",
-            "strong": true
-          }
-        }
-      },
-      "block_order": [
-        "f1",
-        "f2",
-        "f3",
-        "f4",
-        "f5",
-        "r1",
-        "r2",
-        "r3"
-      ],
+      "type": "cs-duo-generated-preview",
       "settings": {
-        "lock": false,
-        "bar_minutes": 5,
-        "wait_heading": "Your words are becoming a music video.",
-        "wait_sub": "Watch this while we make it.",
-        "video_ratio": "4/3",
-        "notice": "⚡ Your free preview appears here at the end of the video.",
-        "ready_notice": "✓ It's ready. Your preview is waiting below.",
-        "song_title": "{name}'s Unique Music Video",
-        "song_sub": "{genre} melody, written for {name} ({rel})",
-        "prev_ratio": "16/9",
-        "play_hint": "Tap to play preview",
-        "prev_empty": "Your 30-second preview appears here.",
-        "preview_length": "0:30",
-        "preview_note": "Play it with headphones if you have them.",
-        "proof_line": "12,000+ couples have given this gift",
-        "deal_title": "🎁 Preview-unlocked rate — 25% off",
-        "deal_note": "Only for couples who watched their preview. It ends with the timer below.",
-        "deal_chip": "SAVE $40",
-        "show_timer": true,
-        "timer_minutes": 1,
-        "timer_title": "Your spot is held",
-        "timer_note": "When it ends the rate goes back to the regular one. You can still order.",
-        "timer_over": "This rate has ended. You can still order at the regular rate.",
-        "show_wait": false
+        "api_base": "https://craftstory-couples.nic-delgaudio.workers.dev"
       }
     },
     "offer": {
@@ -117,8 +38,7 @@
             "price": "$119",
             "was": "$159",
             "badge": "MOST POPULAR",
-            "value": "30min",
-            "variant": "58564120510795"
+            "value": "30min"
           }
         },
         "s2": {
@@ -127,8 +47,7 @@
             "label": "48-hour delivery",
             "note": "Standard",
             "price": "$79",
-            "value": "48h",
-            "variant": "58564120543563"
+            "value": "48h"
           }
         },
         "a1": {
@@ -137,8 +56,7 @@
             "label": "Keep {name}'s lyrics forever",
             "note": "A printable PDF with their name and the cover art. Save it, print it, frame it.",
             "price": "+$19",
-            "value": "1",
-            "variant": "58564120936779"
+            "value": "1"
           }
         },
         "n1": {

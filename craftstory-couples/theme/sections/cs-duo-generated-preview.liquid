@@ -1,0 +1,72 @@
+{{ 'cs-couples-preview.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'cs-couples-preview.js' | asset_url }}" defer="defer"></script>
+<section class="cs cp" data-couples-preview data-view="loading" data-api="{{ section.settings.api_base | escape }}" aria-busy="true">
+  <div class="cp-wrap">
+    <p class="cp-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h1 data-title>{{ section.settings.heading | escape }}</h1>
+    <div class="cp-status" role="status" aria-live="polite">
+      <h2 data-status>Finding your preview…</h2>
+      <p data-detail></p>
+    </div>
+    <div class="cp-studio" data-loader>
+      <div class="cp-portrait" data-portrait>
+        <span class="cp-orbit" aria-hidden="true"></span>
+        <span class="cp-heart" aria-hidden="true">♡</span>
+        <img data-avatar hidden width="220" height="220" alt="Your cartoon characters" referrerpolicy="no-referrer">
+      </div>
+      <p class="cp-portrait-note" data-portrait-note>A little imagination. A lot of you.</p>
+      <ol class="cp-steps" aria-label="Creation stages">
+        <li data-step="plan"><span class="cp-step-icon" aria-hidden="true">1</span><span>Your memories, turned into lyrics</span><small data-step-note>In progress</small></li>
+        <li data-step="avatar"><span class="cp-step-icon" aria-hidden="true">2</span><span>The two of you, reimagined</span><small data-step-note>Up next</small></li>
+        <li data-step="song"><span class="cp-step-icon" aria-hidden="true">3</span><span>A melody made for your story</span><small data-step-note>Up next</small></li>
+        <li data-step="scenes"><span class="cp-step-icon" aria-hidden="true">4</span><span>Four moments worth keeping</span><small data-step-note>0 / 4</small></li>
+        <li data-step="final"><span class="cp-step-icon" aria-hidden="true">5</span><span>Your first listen</span><small data-step-note>Up next</small></li>
+      </ol>
+      <div class="cp-meter" role="progressbar" aria-label="Preview creation" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span data-fill></span></div>
+      <div class="cp-meter-label"><span data-hint aria-live="polite">Every love story has its own soundtrack.</span><span data-percent>0%</span></div>
+      <div class="cp-peeks" aria-label="Your scenes taking shape">
+        {% for i in (1..4) %}<div class="cp-peek"><img data-peek hidden alt="Scene {{ i }}" width="320" height="180" referrerpolicy="no-referrer"><span aria-hidden="true">0{{ i }}</span></div>{% endfor %}
+      </div>
+      <p class="cp-stay" data-stay>This usually takes a few minutes. Your progress is saved if you refresh.</p>
+      <button class="cp-play cp-reveal" type="button" data-reveal hidden>Reveal our preview <span aria-hidden="true">→</span></button>
+    </div>
+    <div data-results hidden>
+    <ul class="cp-progress" aria-label="Preview progress"><li data-song-progress>Personal song</li><li data-images-progress>Four cartoon scenes</li></ul>
+    <div class="cp-stage">
+      <img data-hero hidden alt="" width="1280" height="720" referrerpolicy="no-referrer">
+      <p data-caption>Your story, starring the two of you.</p>
+    </div>
+    <div class="cp-player">
+      <audio preload="metadata" referrerpolicy="no-referrer"></audio>
+      <button type="button" class="cp-play" data-play disabled>Play your song</button>
+      <label class="cp-sr" for="cp-seek-{{ section.id }}">Song position</label>
+      <input id="cp-seek-{{ section.id }}" data-seek type="range" min="0" max="60" value="0" step="0.1" disabled>
+      <span data-clock>0:00 / 1:00</span>
+    </div>
+    <p class="cp-note">{{ section.settings.note | escape }}</p>
+    <div class="cp-grid" aria-label="Your cartoon storyboard">
+      {% for i in (1..4) %}
+        <button type="button" class="cp-card" data-scene disabled aria-pressed="false">
+          <span class="cp-card-picture"><img hidden alt="" width="640" height="360" loading="lazy" referrerpolicy="no-referrer"><span class="cp-number">0{{ i }}</span></span>
+          <span data-scene-caption>Scene {{ i }}</span>
+        </button>
+      {% endfor %}
+    </div>
+    </div>
+    <div class="cp-links"><button data-reconnect type="button" hidden>Check again</button><a href="{{ section.settings.start_link | default: '/pages/couples-start' }}">{{ section.settings.start_label | escape }}</a></div>
+  </div>
+</section>
+{% schema %}
+{
+  "name":"Couples generated preview",
+  "settings":[
+    {"type":"text","id":"api_base","label":"Preview service URL","info":"Server URL without /v1/previews. Never enter an API key here."},
+    {"type":"text","id":"eyebrow","label":"Eyebrow","default":"YOUR LOVE STORY, REIMAGINED"},
+    {"type":"text","id":"heading","label":"Heading","default":"A song only you could inspire."},
+    {"type":"text","id":"note","label":"Preview note","default":"Your free preview: one minute of music and four still cartoon scenes. The full music video comes after your order."},
+    {"type":"url","id":"start_link","label":"Questionnaire link"},
+    {"type":"text","id":"start_label","label":"Questionnaire label","default":"Back to the questionnaire"}
+  ],
+  "presets":[{"name":"Couples generated preview"}]
+}
+{% endschema %}

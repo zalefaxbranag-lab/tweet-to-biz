@@ -199,6 +199,12 @@ def apply_filter(val, spec, scope):
         # Un vrai visuel en data-URI : pas de requete, pas de 404 qui polluent
         # la console, et une planche de contact lisible.
         return PLACEHOLDER
+    if name == "asset_url":
+        # Les fichiers du dossier assets/ du theme, servis a cote de la page :
+        # la preview de l'associe se teste avec SON vrai JS et SA vraie CSS.
+        return "/assets/" + str(val)
+    if name == "stylesheet_tag":
+        return '<link href="' + H.escape(str(val), quote=True) + '" rel="stylesheet" type="text/css" media="all" />'
     if name == "where":
         key, want = args[0], args[1]
         return [x for x in (val or []) if isinstance(x, dict) and x.get(key) == want]

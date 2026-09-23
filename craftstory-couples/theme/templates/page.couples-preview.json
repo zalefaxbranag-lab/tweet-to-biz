@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "head": {
@@ -5,134 +14,9 @@
       "settings": {}
     },
     "song": {
-      "type": "cs-duo-pv-song",
-      "blocks": {
-        "b1": {
-          "type": "beat",
-          "settings": {
-            "line": "Before {name}, the days all looked the same"
-          }
-        },
-        "b2": {
-          "type": "beat",
-          "settings": {
-            "line": "Then one evening that was never meant to matter",
-            "drift": "out"
-          }
-        },
-        "b3": {
-          "type": "beat",
-          "settings": {
-            "line": "And nothing was ordinary again",
-            "drift": "left"
-          }
-        },
-        "b4": {
-          "type": "beat",
-          "settings": {
-            "line": "Through the year that tried to break us"
-          }
-        },
-        "b5": {
-          "type": "beat",
-          "settings": {
-            "line": "Still here. Still choosing you.",
-            "drift": "right"
-          }
-        },
-        "b6": {
-          "type": "beat",
-          "settings": {
-            "line": "{name}, this one is yours.",
-            "drift": "out"
-          }
-        },
-        "f1": {
-          "type": "face",
-          "settings": {}
-        },
-        "f2": {
-          "type": "face",
-          "settings": {}
-        },
-        "f3": {
-          "type": "face",
-          "settings": {}
-        },
-        "f4": {
-          "type": "face",
-          "settings": {}
-        },
-        "f5": {
-          "type": "face",
-          "settings": {}
-        },
-        "r1": {
-          "type": "row",
-          "settings": {
-            "icon": "💐",
-            "label": "Flowers",
-            "value": "Wilt in a week"
-          }
-        },
-        "r2": {
-          "type": "row",
-          "settings": {
-            "icon": "💎",
-            "label": "Jewellery",
-            "value": "Sits in a drawer"
-          }
-        },
-        "r3": {
-          "type": "row",
-          "settings": {
-            "icon": "🎬",
-            "label": "{name}'s music video",
-            "value": "Gets replayed",
-            "strong": true
-          }
-        }
-      },
-      "block_order": [
-        "b1",
-        "b2",
-        "b3",
-        "b4",
-        "b5",
-        "b6",
-        "f1",
-        "f2",
-        "f3",
-        "f4",
-        "f5",
-        "r1",
-        "r2",
-        "r3"
-      ],
+      "type": "cs-duo-generated-preview",
       "settings": {
-        "lock": false,
-        "bar_minutes": 5,
-        "wait_heading": "Your words are becoming a music video.",
-        "wait_sub": "Watch this while we make it.",
-        "video_ratio": "4/3",
-        "notice": "⚡ Your free preview appears here at the end of the video.",
-        "ready_notice": "✓ It's ready. Your preview is waiting below.",
-        "song_title": "{name}'s Unique Music Video",
-        "song_sub": "{genre} melody, written for {name} ({rel})",
-        "prev_ratio": "16/9",
-        "play_hint": "Tap to play preview",
-        "prev_empty": "Your 30-second preview appears here.",
-        "preview_length": "0:30",
-        "preview_note": "Play it with headphones if you have them.",
-        "proof_line": "12,000+ couples have given this gift",
-        "deal_title": "🎁 Preview-unlocked rate — 25% off",
-        "deal_note": "Only for couples who watched their preview. It ends with the timer below.",
-        "deal_chip": "SAVE $40",
-        "show_timer": true,
-        "timer_minutes": 1,
-        "timer_title": "Your spot is held",
-        "timer_note": "When it ends the rate goes back to the regular one. You can still order.",
-        "timer_over": "This rate has ended. You can still order at the regular rate."
+        "api_base": "https://craftstory-couples.nic-delgaudio.workers.dev"
       }
     },
     "offer": {
@@ -201,7 +85,7 @@
         "speed_heading": "Choose your delivery speed",
         "cta_label": "Unlock {name}'s full music video",
         "cta_link": "/pages/couples",
-        "cta_note": "Limited · Yours forever · Secure payment",
+        "cta_note": "Limited \u00b7 Yours forever \u00b7 Secure payment",
         "sticky": true,
         "guar_title": "30-day money-back guarantee",
         "guar_body": "Not happy with your music video? Full refund. No questions asked, no awkward email.",
@@ -215,7 +99,7 @@
         "v1": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -226,7 +110,7 @@
         "v2": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -237,7 +121,7 @@
         "v3": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -248,7 +132,7 @@
         "v4": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -259,7 +143,7 @@
         "v5": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -270,7 +154,7 @@
         "v6": {
           "type": "review",
           "settings": {
-            "stars": "★★★★★",
+            "stars": "\u2605\u2605\u2605\u2605\u2605",
             "date": "",
             "verified": false,
             "name": "",
@@ -318,7 +202,7 @@
           "type": "qa",
           "settings": {
             "q": "How quickly do I get it after paying?",
-            "a": "<p>Within the time you picked above — thirty minutes, or forty-eight hours.</p>"
+            "a": "<p>Within the time you picked above \u2014 thirty minutes, or forty-eight hours.</p>"
           }
         },
         "q4": {
@@ -332,14 +216,14 @@
           "type": "qa",
           "settings": {
             "q": "Can we play it at our wedding?",
-            "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car.</p>"
+            "a": "<p>Yes. It is yours \u2014 first dance, reception, an anniversary dinner, or just the car.</p>"
           }
         },
         "q6": {
           "type": "qa",
           "settings": {
             "q": "What happens if I don't unlock it right now?",
-            "a": "<p>Nothing is lost. Your answers are kept and you can come back — at the regular rate.</p>"
+            "a": "<p>Nothing is lost. Your answers are kept and you can come back \u2014 at the regular rate.</p>"
           }
         }
       },
@@ -366,7 +250,7 @@
         "heading": "Still Have Questions?",
         "intro": "Our friendly team is here to help. Email us anytime at",
         "email": "Sarah@craftstory.co",
-        "tail": "— we typically respond within a few hours.",
+        "tail": "\u2014 we typically respond within a few hours.",
         "bg": "paper2"
       }
     }

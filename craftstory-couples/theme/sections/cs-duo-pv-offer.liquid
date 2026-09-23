@@ -3,24 +3,15 @@
     La page d'apres-tunnel, moitie basse : le choix de vitesse, l'option, le
     bouton, la garantie et la suite.
 
-    LE PAIEMENT. Chaque vitesse (et l'option) porte l'identifiant d'une
-    variante Shopify. Au clic, le choix est mis au panier avec tout ce qu'il
-    faut pour produire la video — leurs reponses, la chanson, les six scenes,
-    les liens des photos — puis le checkout s'ouvre : c'est Shopify Payments
-    qui encaisse, comme pour le reste de la boutique.
-
-    Sans variante renseignee, le bouton reste le lien reglable d'avant : le
-    choix s'y ajoute en parametres (?speed=...&addon=1).
+    Aucun paiement n'est branche. Le bouton est un lien reglable : le choix de
+    vitesse et l'option s'y ajoutent en parametres (?speed=...&addon=1), donc
+    le jour ou un produit existe, il suffit de coller son URL et le choix
+    arrive avec.
 
     {name} devient le prenom, repris de ?name= dans l'URL.
   endcomment
 -%}
-{%- comment -%}
-  id="cs-duo-offer" : la carte de fin de la preview y envoie (« Get the full
-  music video »). Sans cette ancre, son bouton ne menait nulle part.
-{%- endcomment -%}
-<div class="cs cs-duo-pvo" id="cs-duo-offer" data-cs-pvo data-base="{{ section.settings.cta_link | escape }}"
-  data-video-page="{{ shop.url }}{{ section.settings.video_page | default: '/pages/your-video' | escape }}">
+<div class="cs cs-duo-pvo" data-cs-pvo data-base="{{ section.settings.cta_link | escape }}">
   <div class="cs-wrap">
 
     {%- comment -%} 1. la vitesse de livraison {%- endcomment -%}
@@ -39,7 +30,6 @@
           {%- if block.type == 'speed' and block.settings.label != blank -%}
             <label class="cs-pvo-opt" {{ block.shopify_attributes }}>
               <input type="radio" name="cs-speed" value="{{ block.settings.value | default: block.settings.label | escape }}"
-                     data-variant="{{ block.settings.variant | strip | escape }}"
                      data-cs-speed{% if first %} checked{% assign first = false %}{% endif %}>
               <span class="cs-pvo-dot" aria-hidden="true"></span>
               <span class="cs-pvo-body">
@@ -61,8 +51,7 @@
     {%- for block in section.blocks -%}
       {%- if block.type == 'addon' and block.settings.label != blank -%}
         <label class="cs-pvo-opt cs-pvo-addon" {{ block.shopify_attributes }}>
-          <input type="checkbox" data-cs-addon value="{{ block.settings.value | default: '1' | escape }}"
-                 data-variant="{{ block.settings.variant | strip | escape }}">
+          <input type="checkbox" data-cs-addon value="{{ block.settings.value | default: '1' | escape }}">
           <span class="cs-pvo-box" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
           </span>
@@ -82,7 +71,6 @@
           <span data-cs-tpl>{{ section.settings.cta_label }}</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
         </a>
-        <p class="cs-pvo-err" data-cs-cart-err role="alert" hidden>{{ section.settings.err_cart | default: "We couldn't open checkout. Please try again." }}</p>
         {%- if section.settings.cta_note != blank -%}
           <p class="cs-pvo-ctanote">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.6l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 9.6l-7 7z"/></svg>
@@ -152,7 +140,7 @@
 {
   "name": "CraftStory Duo Offer",
   "settings": [
-    { "type": "paragraph", "content": "The offer under the preview. Give each Speed block (and the Add-on) the ID of its Shopify variant: the button then puts the choice in the cart with their answers, the song, the six scenes and the photo links, and opens checkout. Without variant IDs the button stays a plain link." },
+    { "type": "paragraph", "content": "The bottom half of the page they land on after the flow. No payment is wired: the button is a plain link, and the chosen speed and add-on are appended to it as ?speed=…&addon=1. The day a product exists, paste its URL and the choice travels with it." },
     { "type": "paragraph", "content": "Write {name} in the button or a step and it becomes their first name, taken from ?name= in the URL." },
 
     { "type": "header", "content": "1 — Delivery speed" },
@@ -161,9 +149,7 @@
 
     { "type": "header", "content": "2 — The button" },
     { "type": "text", "id": "cta_label", "label": "Button", "default": "Unlock {name}'s full music video" },
-    { "type": "text", "id": "cta_link", "label": "Button link", "default": "/pages/couples", "info": "Only used when the speeds have no variant ID. The speed and add-on are added to it." },
-    { "type": "text", "id": "err_cart", "label": "Message if checkout cannot open", "default": "We couldn't open checkout. Please try again." },
-    { "type": "text", "id": "video_page", "label": "Page where buyers watch their video", "default": "/pages/your-video", "info": "Each order gets a private link to this page (\"Your video\" in the order and in the confirmation email). The page must use the couples-video template." },
+    { "type": "text", "id": "cta_link", "label": "Button link", "default": "/pages/couples", "info": "A product page, a checkout link, anything. The speed and add-on are added to it." },
     { "type": "text", "id": "cta_note", "label": "Line under the button" },
     { "type": "checkbox", "id": "sticky", "label": "Repeat the button in a bar at the bottom", "default": true },
 
@@ -186,8 +172,7 @@
         { "type": "text", "id": "price", "label": "Price" },
         { "type": "text", "id": "was", "label": "Struck-through price" },
         { "type": "text", "id": "badge", "label": "Badge", "info": "For example MOST POPULAR." },
-        { "type": "text", "id": "value", "label": "Value sent in the link", "info": "Defaults to the label." },
-        { "type": "text", "id": "variant", "label": "Shopify variant ID", "info": "The number at the end of the variant's admin URL. The button adds it to the cart and opens checkout." }
+        { "type": "text", "id": "value", "label": "Value sent in the link", "info": "Defaults to the label." }
       ]
     },
     {
@@ -197,8 +182,7 @@
         { "type": "text", "id": "label", "label": "Label" },
         { "type": "text", "id": "note", "label": "Note" },
         { "type": "text", "id": "price", "label": "Price" },
-        { "type": "text", "id": "value", "label": "Value sent in the link", "default": "1" },
-        { "type": "text", "id": "variant", "label": "Shopify variant ID", "info": "Added to the cart with the speed when the box is ticked." }
+        { "type": "text", "id": "value", "label": "Value sent in the link", "default": "1" }
       ]
     },
     {
@@ -216,7 +200,6 @@
 {% stylesheet %}
 .cs-duo-pvo{background:var(--cs-paper);padding:clamp(24px,5vw,40px) 0 clamp(40px,8vw,64px)}
 .cs-duo-pvo [hidden]{display:none !important}
-.cs-duo-pvo{scroll-margin-top:16px}
 .cs-duo-pvo .cs-wrap{max-width:560px}
 .cs-pvo-h{font-family:var(--cs-serif);font-weight:600;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.15;
   letter-spacing:-.015em;color:var(--cs-ink);margin:0 0 14px;padding:0;text-align:center;float:none;width:100%}
@@ -251,9 +234,6 @@
 .cs-pvo-badge{position:absolute;top:-9px;left:14px;padding:2px 9px;border-radius:var(--cs-pill);
   background:var(--cs-star);color:var(--cs-night);font-size:.68rem;font-weight:800;letter-spacing:.04em}
 .cs-pvo-addon{margin-top:10px;background:var(--cs-paper2)}
-.cs-duo-pvo .cs-pvo-err{margin:10px 0 0;padding:10px 13px;border-radius:var(--cs-r);background:rgba(236,91,60,.1);
-  border:1px solid rgba(236,91,60,.34);color:var(--cs-coral-deep);font-size:.88rem;font-weight:650;text-align:center}
-.cs-pvo-go[aria-busy="true"]{opacity:.7;pointer-events:none}
 
 /* Le bouton */
 .cs-pvo-cta{margin-top:clamp(18px,3.4vw,26px);text-align:center}
@@ -300,33 +280,22 @@
     // et a defaut de ?name= pour qu'un lien partage reste lisible. Sans lui, on
     // retire le gabarit plutot que de laisser un trou dans la phrase.
     var name = '';
-    function readName() {
-      var n = '';
-      try {
-        var a = JSON.parse(window.sessionStorage.getItem('csDuoFlow') || '{}') || {};
-        n = (a.their_name || '').trim();
-      } catch (e) {}
-      if (!n) {
-        try { n = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
-      }
-      return n;
+    try {
+      var a = JSON.parse(window.sessionStorage.getItem('csDuoFlow') || '{}') || {};
+      name = (a.their_name || '').trim();
+    } catch (e) {}
+    if (!name) {
+      try { name = (new URLSearchParams(window.location.search).get('name') || '').trim(); } catch (e) {}
     }
-    function fillName() {
-      name = readName();
-      var tpl = root.querySelectorAll('[data-cs-tpl]');
-      for (var i = 0; i < tpl.length; i++) {
-        var t = tpl[i].getAttribute('data-cs-orig') || tpl[i].textContent;
-        tpl[i].setAttribute('data-cs-orig', t);
-        tpl[i].textContent = name
-          ? t.split('{name}').join(name)
-          : t.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
-        tpl[i].hidden = !tpl[i].textContent;
-      }
+    var tpl = root.querySelectorAll('[data-cs-tpl]');
+    for (var i = 0; i < tpl.length; i++) {
+      var t = tpl[i].getAttribute('data-cs-orig') || tpl[i].textContent;
+      tpl[i].setAttribute('data-cs-orig', t);
+      tpl[i].textContent = name
+        ? t.split('{name}').join(name)
+        : t.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
+      if (!tpl[i].textContent) tpl[i].hidden = true;
     }
-    fillName();
-    // Posee sous le tunnel, la section s'ouvre apres le formulaire : le prenom
-    // n'existait peut-etre pas encore au chargement.
-    document.addEventListener('cs:duo:open', function () { fillName(); link(); });
 
     // Le choix voyage dans le lien. Rien n'est achete ici : le jour ou le
     // bouton pointe vers un produit, la vitesse et l'option arrivent avec.
@@ -349,117 +318,6 @@
     var inputs = root.querySelectorAll('[data-cs-speed], [data-cs-addon]');
     for (var n = 0; n < inputs.length; n++) inputs[n].addEventListener('change', link);
     link();
-
-    // ----------------------------------------------------------------------
-    // LE PAIEMENT
-    //
-    // La vitesse choisie (et l'option) part au panier, avec tout ce qu'il faut
-    // pour produire la video : leurs reponses, la chanson et les six scenes de
-    // la preview, les liens des photos. Puis le checkout s'ouvre, et c'est
-    // Shopify Payments qui encaisse.
-    //
-    // Les proprietes qui commencent par « _ » ne sont montrees ni au client,
-    // ni dans ses e-mails : elles sont pour l'atelier, dans la commande.
-    // ----------------------------------------------------------------------
-    var errEl = root.querySelector('[data-cs-cart-err]');
-    var busy = false;
-
-    function kept(key) {
-      try { return JSON.parse(window.sessionStorage.getItem(key) || 'null') || {}; } catch (e) { return {}; }
-    }
-    function cut(v, max) {
-      v = String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
-      return v.length > max ? v.slice(0, max - 1) + '…' : v;
-    }
-
-    function properties() {
-      var a = kept('csDuoFlow');
-      var t = kept('csDuoTake');
-      var out = {};
-      function put(k, v, max) { v = cut(v, max || 250); if (v) out[k] = v; }
-      put('For', a.their_name);
-      put('From', a.your_name);
-      put('Occasion', a.occasion_other || a.occasion);
-      put('Song language', a.language);
-      put('Genre', a.genre);
-      put('Voice', a.voice);
-      put('_Relationship', a.relationship);
-      put('_Story', a.story, 1200);
-      put('_What they love', a.qualities, 1200);
-      put('_Message', a.message, 1200);
-      put('_Phone', a.phone);
-      if (t.song) put('_Preview song', t.song, 600);
-      if (t.beats && t.beats.length) {
-        var urls = [];
-        for (var k = 0; k < t.beats.length; k++) if (t.beats[k].poster) urls.push(t.beats[k].poster);
-        put('_Preview scenes', urls.join(' '), 4000);
-      }
-      if (t.photos && t.photos.length) put('_Photos', t.photos.join(' '), 1200);
-      if (t.title) put('_Song title', t.title);
-      // L'adresse privee de leur video : visible, pour qu'elle soit dans leur
-      // e-mail de confirmation et sur la page de leur commande.
-      if (view) {
-        out['Your video'] = videoPage + (videoPage.indexOf('?') > -1 ? '&' : '?') + 'v=' + view;
-        out['_View'] = view;
-      }
-      return out;
-    }
-
-    // Avant le panier : le dossier de la preview est range chez nous, et une
-    // cle privee revient. Rien n'est genere a ce moment-la. Si l'API ne repond
-    // pas, le checkout s'ouvre quand meme, sans le lien.
-    var videoPage = root.getAttribute('data-video-page') || '';
-    var view = '';
-    function register() {
-      var j = kept('csDuoJob');
-      if (!j.job || !j.status || !videoPage) return Promise.resolve('');
-      var url = String(j.status).replace(/\/status$/, '/order');
-      var ctl = ('AbortController' in window) ? new AbortController() : null;
-      var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
-      return fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job: j.job }),
-        signal: ctl ? ctl.signal : undefined
-      }).then(function (r) { return r.ok ? r.json() : {}; })
-        .then(function (d) { clearTimeout(timer); return /^[a-f0-9]{24}$/.test((d && d.view) || '') ? d.view : ''; })
-        .catch(function () { clearTimeout(timer); return ''; });
-    }
-
-    function checkout(e) {
-      var speed = root.querySelector('[data-cs-speed]:checked');
-      var vid = speed ? (speed.getAttribute('data-variant') || '').replace(/\D+/g, '') : '';
-      // Pas de variante : le lien reglable d'avant reste le chemin.
-      if (!vid) return;
-      e.preventDefault();
-      if (busy) return;
-      busy = true;
-      if (errEl) errEl.hidden = true;
-      for (var g = 0; g < gos.length; g++) gos[g].setAttribute('aria-busy', 'true');
-
-      var aid = (addon && addon.checked) ? (addon.getAttribute('data-variant') || '').replace(/\D+/g, '') : '';
-      var base = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
-
-      register().then(function (v) {
-        view = v || view;
-        var items = [{ id: Number(vid), quantity: 1, properties: properties() }];
-        if (aid) items.push({ id: Number(aid), quantity: 1 });
-        return fetch(base + 'cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ items: items })
-        });
-      }).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        window.location.href = base + 'checkout';
-      }).catch(function () {
-        busy = false;
-        for (var h = 0; h < gos.length; h++) gos[h].removeAttribute('aria-busy');
-        if (errEl) errEl.hidden = false;
-      });
-    }
-    for (var c = 0; c < gos.length; c++) gos[c].addEventListener('click', checkout);
 
     // La barre du bas n'apparait qu'une fois le bouton principal passe : sinon
     // elle double un bouton deja visible a l'ecran.
