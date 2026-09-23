@@ -1,0 +1,302 @@
+{%- comment -%}
+  LE CLIP DE LA PREVIEW, facon « music video ».
+
+  Cette section n'affiche rien par elle-meme. Quand la preview de l'associe
+  (cs-duo-generated-preview) est devoilee, elle transforme son grand cadre en
+  clip : ses quatre scenes se relaient sur SA chanson, en fondu, avec une
+  derive lente (zoom avant, arriere, glissement), la legende de la scene en
+  bas, un grand bouton de lecture, et une carte de fin qui mene a l'offre.
+
+  Rien n'est modifie chez lui : sa chanson, son lecteur, sa barre, ses
+  vignettes restent les siens ; le clip suit simplement l'instant de sa
+  chanson. Retirer cette section rend sa preview telle qu'elle etait.
+{%- endcomment -%}
+<div class="cs-mtg-cfg" data-cs-mtg hidden
+     data-per="{{ section.settings.shot_seconds }}"
+     data-hint="{{ section.settings.play_hint | escape }}"
+     data-again="{{ section.settings.again_label | escape }}"
+     data-end-title="{{ section.settings.end_title | escape }}"
+     data-end-cta="{{ section.settings.end_cta | escape }}"></div>
+
+{% schema %}
+{
+  "name": "Couples: preview clip",
+  "tag": "div",
+  "settings": [
+    { "type": "paragraph", "content": "Turns the revealed preview above into a music video: its four scenes take turns on its song, with fades, a slow drift and the scene line at the bottom. Remove this section to get the original preview back." },
+    { "type": "range", "id": "shot_seconds", "label": "Seconds per shot", "min": 3, "max": 15, "step": 1, "default": 5, "unit": "s" },
+    { "type": "text", "id": "play_hint", "label": "Play button", "default": "Tap to play your music video" },
+    { "type": "text", "id": "again_label", "label": "Replay button", "default": "Watch again" },
+    { "type": "text", "id": "end_title", "label": "End card title", "default": "That was the first minute of {name}'s music video." },
+    { "type": "text", "id": "end_cta", "label": "End card button", "default": "Get the full music video" }
+  ],
+  "presets": [{ "name": "Couples: preview clip" }]
+}
+{% endschema %}
+
+{% stylesheet %}
+/* Le cadre de sa preview, devenu clip. Ses propres elements (image, legende)
+   restent dans la page mais s'effacent derriere le clip. */
+.cp-stage.cs-mtg-on{background:#000;isolation:isolate}
+.cp-stage.cs-mtg-on > [data-hero],
+.cp-stage.cs-mtg-on > [data-caption]{visibility:hidden}
+.cs-mtg{position:absolute;inset:0;overflow:hidden;z-index:1}
+.cs-mtg-shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  opacity:0;transition:opacity .36s linear;transform-origin:center;will-change:opacity,transform}
+.cs-mtg-shot.on{opacity:1;animation:cs-mtg-in var(--cs-mtg-dur,5s) linear both}
+.cs-mtg-shot.on[data-drift=out]{animation-name:cs-mtg-out}
+.cs-mtg-shot.on[data-drift=left]{animation-name:cs-mtg-left}
+.cs-mtg-shot.on[data-drift=right]{animation-name:cs-mtg-right}
+@keyframes cs-mtg-in{from{transform:scale(1.005)}to{transform:scale(1.06)}}
+@keyframes cs-mtg-out{from{transform:scale(1.06)}to{transform:scale(1.005)}}
+@keyframes cs-mtg-left{from{transform:scale(1.06) translateX(1.3%)}to{transform:scale(1.06) translateX(-1.3%)}}
+@keyframes cs-mtg-right{from{transform:scale(1.06) translateX(-1.3%)}to{transform:scale(1.06) translateX(1.3%)}}
+.cs-mtg.cs-mtg-paused .cs-mtg-shot.on{animation-play-state:paused}
+
+/* La legende de la scene, lisible sur n'importe quelle image */
+.cs-mtg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.28) 45%,transparent)}
+.cs-mtg-line{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0 !important;
+  padding:0 clamp(14px,4vw,24px) clamp(14px,4vw,22px);font-family:Georgia,serif;
+  font-size:clamp(1.05rem,4.2vw,1.5rem);line-height:1.25;font-weight:600;color:#fff;
+  text-align:center;text-wrap:balance;text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none}
+.cs-mtg-line span{display:inline-block;opacity:0;transform:translateY(.5em);
+  animation:cs-mtg-word .42s cubic-bezier(.2,.7,.3,1) both}
+@keyframes cs-mtg-word{to{opacity:1;transform:none}}
+.cs-mtg-cd{position:absolute;top:10px;right:11px;z-index:3;padding:4px 9px;border-radius:99px;
+  background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* Le grand bouton de lecture */
+.cs-mtg-cover{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:11px;border:0;cursor:pointer;background:rgba(28,21,51,.34);
+  font:inherit;transition:background .18s ease}
+.cs-mtg-cover:hover{background:rgba(28,21,51,.22)}
+.cs-mtg-btn{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;
+  background:#bd5147;color:#fff;box-shadow:0 8px 20px rgba(189,81,71,.45)}
+.cs-mtg-btn svg{width:26px;height:26px;margin-left:3px}
+.cs-mtg-tap{font-size:.92rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.cs-mtg-cover[hidden]{display:none}
+
+/* La carte de fin, sur la derniere image */
+.cs-mtg-end{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:10px;padding:clamp(16px,5vw,28px);text-align:center;
+  background:rgba(28,21,51,.72);backdrop-filter:blur(3px);animation:cs-mtg-fade .34s ease both}
+.cs-mtg-end[hidden]{display:none}
+@keyframes cs-mtg-fade{from{opacity:0}to{opacity:1}}
+.cs-mtg-end-h{margin:0 !important;font-family:Georgia,serif;font-size:clamp(1.05rem,4vw,1.35rem);
+  line-height:1.24;font-weight:700;color:#fff;text-wrap:balance}
+.cs-mtg-go{border:0;border-radius:30px;padding:13px 24px;background:#bd5147;color:#fff;
+  font:inherit;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(189,81,71,.35)}
+.cs-mtg-again{border:0;border-radius:99px;padding:7px 14px;background:rgba(255,255,255,.16);color:#fff;
+  font:inherit;font-size:.86rem;font-weight:650;cursor:pointer}
+.cs-mtg-again:hover{background:rgba(255,255,255,.28)}
+
+@media(prefers-reduced-motion:reduce){
+  .cs-mtg-shot{transition:none}
+  .cs-mtg-shot.on{animation:none}
+  .cs-mtg-line span{animation:none;opacity:1;transform:none}
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var DRIFTS = ['in', 'out', 'left', 'right'];
+  var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+
+  function cfg() {
+    var el = document.querySelector('[data-cs-mtg]');
+    if (!el) return null;
+    var d = el.dataset;
+    return {
+      per: Math.max(3, parseFloat(d.per) || 5),
+      hint: d.hint || 'Tap to play your music video',
+      again: d.again || 'Watch again',
+      endTitle: d.endTitle || '',
+      endCta: d.endCta || 'Get the full music video'
+    };
+  }
+
+  function firstName() {
+    try {
+      var a = JSON.parse(window.sessionStorage.getItem('csDuoFlow') || '{}') || {};
+      return (a.their_name || '').trim();
+    } catch (e) { return ''; }
+  }
+
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+
+  function fmt(s) {
+    s = Math.max(0, Math.ceil(s));
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+
+  // Transforme le cadre d'UNE preview devoilee. Une seule fois par cadre.
+  function dress(root, c) {
+    var stage = root.querySelector('.cp-stage');
+    var audio = root.querySelector('audio');
+    var play = root.querySelector('[data-play]');
+    if (!stage || !audio || !play || stage.classList.contains('cs-mtg-on')) return;
+
+    // Ses scenes, dans l'ordre de ses vignettes : image + legende.
+    var scenes = [];
+    var cards = root.querySelectorAll('[data-scene]');
+    for (var i = 0; i < cards.length; i++) {
+      var img = cards[i].querySelector('img');
+      var cap = cards[i].querySelector('[data-scene-caption]');
+      var src = img && img.getAttribute('src');
+      if (src) scenes.push({ src: src, line: cap ? cap.textContent.trim() : '' });
+    }
+    if (!scenes.length) return;
+
+    stage.classList.add('cs-mtg-on');
+    var box = el('div', 'cs-mtg');
+    box.setAttribute('aria-hidden', 'true');
+    var imgs = scenes.map(function (s) {
+      var im = el('img', 'cs-mtg-shot');
+      im.alt = '';
+      im.decoding = 'async';
+      im.setAttribute('referrerpolicy', 'no-referrer');
+      im.src = s.src;
+      box.appendChild(im);
+      return im;
+    });
+    var line = el('p', 'cs-mtg-line');
+    var cd = el('span', 'cs-mtg-cd');
+    box.appendChild(line);
+    box.appendChild(cd);
+    stage.appendChild(box);
+
+    var cover = el('button', 'cs-mtg-cover', '<span class="cs-mtg-btn">' + PLAY + '</span><span class="cs-mtg-tap"></span>');
+    cover.type = 'button';
+    cover.querySelector('.cs-mtg-tap').textContent = c.hint;
+    stage.appendChild(cover);
+
+    var name = firstName();
+    var end = el('div', 'cs-mtg-end');
+    end.hidden = true;
+    var h = el('p', 'cs-mtg-end-h');
+    h.textContent = name ? c.endTitle.split('{name}').join(name)
+      : c.endTitle.replace(/\{name\}'?s?\s*/g, '').replace(/\s+/g, ' ').trim();
+    var go = el('button', 'cs-mtg-go');
+    go.type = 'button';
+    go.textContent = c.endCta;
+    var again = el('button', 'cs-mtg-again');
+    again.type = 'button';
+    again.textContent = c.again;
+    end.appendChild(h);
+    end.appendChild(go);
+    end.appendChild(again);
+    stage.appendChild(end);
+
+    var shown = -1;
+    var raf = 0;
+    function length() {
+      var d = audio.duration;
+      return Math.min(60, isFinite(d) && d > 0 ? d : 60);
+    }
+
+    function show(t) {
+      var n = Math.max(0, Math.floor(t / c.per));
+      if (n === shown) return;
+      shown = n;
+      var s = n % imgs.length;
+      for (var k = 0; k < imgs.length; k++) {
+        if (k !== s) imgs[k].classList.remove('on');
+      }
+      var im = imgs[s];
+      im.classList.remove('on');
+      void im.offsetWidth;                 // relance la derive
+      im.setAttribute('data-drift', DRIFTS[n % DRIFTS.length]);
+      im.style.setProperty('--cs-mtg-dur', c.per + 's');
+      im.classList.add('on');
+      var words = (scenes[s].line || '').split(/\s+/).filter(Boolean);
+      line.innerHTML = '';
+      for (var w = 0; w < words.length; w++) {
+        var sp = document.createElement('span');
+        sp.textContent = words[w];
+        sp.style.animationDelay = (w * 0.07) + 's';
+        line.appendChild(sp);
+        if (w < words.length - 1) line.appendChild(document.createTextNode(' '));
+      }
+    }
+
+    function paint() {
+      var t = audio.currentTime || 0;
+      show(t);
+      cd.textContent = fmt(length() - t);
+    }
+
+    function loop() {
+      paint();
+      raf = audio.paused ? 0 : window.requestAnimationFrame(loop);
+    }
+
+    function start() {
+      end.hidden = true;
+      if (audio.currentTime >= length() - 0.25) audio.currentTime = 0;
+      if (audio.paused) play.click();     // son lecteur a lui lance la chanson
+    }
+
+    cover.addEventListener('click', start);
+    again.addEventListener('click', function () { shown = -1; audio.currentTime = 0; start(); });
+    go.addEventListener('click', function () {
+      var offer = document.querySelector('[data-cs-pvo]');
+      if (offer) offer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    box.addEventListener('click', function () { if (!audio.paused) play.click(); });
+
+    audio.addEventListener('play', function () {
+      cover.hidden = true;
+      end.hidden = true;
+      box.classList.remove('cs-mtg-paused');
+      if (!raf) raf = window.requestAnimationFrame(loop);
+    });
+    audio.addEventListener('pause', function () {
+      box.classList.add('cs-mtg-paused');
+      // Sa limite d'une minute met la chanson en pause : c'est la fin du clip.
+      if (audio.currentTime >= length() - 0.25) { end.hidden = false; cover.hidden = true; }
+      else cover.hidden = false;
+    });
+    audio.addEventListener('ended', function () { end.hidden = false; cover.hidden = true; });
+    audio.addEventListener('seeked', paint);
+    audio.addEventListener('timeupdate', function () { if (audio.paused) paint(); });
+    audio.addEventListener('loadedmetadata', paint);
+
+    paint();
+  }
+
+  function scan() {
+    var c = cfg();
+    if (!c) return;
+    var all = document.querySelectorAll('[data-couples-preview][data-view="result"]');
+    for (var i = 0; i < all.length; i++) dress(all[i], c);
+  }
+
+  // Sa preview passe a « result » quand elle est devoilee (et peut etre
+  // remplacee par une copie neuve) : on guette l'attribut, rien d'autre.
+  function watch() {
+    scan();
+    if (!('MutationObserver' in window)) return;
+    new MutationObserver(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        if (m.type === 'attributes') { scan(); return; }
+        // Une preview neuve posee dans la page (le tunnel la remplace quand la
+        // preview est lancee). Le reste des changements ne nous regarde pas.
+        for (var j = 0; j < m.addedNodes.length; j++) {
+          var a = m.addedNodes[j];
+          if (a.nodeType === 1 && (a.matches('[data-couples-preview]') || a.querySelector('[data-couples-preview]'))) { scan(); return; }
+        }
+      }
+    }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-view'] });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
+  else watch();
+})();
+{% endjavascript %}

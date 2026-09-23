@@ -12,6 +12,8 @@ un faux studio que le test sert lui-meme, pour ne rien generer pour de vrai.
                           barre, la page de la preview s'ouvre d'elle-meme
     live30-preview.html   la page preview de l'associe, telle quelle
     live30-editor.html    la page unique vue dans l'editeur : aucun verrou
+    live30-vid.html       la page unique avec une video televersee (versions Shopify)
+    live30-montage.html   la page unique + le clip facon « music video » (v37)
 """
 import io
 import json
@@ -65,6 +67,24 @@ def main():
     def editor(d):
         d["design_mode"] = True
     mock("page.couples-start.json", "live30-editor", editor)
+
+    # Leur video televersee dans l'editeur : Shopify en fabrique plusieurs
+    # versions MP4, la plus petite souvent en premier.
+    def uploaded(d):
+        f = d["sections"][0]["settings"]
+        f.pop("mk_video_url", None)
+        f["mk_video"] = {"aspect_ratio": 1.7778, "preview_image": {"src": "x"}, "sources": [
+            {"format": "m3u8", "url": "/v.m3u8", "height": 1080},
+            {"format": "mp4", "url": "/clip-480.mp4", "height": 480},
+            {"format": "mp4", "url": "/clip-1080.mp4", "height": 1080},
+            {"format": "mp4", "url": "/clip-720.mp4", "height": 720},
+            {"format": "mp4", "url": "/clip-2160.mp4", "height": 2160}]}
+    mock("page.couples-start.json", "live30-vid", uploaded)
+
+    # La page unique avec le clip facon « music video » (brouillon v37).
+    def montage(d):
+        d["sections"].append({"type": "cs-duo-montage", "key": "montage", "settings": {}, "blocks": []})
+    mock("page.couples-start.json", "live30-montage", montage)
 
 
 if __name__ == "__main__":

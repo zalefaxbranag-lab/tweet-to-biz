@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""L'attente de 30 secondes, puis toute la page qui s'ouvre dessous, sans clic.
+"""L'attente (2 min 30, la duree du clip), puis toute la page qui s'ouvre dessous, sans clic.
 
 Joue dans Chromium avec les VRAIS gabarits et la VRAIE preview de l'associe
 (sa section, son JS, sa CSS, telles que sur le live). Seul son studio (le
 worker Cloudflare) est remplace par un faux, servi par le test : aucune
 generation reelle, aucun appel au vrai worker. L'horloge de la page est
-simulee : trente secondes se jouent en un instant.
+simulee : deux minutes et demie se jouent en quelques secondes.
 
     python3 qa/live30_drive.py
 """
@@ -34,9 +34,12 @@ serve.ROUTES["/pages/couples-preview"] = "/live30-preview.html"
 serve.ROUTES["/pages/flow-only"] = "/live30-flowonly.html"
 serve.ROUTES["/pages/no-clip"] = "/live30-noclip.html"
 serve.ROUTES["/pages/editor"] = "/live30-editor.html"
+serve.ROUTES["/pages/uploaded"] = "/live30-vid.html"
+serve.ROUTES["/pages/montage"] = "/live30-montage.html"
 _srv, BASE = serve.start(D)
 
 ok = True
+SECS = 150   # la barre par defaut : 2 min 30, la duree du clip
 
 
 def check(label, got, want):
@@ -108,29 +111,33 @@ class Studio:
         self.mode = "ok"         # ok | hold | fail
         self.gen = "ok"          # ok | failed : la fabrication echoue chez le studio
         self.steps = {}          # id -> nombre de lectures
+        self.ready_at = 8        # lectures avant « pret » (8 x 4 s = ~32 s)
 
     def job(self, n):
         return ("%064x" % (0xabc000 + n), "%064x" % (0xdef000 + n))
 
     def state(self, jid):
+        """La fabrication, etape par etape. ready_at = le nombre de lectures
+        (une toutes les 4 s) avant que tout soit pret : 8 = ~32 s, 45 = ~3 min."""
         k = self.steps.get(jid, 0)
         self.steps[jid] = k + 1
+        r = self.ready_at
         if self.gen == "failed" and k >= 2:
             return {"status": "failed", "planReady": True, "names": ["Marie", "Thomas"],
                     "scenes": [{"state": "failed"}] * 4, "createdAt": 0,
                     "error": "We could not finish this preview."}
         scenes = [{"state": "pending", "caption": "Scene %d" % (i + 1)} for i in range(4)]
-        d = {"status": "running", "planReady": k >= 1, "names": ["Marie", "Thomas"],
+        d = {"status": "running", "planReady": k >= r / 8, "names": ["Marie", "Thomas"],
              "scenes": scenes, "createdAt": 0}
-        if k >= 2:
+        if k >= 2 * r / 8:
             d["avatar"] = BASE + "/take/scene5.png"
-        if k >= 3:
+        if k >= 3 * r / 8:
             d["music"] = BASE + "/take/song.webm"
         for i in range(4):
-            if k >= 4 + i:
+            if k >= (4 + i) * r / 8:
                 scenes[i] = {"state": "done", "url": BASE + "/take/scene%d.png" % (i + 1),
                              "caption": "Moment %d" % (i + 1)}
-        if k >= 8:
+        if k >= r:
             d["status"] = "ready"
             d["title"] = "Marie & Thomas"
         return d
@@ -223,6 +230,7 @@ with sync_playwright() as pw:
     check("rien dessous : preview, offre, avis, FAQ, aide", [shown(p, k) for k in BELOW], [False] * 5)
     check("la preview de l'associe a demarre sans rien a suivre", p.get_attribute("[data-couples-preview]", "data-view"), "empty")
     check("aucune lecture du studio avant l'envoi", len(st.gets), 0)
+    check("la barre est reglee sur 2 min 30", p.get_attribute("[data-cs-flow]", "data-mk-sec"), str(SECS))
 
     print("\n--- A. LE DERNIER CLIC : L'ATTENTE, TOUT DE SUITE ---")
     walk(p)
@@ -244,40 +252,34 @@ with sync_playwright() as pw:
     check("et marquee comme devoilee d'avance (pas de clic pour la voir)",
           p.evaluate("JSON.parse(sessionStorage.getItem('csCouplesRevealed')||'null')") == (job or {}).get("id"), True)
     check("la section de la preview a redemarre sur elle, cachee", p.get_attribute("[data-couples-preview]", "data-view"), "loading")
-    run(p, 12000)
-    check("elle suit la fabrication pendant l'attente", len(st.gets) >= 2, True)
-    check("a 12 s : toujours ferme", [gate(p), shown(p, "song")], ["closed", False])
-    check("la barre avance, pas pleine", 35 <= pct(p) <= 45, True)
+    run(p, 60000)
+    check("elle suit la fabrication pendant l'attente, jusqu'a « prete »", len(st.gets) >= 8, True)
+    check("a 1 min : toujours ferme", [gate(p), shown(p, "song")], ["closed", False])
+    check("la barre est a ~40 %", 36 <= pct(p) <= 42, True)
+    check("meme prete, la preview reste cachee avant la fin de la barre", p.get_attribute("[data-couples-preview]", "data-view"), "result")
 
-    print("\n--- A. A 30 SECONDES : TOUT S'OUVRE DESSOUS, SANS CLIC ---")
-    run(p, 16500)
-    check("a 28,5 s : encore ferme", gate(p), "closed")
+    print("\n--- A. A 2 MIN 30 : TOUT S'OUVRE DESSOUS, SANS CLIC ---")
+    run(p, (SECS - 60) * 1000 - 1500)
+    check("a 2 min 28,5 : encore ferme", [gate(p), shown(p, "song")], ["closed", False])
     top_before = p.evaluate("window.scrollY")
     run(p, 2000)
-    check("a 30,5 s : le verrou est leve", gate(p), None)
+    check("a 2 min 30,5 : le verrou est leve", gate(p), None)
     check("la barre est pleine", pct(p), 100)
-    check("la preview est visible dessous", shown(p, "song"), True)
     check("« descends » s'affiche, sans bouton", [p.is_visible("[data-cs-mk-ready]"), p.eval_on_selector_all("[data-cs-mk-go]", "e=>e.length")], [True, 0])
     check("la notice a cede la place", p.is_hidden("[data-cs-mk-note]"), True)
     p.wait_for_timeout(900)
     check("la page descend seule jusqu'a la preview", p.evaluate("window.scrollY") > top_before + 200, True)
-    check("la preview est encore en fabrication a 30 s", p.get_attribute("[data-couples-preview]", "data-view"), "loading")
-    check("l'offre attend que la preview soit devoilee (regle de l'associe)", shown(p, "offer"), False)
-    check("l'ouverture est gardee pour un rechargement", p.evaluate("sessionStorage.getItem('csDuoOpen')"), "1")
-
-    print("\n--- A. LA PREVIEW SE DEVOILE SEULE QUAND ELLE EST PRETE ---")
-    run(p, 40000, 2000)
-    view = p.get_attribute("[data-couples-preview]", "data-view")
-    check("la preview est devoilee, sans le bouton « Reveal »", view, "result")
+    check("la preview est la, deja devoilee", p.get_attribute("[data-couples-preview]", "data-view"), "result")
     check("le bouton « Reveal » n'a jamais servi", p.is_hidden("[data-reveal]"), True)
     check("tout le reste de la page est la", [shown(p, k) for k in BELOW], [True] * 5)
     check("l'offre porte son prenom", p.inner_text(sec("offer") + " .cs-pvo-cta [data-cs-tpl]"), "Unlock Marie's full music video")
     check("son titre et sa chanson sont la",
           [p.inner_text("[data-couples-preview] [data-title]"), p.get_attribute("[data-couples-preview] audio", "src")],
           ["Marie & Thomas", BASE + "/take/song.webm"])
+    check("l'ouverture est gardee pour un rechargement", p.evaluate("sessionStorage.getItem('csDuoOpen')"), "1")
 
     print("\n--- A. LEUR CHANSON COUPE LE CLIP D'ATTENTE ---")
-    p.evaluate("document.querySelector('.cs-flow-mk-v').muted=false")
+    p.evaluate("(()=>{const v=document.querySelector('.cs-flow-mk-v');v.muted=false;v.play()})()")
     p.click("[data-couples-preview] [data-play]")
     p.wait_for_timeout(400)
     check("le clip d'attente s'est mis en pause", p.evaluate("document.querySelector('.cs-flow-mk-v').paused"), True)
@@ -303,8 +305,27 @@ with sync_playwright() as pw:
     check("toujours la meme page", p.url, BASE + "/pages/couples-start")
     ctx.close()
 
+    # ================================================================ A2
+    print("\n--- A2. FABRICATION DE 3 MIN (PLUS LONGUE QUE LA BARRE) ---")
+    ctx, st = context()
+    st.ready_at = 45                     # 45 lectures x 4 s = 3 min
+    p = page(ctx)
+    p.goto(BASE + "/pages/couples-start")
+    p.wait_for_timeout(400)
+    freeze(p)
+    walk(p)
+    p.wait_for_timeout(1200)
+    run(p, SECS * 1000 + 500)
+    check("a 2 min 30 : ouvert, la preview montre sa progression", [gate(p), shown(p, "song"), p.get_attribute("[data-couples-preview]", "data-view")], [None, True, "loading"])
+    check("son compteur avance (etapes deja faites)", int(p.inner_text("[data-couples-preview] [data-percent]").rstrip("%")) >= 60, True)
+    check("l'offre attend sa preview (regle de l'associe)", shown(p, "offer"), False)
+    run(p, 40000, 2000)
+    check("a ~3 min : devoilee seule, sans clic", p.get_attribute("[data-couples-preview]", "data-view"), "result")
+    check("et tout le reste apparait", [shown(p, k) for k in BELOW], [True] * 5)
+    ctx.close()
+
     # ================================================================ B
-    print("\n--- B. STUDIO LENT : LA BARRE ATTEND A 99 %, PUIS S'OUVRE ---")
+    print("\n--- B. STUDIO LENT A ACCEPTER L'ENVOI (40 s) : LA BARRE CONTINUE ---")
     ctx, st = context()
     st.mode = "hold"
     p = page(ctx)
@@ -312,15 +333,13 @@ with sync_playwright() as pw:
     p.wait_for_timeout(400)
     freeze(p)
     walk(p)
-    run(p, 32000)
-    check("a 32 s sans preview lancee : 99 %, ferme", [pct(p), gate(p)], [99, "closed"])
-    check("l'etape dit « presque »", p.inner_text("[data-cs-mk-stage]"), "Almost there…")
-    run(p, 8000)
+    run(p, 40000)
+    check("a 40 s : l'attente continue, fermee", [p.is_visible("[data-cs-mk]"), gate(p)], [True, "closed"])
     st.release()
     p.wait_for_timeout(1200)
-    run(p, 1000)
-    check("des que la preview part : ouvert", [gate(p), shown(p, "song"), pct(p)], [None, True, 100])
-    check("et jamais sur son ecran vide « Your story starts here »", p.get_attribute("[data-couples-preview]", "data-view"), "loading")
+    run(p, (SECS - 40) * 1000 + 1000)
+    check("a 2 min 30 : ouvert", [gate(p), shown(p, "song"), pct(p)], [None, True, 100])
+    check("et jamais sur son ecran vide « Your story starts here »", p.get_attribute("[data-couples-preview]", "data-view") in ("loading", "result"), True)
     ctx.close()
 
     # ================================================================ C
@@ -340,9 +359,9 @@ with sync_playwright() as pw:
     st.mode = "ok"
     p.click("[data-cs-next]")
     p.wait_for_timeout(1200)
-    run(p, 31000)
-    check("au second essai : attente puis ouverture", [gate(p), shown(p, "song")], [None, True])
     check("et le clip d'attente est reparti", p.evaluate("!document.querySelector('.cs-flow-mk-v').paused"), True)
+    run(p, SECS * 1000 + 1000)
+    check("au second essai : attente complete puis ouverture", [gate(p), shown(p, "song")], [None, True])
     check("meme cle d'idempotence (pas de double preview)", st.posts[0]["key"] == st.posts[1]["key"], True)
     ctx.close()
 
@@ -356,13 +375,13 @@ with sync_playwright() as pw:
     freeze(p)
     walk(p)
     run(p, 44000)
-    check("a 44 s : on attend encore, a 99 %", [p.is_visible("[data-cs-mk]"), pct(p)], [True, 99])
+    check("a 44 s : on attend encore", p.is_visible("[data-cs-mk]"), True)
     run(p, 17000)
     check("a 61 s au plus tard : retour au formulaire, message lisible", [p.is_visible("[data-cs-form]"), p.inner_text("[data-cs-err]")],
           [True, "We could not send that. Check your connection and try again."])
     st.release()
     p.wait_for_timeout(800)
-    run(p, 31000)
+    run(p, SECS * 1000)
     check("une reponse tardive ne rouvre rien", [gate(p), p.is_visible("[data-cs-form]")], ["closed", True])
     ctx.close()
 
@@ -375,12 +394,12 @@ with sync_playwright() as pw:
     freeze(p)
     walk(p)
     p.wait_for_timeout(1200)
-    run(p, 20000)
-    check("a 20 s : toujours sur le tunnel", p.url.endswith("/pages/flow-only"), True)
+    run(p, (SECS - 10) * 1000)
+    check("a 2 min 20 : toujours sur le tunnel", p.url.endswith("/pages/flow-only"), True)
     with p.expect_navigation():
         run(p, 11000)
     p.wait_for_timeout(600)
-    check("a 30 s : la page de la preview, sans clic", p.url.split("#")[0], BASE + "/pages/couples-preview")
+    check("a 2 min 30 : la page de la preview, sans clic", p.url.split("#")[0], BASE + "/pages/couples-preview")
     check("avec la preview dans l'adresse", bool(re.search(r"#preview=[a-f0-9]{64}\.[a-f0-9]{64}$", p.url)), True)
     run(p, 40000, 2000)
     check("elle s'y devoile seule, elle aussi", p.get_attribute("[data-couples-preview]", "data-view"), "result")
@@ -405,6 +424,17 @@ with sync_playwright() as pw:
     check("et la consigne « upload an MP4 » n'apparait jamais", p.is_visible("text=Your video goes here"), False)
     ctx.close()
 
+    # ================================================================ F2
+    print("\n--- F2. LEUR VIDEO TELEVERSEE (VERSIONS SHOPIFY) ---")
+    ctx, st = context()
+    p = page(ctx)
+    p.goto(BASE + "/pages/uploaded")
+    p.wait_for_timeout(400)
+    v = p.eval_on_selector(".cs-flow-mk-v", "v=>[v.getAttribute('data-cs-mk-src'), !!v.getAttribute('poster')]")
+    check("la meilleure version MP4 jusqu'a 1080p, avec sa premiere image", v, ["/clip-1080.mp4", True])
+    check("le cadre prend la forme de la video (16:9)", p.eval_on_selector(".cs-flow-mk-stage", "e=>e.style.aspectRatio"), "1.7778 / 1")
+    ctx.close()
+
     # ================================================================ G
     print("\n--- G. DANS L'EDITEUR : AUCUN VERROU ---")
     ctx, st = context()
@@ -418,6 +448,7 @@ with sync_playwright() as pw:
     # ================================================================ H
     print("\n--- H. ONGLET QUI REFUSE DE RIEN GARDER : LA PREVIEW DEMARRE QUAND MEME ---")
     ctx, st = context()
+    st.ready_at = 60
     p = page(ctx)
     p.add_init_script("Storage.prototype.setItem=function(){throw new Error('blocked')};")
     p.goto(BASE + "/pages/couples-start")
@@ -425,8 +456,8 @@ with sync_playwright() as pw:
     freeze(p)
     walk(p)
     p.wait_for_timeout(1200)
-    run(p, 31000)
-    check("a 31 s : ouvert, et la preview suit sa fabrication", [gate(p), p.get_attribute("[data-couples-preview]", "data-view")], [None, "loading"])
+    run(p, SECS * 1000 + 1000)
+    check("a 2 min 30 : ouvert, et la preview suit sa fabrication", [gate(p), p.get_attribute("[data-couples-preview]", "data-view")], [None, "loading"])
     check("elle lit la preview dans l'adresse", bool(re.search(r"#preview=[a-f0-9]{64}\.[a-f0-9]{64}$", p.url)), True)
     ctx.close()
 
@@ -440,9 +471,53 @@ with sync_playwright() as pw:
     freeze(p)
     walk(p)
     p.wait_for_timeout(1200)
-    run(p, 31000)
+    run(p, SECS * 1000 + 1000)
     check("sa preview affiche son erreur", p.get_attribute("[data-couples-preview]", "data-view"), "error")
     check("et la suite se montre : offre, avis, FAQ, aide", [shown(p, k) for k in BELOW], [True] * 5)
+    ctx.close()
+
+    # ================================================================ M
+    print("\n--- M. LE CLIP FACON « MUSIC VIDEO » (BROUILLON v37) ---")
+    ctx, st = context()
+    p = page(ctx)
+    p.goto(BASE + "/pages/montage")
+    p.wait_for_timeout(400)
+    freeze(p)
+    walk(p)
+    p.wait_for_timeout(1200)
+    run(p, SECS * 1000 + 1000)
+    check("la preview est devoilee", p.get_attribute("[data-couples-preview]", "data-view"), "result")
+    check("son cadre est devenu un clip", p.eval_on_selector_all(".cp-stage.cs-mtg-on", "e=>e.length"), 1)
+    check("ses 4 scenes y sont", p.eval_on_selector_all(".cs-mtg-shot", "e=>e.map(i=>i.getAttribute('src').split('/').pop())"),
+          ["scene1.png", "scene2.png", "scene3.png", "scene4.png"])
+    check("son image et sa legende d'origine s'effacent derriere", p.eval_on_selector("[data-couples-preview] [data-hero]", "e=>getComputedStyle(e).visibility"), "hidden")
+    check("le grand bouton de lecture est la", [p.is_visible(".cs-mtg-cover"), p.inner_text(".cs-mtg-tap")], [True, "Tap to play your music video"])
+    check("premiere scene a l'ecran avant lecture", p.eval_on_selector(".cs-mtg-shot.on", "e=>e.getAttribute('src').split('/').pop()"), "scene1.png")
+    p.click(".cs-mtg-cover")
+    p.wait_for_timeout(500)
+    check("un clic : SA chanson joue (son lecteur a lui)", p.evaluate("!document.querySelector('[data-couples-preview] audio').paused"), True)
+    check("le bouton s'efface", p.is_hidden(".cs-mtg-cover"), True)
+    p.evaluate("(()=>{const a=document.querySelector('[data-couples-preview] audio');a.pause();a.currentTime=12})()")
+    p.wait_for_timeout(500)
+    check("a 12 s : la 3e scene, en glissement, avec sa legende",
+          [p.eval_on_selector(".cs-mtg-shot.on", "e=>[e.getAttribute('src').split('/').pop(), e.getAttribute('data-drift')]"), p.inner_text(".cs-mtg-line")],
+          [["scene3.png", "left"], "Moment 3"])
+    check("en pause : le bouton revient", p.is_visible(".cs-mtg-cover"), True)
+    p.evaluate("(()=>{const a=document.querySelector('[data-couples-preview] audio');a.currentTime=21})()")
+    p.wait_for_timeout(500)
+    check("a 21 s : on reboucle sur la 1re scene, en zoom avant", p.eval_on_selector(".cs-mtg-shot.on", "e=>[e.getAttribute('src').split('/').pop(), e.getAttribute('data-drift')]"), ["scene1.png", "in"])
+    p.evaluate("(()=>{const a=document.querySelector('[data-couples-preview] audio');a.currentTime=Math.max(0,Math.min(60,a.duration)-0.3);a.play()})()")
+    p.wait_for_timeout(2500)
+    check("a la fin : la carte de fin, avec son prenom", [p.is_visible(".cs-mtg-end"), p.inner_text(".cs-mtg-end-h")],
+          [True, "That was the first minute of Marie's music video."])
+    top = p.evaluate("window.scrollY")
+    p.click(".cs-mtg-go")
+    p.wait_for_timeout(900)
+    check("« Get the full music video » descend jusqu'a l'offre", p.evaluate("window.scrollY") > top, True)
+    p.click(".cs-mtg-again")
+    p.wait_for_timeout(500)
+    check("« Watch again » : ca repart du debut", p.evaluate("(()=>{const a=document.querySelector('[data-couples-preview] audio');return !a.paused && a.currentTime<3})()"), True)
+    check("le reste de sa preview est intact (vignettes, lecteur)", [p.eval_on_selector_all("[data-couples-preview] [data-scene]", "e=>e.length"), p.is_visible("[data-couples-preview] [data-play]")], [4, True])
     ctx.close()
 
     print("\n--- ERREURS JS ---")

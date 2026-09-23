@@ -9,8 +9,8 @@
 -%}
 {%- comment -%}
   LA PAGE UNIQUE. Quand la preview (et l'offre, les avis...) est posee SOUS le
-  tunnel, rien n'en est visible avant la fin de l'attente : trente secondes de
-  barre, puis tout s'ouvre dessous, sans clic. Le verrou est pose ici, avant
+  tunnel, rien n'en est visible avant la fin de l'attente : la barre (2 min 30
+  par defaut, la duree du clip), puis tout s'ouvre dessous, sans clic. Le verrou est pose ici, avant
   que la suite de la page ne s'affiche, sinon elle apparaitrait une fraction
   de seconde. Au retour sur une page deja ouverte, il ne se pose pas.
 
@@ -241,8 +241,9 @@
       dernier bouton, sans changement de page : c'est la suite immediate du
       dernier champ, pas un accuse de reception.
 
-      La barre se remplit en trente secondes. Pleine, tout s'ouvre dessous
-      (la preview, puis le reste de la page), sans bouton a toucher.
+      La barre se remplit pendant la duree reglee (2 min 30 par defaut, celle
+      du clip). Pleine, tout s'ouvre dessous (la preview, puis le reste de la
+      page), sans bouton a toucher.
     {%- endcomment -%}
     <div class="cs-flow-mk" data-cs-mk hidden>
       {%- if section.settings.mk_logo != blank -%}
@@ -258,11 +259,34 @@
         <p class="cs-flow-mk-sub">{{ section.settings.mk_sub }}</p>
       {%- endif -%}
 
+      {%- comment -%}
+        La forme du cadre : celle du clip televerse par defaut (rien n'est
+        rogne), sinon celle choisie dans l'editeur.
+      {%- endcomment -%}
+      {%- assign mkratio = section.settings.mk_ratio -%}
+      {%- if mkratio == 'auto' -%}
+        {%- assign mkratio = section.settings.mk_video.aspect_ratio | default: '4/3' -%}
+      {%- endif -%}
       {%- if section.settings.mk_video != blank or section.settings.mk_video_url != blank -%}
-        <div class="cs-flow-mk-stage" style="aspect-ratio:{{ section.settings.mk_ratio }}">
+        <div class="cs-flow-mk-stage" style="aspect-ratio:{{ mkratio }}">
           {%- if section.settings.mk_video != blank -%}
-            {%- assign mksrc = section.settings.mk_video.sources | where: 'format', 'mp4' | first -%}
-            {%- assign mkv = mksrc.url -%}
+            {%- comment -%}
+              Shopify fabrique plusieurs versions MP4 du clip. La premiere de la
+              liste est souvent la plus petite : on prend la meilleure jusqu'a
+              1080p, net sur ordinateur sans peser trop lourd sur telephone.
+            {%- endcomment -%}
+            {%- assign mkv = '' -%}
+            {%- assign mkh = 0 -%}
+            {%- for mksrc in section.settings.mk_video.sources -%}
+              {%- if mksrc.format == 'mp4' and mksrc.height <= 1080 and mksrc.height > mkh -%}
+                {%- assign mkv = mksrc.url -%}
+                {%- assign mkh = mksrc.height -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if mkv == blank -%}
+              {%- assign mksrc = section.settings.mk_video.sources | where: 'format', 'mp4' | first -%}
+              {%- assign mkv = mksrc.url -%}
+            {%- endif -%}
           {%- else -%}
             {%- assign mkv = section.settings.mk_video_url -%}
           {%- endif -%}
@@ -273,7 +297,7 @@
           {%- endcomment -%}
           <video class="cs-flow-mk-v" data-cs-mk-src="{{ mkv | escape }}" playsinline preload="none"
                  {% if section.settings.mk_autoplay %}muted{% else %}controls{% endif %}
-                 {% if section.settings.mk_poster != blank %}poster="{{ section.settings.mk_poster | image_url: width: 900 }}"{% endif %}></video>
+                 {% if section.settings.mk_poster != blank %}poster="{{ section.settings.mk_poster | image_url: width: 900 }}"{% elsif section.settings.mk_video.preview_image != blank %}poster="{{ section.settings.mk_video.preview_image | image_url: width: 900 }}"{% endif %}></video>
           {%- if section.settings.mk_clock -%}
             <span class="cs-flow-mk-clock" data-cs-mk-clock aria-hidden="true">--:--</span>
           {%- endif -%}
@@ -293,7 +317,7 @@
           rien du tout. Sans lui on ne voit pas ou deposer la video, et la page
           a l'air amputee.
         {%- endcomment -%}
-        <div class="cs-flow-mk-stage cs-flow-mk-empty" style="aspect-ratio:{{ section.settings.mk_ratio }}">
+        <div class="cs-flow-mk-stage cs-flow-mk-empty" style="aspect-ratio:{{ mkratio }}">
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
             {{ section.settings.mk_empty | default: 'Your video goes here — upload an MP4 in the sidebar.' }}
@@ -408,8 +432,9 @@
     { "type": "video", "id": "mk_video", "label": "Clip (upload MP4)" },
     { "type": "video_url", "id": "mk_video_url", "label": "Or a clip URL", "accept": ["youtube", "vimeo"] },
     { "type": "image_picker", "id": "mk_poster", "label": "Clip cover" },
-    { "type": "select", "id": "mk_ratio", "label": "Clip shape", "default": "4/3",
+    { "type": "select", "id": "mk_ratio", "label": "Clip shape", "default": "auto",
       "options": [
+        { "value": "auto", "label": "Same as the clip" },
         { "value": "16/9", "label": "Wide (16:9)" },
         { "value": "4/3", "label": "Classic (4:3)" },
         { "value": "1/1", "label": "Square (1:1)" },
@@ -420,7 +445,7 @@
     { "type": "text", "id": "mk_sound", "label": "Sound button", "default": "Tap for sound" },
     { "type": "text", "id": "mk_caption", "label": "Caption over the clip" },
     { "type": "text", "id": "mk_empty", "label": "Text while there is no clip", "default": "Your video goes here — upload an MP4 in the sidebar.", "info": "Shown in an empty frame, so the block is visible before you add a file." },
-    { "type": "range", "id": "mk_seconds", "label": "How long the bar takes", "min": 10, "max": 60, "step": 5, "default": 30, "unit": "s", "info": "If the preview has not started yet when the bar is full, it holds at 99% until it has — never more than a minute in all." },
+    { "type": "range", "id": "mk_seconds", "label": "How long the bar takes", "min": 10, "max": 300, "step": 5, "default": 150, "unit": "s", "info": "Match it to your clip: 150 s = 2:30. When the bar is full, the page below opens by itself." },
     { "type": "textarea", "id": "mk_stages", "label": "Stages", "default": "Reading your story…\nWriting your lyrics…\nRecording your song…\nAnimating your music video…\nAlmost there…", "info": "One per line. The label changes as the bar advances." },
     { "type": "text", "id": "mk_notice", "label": "Notice while it fills", "default": "⚡ Your free preview appears just below when the bar is full." },
     { "type": "text", "id": "mk_stay", "label": "Warning under it, in capitals", "default": "DON'T LEAVE THIS PAGE!" },
@@ -851,21 +876,23 @@
     // c'est la suite immediate du dernier bouton, pas un accuse de reception.
     //
     // LA PAGE UNIQUE. Quand la preview est posee sous le tunnel (puis l'offre
-    // et le reste), l'attente dure trente secondes. Barre pleine, tout
-    // s'ouvre dessous, sans clic : la preview y poursuit sa fabrication et se
-    // devoile d'elle-meme quand elle est prete. Rien n'est visible dessous
-    // avant la fin de la barre.
+    // et le reste), l'attente dure le temps de la barre : 2 min 30 par
+    // defaut, la duree du clip d'attente. Barre pleine, tout s'ouvre dessous,
+    // sans clic : la preview y poursuit sa fabrication si elle n'est pas
+    // finie, et se devoile d'elle-meme quand elle est prete. Rien n'est
+    // visible dessous avant la fin de la barre.
     //
     // Sans preview dessous (le tunnel seul sur sa page), la fin de la barre
     // ouvre la page de la preview, d'elle-meme elle aussi.
     //
     // La barre ne finit pas tant que la preview n'a pas ete lancee (le depot
-    // des photos peut etre lent) : elle attend a 99 %, jamais plus d'une
-    // minute en tout. Un echec ramene au formulaire, avec le message.
+    // des photos peut etre lent) : elle attend a 99 %. Le studio a une minute
+    // au plus pour accepter l'envoi ; un echec ramene au formulaire, avec le
+    // message.
     var MKEND = 'csDuoMakeAt';     // l'echeance de la barre, posee au clic
     var WAITJOB = 'csDuoWaitJob';  // la preview que cette attente a lancee
     var OPEN = 'csDuoOpen';        // la page s'est ouverte pour elle
-    var CAP = 60000;               // l'attente la plus longue, quoi qu'il arrive
+    var CAP = 60000;               // le temps laisse au studio pour accepter l'envoi
 
     function ss(k, v) {
       try {
@@ -1014,7 +1041,7 @@
         }, true);
       }
 
-      var secs = parseFloat(root.getAttribute('data-mk-sec') || '30') || 30;
+      var secs = parseFloat(root.getAttribute('data-mk-sec') || '150') || 150;
       var fillBar = mk.querySelector('[data-cs-mk-fill]');
       var pctEl = mk.querySelector('[data-cs-mk-pct]');
       var stageEl = mk.querySelector('[data-cs-mk-stage]');

@@ -1,11 +1,11 @@
-# Page unique : 30 s d'attente, puis la preview de l'associé dessous
+# Page unique : l'attente (2 min 30), puis la preview de l'associé dessous
 
 Base : le thème live **v35 « COUPLES LOADING + PREVIEW »**, fichier pour fichier.
 Deux fichiers changent, rien d'autre :
 
 | Fichier | Changement |
 |---|---|
-| `sections/cs-duo-flow.liquid` | l'attente (barre de 30 s, 1 min au plus) et l'ouverture automatique de la page dessous |
+| `sections/cs-duo-flow.liquid` | l'attente (barre de 2 min 30, réglable, la durée du clip) et l'ouverture automatique de la page dessous |
 | `templates/page.couples-start.json` | sous le questionnaire, les sections de la page preview, réglages recopiés à l'identique |
 
 **Non modifiés** : la preview de l'associé (`cs-duo-generated-preview`,
@@ -20,7 +20,7 @@ tout le reste du thème.
    On y voit le clip d'attente (ou leur photo s'il n'y en a pas), la barre, la
    notice et « DON'T LEAVE THIS PAGE! ». En même temps, la preview est lancée
    chez le studio de l'associé, avec les mêmes données qu'avant.
-3. En **30 s**, la barre est pleine et tout s'ouvre dessous, **sans clic**. La
+3. En **2 min 30** (la durée du clip d'attente), la barre est pleine et tout s'ouvre dessous, **sans clic**. La
    page descend doucement jusqu'à la preview. Avant ça, rien n'est visible
    dessous.
 4. La preview de l'associé continue sa fabrication sous ses yeux (ses étapes,
@@ -38,7 +38,7 @@ tout le reste du thème.
 | Rechargement pendant l'attente | l'attente reprend où elle en était |
 | Rechargement après l'ouverture | la page reste ouverte, la preview revient dévoilée |
 | « Back to the questionnaire » (dans sa preview) | on repart de zéro sur la même page |
-| Gabarit sans preview dessous | à la fin des 30 s, `/pages/couples-preview#preview=…` s'ouvre seule (son chemin d'origine, sans clic) |
+| Gabarit sans preview dessous | à la fin de la barre, `/pages/couples-preview#preview=…` s'ouvre seule (son chemin d'origine, sans clic) |
 | Éditeur de thème | aucun verrou, tout est visible |
 | Sa preview échoue (ou n'est plus disponible) | la suite (aide, FAQ, offre) s'affiche quand même : jamais de page sans issue |
 
@@ -61,7 +61,7 @@ tout le reste du thème.
 
 ## Tests
 
-`qa/live30_drive.py` : 76 vérifications dans Chromium, avec son vrai JS et sa
+`qa/live30_drive.py` : 96 vérifications dans Chromium, avec son vrai JS et sa
 vraie CSS. Son studio est remplacé par un faux servi par le test : aucune
 génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabarits.
 
@@ -72,10 +72,36 @@ Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 30s (a publier) »**
 ci-dessus diffèrent, vérifié fichier par fichier : la section au MD5 près
 (`f4140032…`), le gabarit sur son contenu.
 
-## À savoir
+## La durée de la vraie génération
 
-- Aucune vidéo d'attente n'est réglée, ni sur le live ni avant. Tant qu'il n'y
-  en a pas, leur photo occupe le cadre. Pour en mettre une : éditeur, section
-  du questionnaire, « Clip (upload MP4) ».
+Le studio de l'associé n'est pas joignable depuis l'environnement de travail
+(refus du réseau), donc pas de mesure directe. Ce qu'on sait : son propre
+écran de chargement annonce « a few minutes » et ne parle de retard qu'après
+4 min ; ses étapes s'enchaînent (plan, avatar, puis les 4 scènes ; la chanson
+en parallèle), et sur KIE une image prend ~30-60 s, une chanson complète
+~1-2 min. D'où les 2 à 3 min observées. Avec la barre à 2 min 30 : si la
+preview est prête avant, elle s'affiche d'emblée ; si elle prend 3 min, on
+voit sa progression ~30 s de plus, puis elle se dévoile seule (testé).
+
+## La vidéo d'attente
+
+Éditeur → section du questionnaire → « Clip (upload MP4) ». On y prend la
+meilleure version MP4 (jusqu'à 1080p), la forme du clip (rien n'est rogné,
+réglage « Clip shape » = « Same as the clip ») et sa première image pendant
+le chargement. Régler « How long the bar takes » sur la durée du clip
+(150 s = 2 min 30, par défaut). Sans clip, leur photo occupe le cadre.
+
+## Le clip façon « music video » (brouillon v37, à tester)
+
+Section à part, `cs-duo-montage`, posée tout en bas de la page unique : elle
+n'affiche rien d'elle-même. Quand la preview de l'associé est dévoilée, son
+grand cadre devient un clip : ses 4 scènes se relaient sur SA chanson (un plan
+toutes les 5 s, en fondu, zoom avant, arrière, glissements), la légende de la
+scène en bas, un grand bouton de lecture (qui passe par SON lecteur), une
+carte de fin avec le prénom et « Get the full music video » qui descend à
+l'offre. Ses fichiers ne changent pas ; retirer la section rend sa preview
+d'origine.
+
+## À savoir
 - Le bouton de l'offre mène toujours à `/pages/couples`, comme sur le live.
   Aucun paiement n'y est branché.
