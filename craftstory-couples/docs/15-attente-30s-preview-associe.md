@@ -34,7 +34,7 @@ tout le reste du thème.
 |---|---|
 | Studio lent (photos lourdes) | la barre attend à 99 % que la preview soit lancée |
 | Studio qui ne répond pas | il coupe à 45 s (son code) ; notre plafond est 60 s ; retour au questionnaire avec un message lisible |
-| Studio qui refuse (photo, etc.) | retour au questionnaire avec **son** message |
+| Studio qui refuse (photo, plafond du jour, etc.) | retour au questionnaire avec **son** message, réponses gardées (ex. « Our free preview studio is at capacity. Please try again tomorrow. » : c'est son studio qui est plein, pas la page) |
 | Rechargement pendant l'attente | l'attente reprend où elle en était |
 | Rechargement après l'ouverture | la page reste ouverte, la preview revient dévoilée |
 | « Back to the questionnaire » (dans sa preview) | on repart de zéro sur la même page |
@@ -67,10 +67,10 @@ génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabar
 
 ## Poussé sur le brouillon
 
-Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 30s (a publier) »**
+Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 2m30 (a publier) »**
 (`208474538315`) est une copie exacte du live. Seuls les deux fichiers
 ci-dessus diffèrent, vérifié fichier par fichier : la section au MD5 près
-(`f4140032…`), le gabarit sur son contenu.
+(`545df140…`), le gabarit sur son contenu.
 
 ## La durée de la vraie génération
 
