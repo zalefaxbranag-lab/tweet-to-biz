@@ -35,6 +35,14 @@
     html[data-cs-duo-gate="closed"] #shopify-section-{{ section.id }} ~ .shopify-section{display:none !important}
     html[data-cs-duo-resume] #shopify-section-{{ section.id }} .cs-flow-top,
     html[data-cs-duo-resume] #shopify-section-{{ section.id }} [data-cs-form]{display:none !important}
+    {%- comment -%}
+      Sa preview cache ce qui la suit jusqu'a ce qu'elle soit devoilee. Si
+      elle echoue (ou n'est plus disponible), rien ne serait jamais devoile :
+      on montre alors la suite (l'aide, l'offre), pour ne pas laisser le
+      visiteur devant un message sans issue.
+    {%- endcomment -%}
+    html:not([data-cs-duo-gate]) #shopify-section-{{ section.id }} ~ .shopify-section:has([data-couples-preview][data-view="error"]) ~ .shopify-section,
+    html:not([data-cs-duo-gate]) #shopify-section-{{ section.id }} ~ .shopify-section:has([data-couples-preview][data-view="empty"]) ~ .shopify-section{display:block !important}
   </style>
 {%- else -%}
   {%- comment -%}

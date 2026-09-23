@@ -106,6 +106,7 @@ class Studio:
         self.gets = []
         self.hold = []
         self.mode = "ok"         # ok | hold | fail
+        self.gen = "ok"          # ok | failed : la fabrication echoue chez le studio
         self.steps = {}          # id -> nombre de lectures
 
     def job(self, n):
@@ -114,6 +115,10 @@ class Studio:
     def state(self, jid):
         k = self.steps.get(jid, 0)
         self.steps[jid] = k + 1
+        if self.gen == "failed" and k >= 2:
+            return {"status": "failed", "planReady": True, "names": ["Marie", "Thomas"],
+                    "scenes": [{"state": "failed"}] * 4, "createdAt": 0,
+                    "error": "We could not finish this preview."}
         scenes = [{"state": "pending", "caption": "Scene %d" % (i + 1)} for i in range(4)]
         d = {"status": "running", "planReady": k >= 1, "names": ["Marie", "Thomas"],
              "scenes": scenes, "createdAt": 0}
@@ -423,6 +428,21 @@ with sync_playwright() as pw:
     run(p, 31000)
     check("a 31 s : ouvert, et la preview suit sa fabrication", [gate(p), p.get_attribute("[data-couples-preview]", "data-view")], [None, "loading"])
     check("elle lit la preview dans l'adresse", bool(re.search(r"#preview=[a-f0-9]{64}\.[a-f0-9]{64}$", p.url)), True)
+    ctx.close()
+
+    # ================================================================ I
+    print("\n--- I. LA FABRICATION ECHOUE : JAMAIS DE PAGE SANS ISSUE ---")
+    ctx, st = context()
+    st.gen = "failed"
+    p = page(ctx)
+    p.goto(BASE + "/pages/couples-start")
+    p.wait_for_timeout(400)
+    freeze(p)
+    walk(p)
+    p.wait_for_timeout(1200)
+    run(p, 31000)
+    check("sa preview affiche son erreur", p.get_attribute("[data-couples-preview]", "data-view"), "error")
+    check("et la suite se montre : offre, avis, FAQ, aide", [shown(p, k) for k in BELOW], [True] * 5)
     ctx.close()
 
     print("\n--- ERREURS JS ---")

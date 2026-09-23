@@ -40,6 +40,7 @@ tout le reste du thème.
 | « Back to the questionnaire » (dans sa preview) | on repart de zéro sur la même page |
 | Gabarit sans preview dessous | à la fin des 30 s, `/pages/couples-preview#preview=…` s'ouvre seule (son chemin d'origine, sans clic) |
 | Éditeur de thème | aucun verrou, tout est visible |
+| Sa preview échoue (ou n'est plus disponible) | la suite (aide, FAQ, offre) s'affiche quand même : jamais de page sans issue |
 
 ## Comment c'est branché sans toucher à ses fichiers
 
@@ -60,7 +61,7 @@ tout le reste du thème.
 
 ## Tests
 
-`qa/live30_drive.py` : 74 vérifications dans Chromium, avec son vrai JS et sa
+`qa/live30_drive.py` : 76 vérifications dans Chromium, avec son vrai JS et sa
 vraie CSS. Son studio est remplacé par un faux servi par le test : aucune
 génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabarits.
 
@@ -69,7 +70,7 @@ génération réelle. `qa/build_live30.py` rend les pages depuis les vrais gabar
 Le brouillon **v36 « CraftStory v36 LIVE v35 + attente 30s (a publier) »**
 (`208474538315`) est une copie exacte du live. Seuls les deux fichiers
 ci-dessus diffèrent, vérifié fichier par fichier : la section au MD5 près
-(`d818719f…`), le gabarit sur son contenu.
+(`f4140032…`), le gabarit sur son contenu.
 
 ## À savoir
 

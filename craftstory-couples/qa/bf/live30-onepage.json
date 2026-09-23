@@ -1,0 +1,244 @@
+{
+ "sections": [
+  {
+   "type": "cs-duo-flow",
+   "key": "flow",
+   "settings": {
+    "api_url": "https://fake-studio.test/v1/previews",
+    "s6_consent": "We are both adults and agree to our photos being used to create our song and cartoon preview.",
+    "next_page": "/pages/couples-preview",
+    "mk_video_url": "/clip.webm",
+    "mk_caption": "OUR WRITERS ARE"
+   },
+   "blocks": []
+  },
+  {
+   "type": "cs-duo-generated-preview",
+   "key": "song",
+   "settings": {
+    "api_base": "https://fake-studio.test"
+   },
+   "blocks": []
+  },
+  {
+   "type": "cs-duo-pv-offer",
+   "key": "offer",
+   "settings": {
+    "speed_heading": "Choose your delivery speed",
+    "cta_label": "Unlock {name}'s full music video",
+    "cta_link": "/pages/couples",
+    "cta_note": "Limited · Yours forever · Secure payment",
+    "sticky": true,
+    "guar_title": "30-day money-back guarantee",
+    "guar_body": "Not happy with your music video? Full refund. No questions asked, no awkward email.",
+    "next_heading": "What happens next",
+    "next_sub": "Simple. No guesswork."
+   },
+   "blocks": [
+    {
+     "type": "speed",
+     "settings": {
+      "label": "30-minute delivery",
+      "note": "Ready while you are still on your phone",
+      "price": "$119",
+      "was": "$159",
+      "badge": "MOST POPULAR",
+      "value": "30min"
+     }
+    },
+    {
+     "type": "speed",
+     "settings": {
+      "label": "48-hour delivery",
+      "note": "Standard",
+      "price": "$79",
+      "value": "48h"
+     }
+    },
+    {
+     "type": "addon",
+     "settings": {
+      "label": "Keep {name}'s lyrics forever",
+      "note": "A printable PDF with their name and the cover art. Save it, print it, frame it.",
+      "price": "+$19",
+      "value": "1"
+     }
+    },
+    {
+     "type": "step",
+     "settings": {
+      "title": "Unlock now",
+      "body": "One payment. Production starts the moment you click."
+     }
+    },
+    {
+     "type": "step",
+     "settings": {
+      "title": "Your music video is delivered",
+      "body": "In your inbox, within the time you picked. The song and the video, yours to keep."
+     }
+    },
+    {
+     "type": "step",
+     "settings": {
+      "title": "Play it for them",
+      "body": "A car, a first dance, a kitchen on a Tuesday. Headphones if you have them."
+     }
+    }
+   ]
+  },
+  {
+   "type": "cs-duo-reviews",
+   "key": "reviews",
+   "settings": {
+    "layout": "list",
+    "eyebrow": "",
+    "heading": "Loved by 12,000+ couples",
+    "proof_line": "Real stories, real reactions",
+    "verified_label": "Verified purchase",
+    "cta_label": "",
+    "cta_link": "#",
+    "rating_score": "4.9",
+    "rating_label": "Excellent",
+    "rating_count": "Based on 63 reviews",
+    "rating_bars": "5 stars|87\n4 stars|9\n3 stars|3\n2 stars|1\n1 star|0"
+   },
+   "blocks": [
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "1 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    },
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "2 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    },
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "3 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    },
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "4 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    },
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "5 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    },
+    {
+     "type": "review",
+     "settings": {
+      "stars": "★★★★★",
+      "date": "6 weeks ago",
+      "verified": true,
+      "name": "Name",
+      "meta": "",
+      "quote": "REVIEW SLOT — their own words go here."
+     }
+    }
+   ]
+  },
+  {
+   "type": "cs-duo-faq",
+   "key": "faq",
+   "settings": {
+    "heading": "Questions",
+    "sub": "Everything you're wondering, answered.",
+    "align": "center",
+    "bg": "paper",
+    "cta_label": "",
+    "cta_link": "#"
+   },
+   "blocks": [
+    {
+     "type": "qa",
+     "settings": {
+      "q": "What if I don't like the full music video?",
+      "a": "<p>Tell us within 30 days and you get a full refund. No questions asked.</p>"
+     }
+    },
+    {
+     "type": "qa",
+     "settings": {
+      "q": "Is my payment secure?",
+      "a": "<p>Yes. Payment is handled by Shopify's own checkout. We never see your card details.</p>"
+     }
+    },
+    {
+     "type": "qa",
+     "settings": {
+      "q": "How quickly do I get it after paying?",
+      "a": "<p>Within the time you picked above — thirty minutes, or forty-eight hours.</p>"
+     }
+    },
+    {
+     "type": "qa",
+     "settings": {
+      "q": "How do I show it to them?",
+      "a": "<p>You get a private link plus the files. Play it from your phone, send the link, or put the video on a TV.</p>"
+     }
+    },
+    {
+     "type": "qa",
+     "settings": {
+      "q": "Can we play it at our wedding?",
+      "a": "<p>Yes. It is yours — first dance, reception, an anniversary dinner, or just the car.</p>"
+     }
+    },
+    {
+     "type": "qa",
+     "settings": {
+      "q": "What happens if I don't unlock it right now?",
+      "a": "<p>Nothing is lost. Your answers are kept and you can come back — at the regular rate.</p>"
+     }
+    }
+   ]
+  },
+  {
+   "type": "cs-duo-help",
+   "key": "help",
+   "settings": {
+    "heading": "Still Have Questions?",
+    "intro": "Our friendly team is here to help. Email us anytime at",
+    "email": "Sarah@craftstory.co",
+    "tail": "— we typically respond within a few hours.",
+    "bg": "paper2"
+   },
+   "blocks": []
+  }
+ ]
+}
